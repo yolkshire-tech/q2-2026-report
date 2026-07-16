@@ -1,0 +1,7 @@
+*.csv
+*.xlsx
+*.py
+__pycache__/
+.agents/
+scratch/
+.gemini/

@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yolkshire | Q2 2026 Executive Dashboard v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Raleway:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#2B2428; --bg2:#362E33; --bg3:#43393F; --bg4:#50444C;
+  --primary:#E7BA44; --secondary:#415639; --accent:#7C4C47;
+  --text:#FCF0D0; --muted:#a3979d; --border:#43393F;
+  --grid:rgba(252,240,208,.06);
+  --blue:#5985b9; --green:#56754d; --amber:#E7BA44; --red:#9c5f59; --purple:#907aa9;
+}
+body.light-mode{
+  --bg:#FCF0D0; --bg2:#F5E9C9; --bg3:#EBDDB8; --bg4:#DFD0AA;
+  --primary:#E7BA44; --secondary:#415639; --accent:#7C4C47;
+  --text:#2B2428; --muted:#665c61; --border:#DFD0AA;
+  --grid:rgba(43,36,40,.08);
+  --blue:#3b6594; --green:#415639; --amber:#c49625; --red:#7C4C47; --purple:#755b91;
+}
+body{font-family:'Raleway',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;transition:background .25s,color .25s}
+h1,h2,h3,h4,.logo-text h1,.tab,.sec{font-family:'Poppins',sans-serif}
+.kpi-val{font-family:'Montserrat',sans-serif}
+
+.header{background:linear-gradient(135deg,var(--bg),rgba(0,0,0,0.1));border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;backdrop-filter:blur(8px);transition:all .25s}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--primary),var(--accent));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.logo-text h1{font-size:18px;font-weight:700;color:var(--primary);letter-spacing:-.3px}
+.logo-text p{font-size:11px;color:var(--muted);margin-top:1px}
+.header-actions{display:flex;align-items:center;gap:14px}
+.header-badges{display:flex;gap:10px;align-items:center}
+.badge-pill{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:11px;color:var(--muted)}
+.badge-pill span{color:var(--primary);font-weight:600}
+.live-dot{width:8px;height:8px;background:var(--primary);border-radius:50%;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.theme-toggle{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;display:flex;align-items:center;gap:6px;transition:all .2s}
+.theme-toggle:hover{border-color:var(--primary);background:var(--bg3)}
+
+.filter-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 28px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;transition:all .25s}
+.filter-group{display:flex;align-items:center;gap:8px}
+.filter-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}
+.filter-select{background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:'Raleway',sans-serif;font-size:12px;font-weight:500;padding:6px 28px 6px 10px;border-radius:7px;cursor:pointer;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23E7BA44'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;transition:border-color .15s}
+.filter-select:hover{border-color:var(--primary)}
+.filter-active{border-color:var(--primary)!important;background-color:rgba(231,186,68,.12)!important;color:var(--primary)!important}
+.filter-reset{margin-left:auto;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Raleway',sans-serif;font-size:11px;padding:5px 12px;border-radius:6px;cursor:pointer;transition:all .15s}
+.filter-reset:hover{border-color:var(--accent);color:var(--text);background:var(--accent)}
+.filter-context{font-size:11px;color:var(--primary);padding:4px 10px;background:rgba(231,186,68,.08);border-radius:5px;border:1px solid rgba(231,186,68,.2)}
+
+.tabs{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 28px;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:13px 16px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:.3px}
+.tab:hover{color:var(--text);background:rgba(255,255,255,.02)}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary);background:rgba(231,186,68,.05)}
+
+.page{display:none;padding:24px 28px;animation:fadeIn .25s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+.sec{font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;margin-top:8px;display:flex;align-items:center;gap:10px}
+.sec::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+.kpi-grid-5{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:22px}
+.kpi-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s;cursor:default}
+.kpi-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.4)}
+.kpi-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2.5px;border-radius:12px 12px 0 0}
+.kpi-card.c-blue::after{background:linear-gradient(90deg,var(--primary),var(--blue))}
+.kpi-card.c-green::after{background:linear-gradient(90deg,var(--secondary),#56754d)}
+.kpi-card.c-amber::after{background:linear-gradient(90deg,var(--primary),var(--accent))}
+.kpi-card.c-red::after{background:linear-gradient(90deg,var(--accent),#b35a51)}
+.kpi-card.c-purple::after{background:linear-gradient(90deg,var(--purple),var(--primary))}
+.kpi-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.kpi-val{font-size:24px;font-weight:800;letter-spacing:-1px;line-height:1}
+.kpi-val.c-blue{color:var(--primary)}
+.kpi-val.c-green{color:#9fc794}
+.kpi-val.c-amber{color:var(--primary)}
+.kpi-val.c-red{color:#e68c85}
+.kpi-val.c-purple{color:#cbb8e3}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:6px}
+.kpi-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:26px;opacity:.07}
+.trend-up{color:#9fc794}
+.trend-dn{color:#e68c85}
+body.light-mode .kpi-val.c-green{color:#345736}
+body.light-mode .kpi-val.c-red{color:#7C4C47}
+body.light-mode .kpi-val.c-purple{color:#755b91}
+
+.grid{display:grid;gap:14px;margin-bottom:20px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:1fr 1fr 1fr}
+.g21{grid-template-columns:2fr 1fr}
+.g12{grid-template-columns:1fr 2fr}
+.g31{grid-template-columns:3fr 1fr}
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative}
+.chart-card h3{font-size:13px;font-weight:600;margin-bottom:3px;color:var(--text)}
+.chart-card .sub{font-size:11px;color:var(--muted);margin-bottom:14px}
+.cw{position:relative}
+.expand-btn{position:absolute;top:14px;right:14px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);width:24px;height:24px;border-radius:5px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:all .15s;z-index:10}
+.expand-btn:hover{border-color:var(--primary);color:var(--primary)}
+
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{background:var(--bg3);color:var(--primary);font-weight:700;text-transform:uppercase;letter-spacing:.4px;font-size:10px;padding:9px 12px;text-align:left;border-bottom:1px solid var(--border);cursor:pointer;user-select:none}
+.tbl th:hover{color:var(--text)}
+.tbl td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text)}
+.tbl tr:hover td{background:rgba(80,68,76,.15)}
+.tbl tr:last-child td{border-bottom:none}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;font-family:'Poppins',sans-serif}
+.tag.star{background:rgba(65,86,57,.15);color:#9fc794;border:1px solid rgba(65,86,57,.3)}
+.tag.horse{background:rgba(89,133,185,.15);color:#94b8e3;border:1px solid rgba(89,133,185,.3)}
+.tag.puzzle{background:rgba(231,186,68,.15);color:var(--primary);border:1px solid rgba(231,186,68,.3)}
+.tag.dog{background:rgba(124,76,71,.15);color:#e68c85;border:1px solid rgba(124,76,71,.3)}
+.tag.grow{background:rgba(65,86,57,.2);color:#9fc794}
+.tag.warn{background:rgba(231,186,68,.15);color:var(--primary)}
+.tag.risk{background:rgba(124,76,71,.2);color:#e68c85}
+.tag.online{background:rgba(231,186,68,.15);color:var(--primary);border:1px solid rgba(231,186,68,.3)}
+.tag.offline{background:rgba(65,86,57,.15);color:#9fc794;border:1px solid rgba(65,86,57,.3)}
+
+.prog{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-top:4px}
+.prog-fill{height:100%;border-radius:3px}
+
+.insight-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px}
+.insight{border-radius:10px;padding:16px;border:1px solid}
+.insight.good{background:rgba(65,86,57,.08);border-color:rgba(65,86,57,.25)}
+.insight.warn{background:rgba(231,186,68,.05);border-color:rgba(231,186,68,.2)}
+.insight.act{background:rgba(89,133,185,.08);border-color:rgba(89,133,185,.2)}
+.insight-t{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-family:'Poppins',sans-serif}
+.insight.good .insight-t{color:#9fc794}
+.insight.warn .insight-t{color:var(--primary)}
+.insight.act .insight-t{color:#94b8e3}
+.insight ul{list-style:none}
+.insight li{font-size:11px;color:var(--text);padding:4px 0;border-bottom:1px solid rgba(252,240,208,.04);line-height:1.5}
+.insight li:last-child{border:none}
+.insight li::before{content:'-> ';color:var(--muted)}
+
+.rec-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px}
+.rec-card{background:var(--bg2);border-radius:12px;padding:18px;border:1px solid var(--border)}
+.rec-card h3{font-size:14px;font-weight:700;color:var(--primary)}
+.rec-period{font-size:10px;color:var(--muted);margin-bottom:12px;margin-top:2px;text-transform:uppercase;letter-spacing:.5px;font-family:'Poppins',sans-serif}
+.rec-item{display:flex;gap:9px;padding:7px 0;border-bottom:1px solid rgba(80,68,76,.15)}
+.rec-item:last-child{border:none}
+.rec-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px}
+.rec-text{font-size:11px;color:var(--text);line-height:1.5}
+
+.swot{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border-radius:12px;overflow:hidden;margin-bottom:22px}
+.swot-q{padding:18px;background:var(--bg2)}
+.swot-q h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.swot-q.s h3{color:#9fc794} .swot-q.w h3{color:#e68c85}
+.swot-q.o h3{color:#94b8e3} .swot-q.t h3{color:var(--primary)}
+.swot-item{font-size:11px;color:var(--text);padding:3px 0;line-height:1.5;opacity:.9}
+
+.hm-legend{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:10px;color:var(--muted)}
+.hm-bar{width:120px;height:8px;border-radius:4px;background:linear-gradient(90deg,#2b2428,#415639,#E7BA44,#7C4C47)}
+
+.load-cell{display:flex;align-items:center;gap:8px;min-width:120px}
+.load-bar-wrap{flex:1;height:7px;background:var(--bg3);border-radius:4px;overflow:hidden}
+.load-bar-fill{height:100%;border-radius:4px}
+
+.note{background:rgba(231,186,68,.05);border:1px solid rgba(231,186,68,.15);border-radius:8px;padding:12px 16px;font-size:11px;color:var(--text);line-height:1.6;margin-top:14px}
+.note strong{color:var(--primary)}
+.info-note{background:rgba(89,133,185,.06);border:1px solid rgba(89,133,185,.15);border-radius:8px;padding:10px 14px;font-size:11px;color:var(--text);line-height:1.6;margin-bottom:14px}
+.info-note strong{color:#94b8e3}
+.alert-note{background:rgba(124,76,71,.06);border:1px solid rgba(124,76,71,.2);border-radius:8px;padding:12px 16px;font-size:11px;color:var(--text);line-height:1.6;margin-top:14px}
+.alert-note strong{color:#e68c85}
+
+.branch-selector{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.branch-pill{padding:7px 16px;border-radius:20px;border:1px solid var(--border);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;font-family:'Poppins',sans-serif;background:var(--bg2);color:var(--muted)}
+.branch-pill:hover{border-color:var(--primary);color:var(--primary)}
+.branch-pill.active{background:var(--primary);color:var(--bg);border-color:var(--primary)}
+
+#modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+#modal-overlay.open{display:flex}
+#modal-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;width:92%;max-width:1100px;max-height:88vh;overflow:hidden;display:flex;flex-direction:column}
+#modal-header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+#modal-title{font-size:16px;font-weight:700;color:var(--text);font-family:'Poppins',sans-serif}
+#modal-close{background:var(--bg3);border:1px solid var(--border);color:var(--muted);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:14px;transition:all .15s}
+#modal-close:hover{border-color:var(--accent);color:var(--text);background:var(--accent)}
+#modal-body{padding:24px;overflow-y:auto;flex:1}
+#modal-chart-wrap{height:300px;margin-bottom:24px}
+
+.report-content{max-width:900px;margin:0 auto;font-family:'Raleway',sans-serif;line-height:1.7;padding-bottom:80px}
+.report-content h1{font-size:24px;font-weight:800;color:var(--primary);margin-bottom:8px;font-family:'Poppins',sans-serif}
+.report-content h2{font-size:17px;font-weight:700;color:var(--text);margin:28px 0 12px;font-family:'Poppins',sans-serif;padding-bottom:6px;border-bottom:2px solid var(--primary)}
+.report-content h3{font-size:14px;font-weight:700;color:var(--primary);margin:18px 0 8px;font-family:'Poppins',sans-serif}
+.report-content p{font-size:13px;color:var(--text);margin-bottom:10px}
+.report-content ul,.report-content ol{margin:8px 0 12px 20px}
+.report-content li{font-size:13px;color:var(--text);margin-bottom:5px}
+.report-content blockquote{background:rgba(231,186,68,.06);border-left:3px solid var(--primary);padding:10px 16px;margin:14px 0;border-radius:0 8px 8px 0;font-size:13px;color:var(--text)}
+.report-content table{width:100%;border-collapse:collapse;font-size:12px;margin:14px 0}
+.report-content th{background:var(--bg3);color:var(--primary);font-weight:700;text-transform:uppercase;letter-spacing:.4px;font-size:10px;padding:9px 12px;text-align:left;border-bottom:1px solid var(--border)}
+.report-content td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text)}
+.report-content tr:hover td{background:rgba(80,68,76,.12)}
+.report-content .status-good{color:#9fc794;font-weight:700}
+.report-content .status-warn{color:var(--primary);font-weight:700}
+.report-content .status-risk{color:#e68c85;font-weight:700}
+.report-content .divider{height:1px;background:var(--border);margin:28px 0}
+.print-btn{position:fixed;bottom:28px;right:28px;background:var(--primary);color:var(--bg);border:none;padding:12px 20px;border-radius:10px;font-family:'Poppins',sans-serif;font-weight:700;font-size:13px;cursor:pointer;z-index:500;box-shadow:0 4px 20px rgba(231,186,68,.4);transition:all .2s}
+.print-btn:hover{transform:translateY(-2px)}
+
+@media print{
+  .header,.filter-bar,.tabs,.print-btn,#modal-overlay,.expand-btn{display:none!important}
+  .page{display:block!important;padding:16px!important}
+  body{background:#fff!important;color:#000!important}
+  .report-content h2{color:#000!important;border-color:#000!important}
+  .report-content h1,.report-content h3{color:#333!important}
+  .report-content th{background:#f0f0f0!important;color:#000!important}
+  .report-content td{color:#000!important}
+}
+
+@media(max-width:768px){
+  .header{padding:12px 16px;flex-direction:column;align-items:flex-start;gap:10px}
+  .header-actions{width:100%;justify-content:space-between}
+  .header-badges{display:none}
+  .filter-bar{padding:10px 16px;gap:8px}
+  .filter-group{width:100%;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:6px}
+  .filter-select{width:60%;max-width:180px}
+  .filter-reset{margin-left:0;width:100%;text-align:center;padding:8px}
+  .tabs{padding:0 8px}
+  .tab{padding:10px 10px;font-size:10px}
+  .page{padding:16px 12px}
+  .kpi-grid,.kpi-grid-5{grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px}
+  .kpi-val{font-size:18px}
+  .grid.g2,.grid.g3,.grid.g21,.grid.g12,.grid.g31{grid-template-columns:1fr}
+  .rec-grid,.insight-grid,.swot{grid-template-columns:1fr}
+  canvas{max-height:220px}
+}
+</style>
+</head>
+<body>
+
+<!-- MODAL -->
+<div id="modal-overlay" onclick="closeModal()">
+  <div id="modal-box" onclick="event.stopPropagation()">
+    <div id="modal-header">
+      <h2 id="modal-title"></h2>
+      <button id="modal-close" onclick="closeModal()">&#10005;</button>
+    </div>
+    <div id="modal-body">
+      <div id="modal-chart-wrap" style="display:none"><canvas id="modal-canvas"></canvas></div>
+      <div id="modal-table-wrap"></div>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">&#127859;</div>
+    <div class="logo-text"><h1>Yolkshire</h1><p>Q2 2026 Executive Dashboard &middot; v2</p></div>
+  </div>
+  <div class="header-actions">
+    <div class="header-badges">
+      <div class="badge-pill">Period: <span>Apr 1 &ndash; Jun 30, 2026</span></div>
+      <div class="badge-pill">Orders: <span>40,193</span></div>
+      <div class="badge-pill">Branches: <span>7</span></div>
+      <div class="live-dot"></div>
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()">
+      <span id="theme-icon">&#9728;&#65039;</span> <span id="theme-text">Light Mode</span>
+    </button>
+  </div>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <div class="filter-group">
+    <span class="filter-label">Branch</span>
+    <select class="filter-select" id="f-branch" onchange="applyFilters()">
+      <option value="all">All Branches</option>
+      <option value="Kothrud">Kothrud</option>
+      <option value="AUNDH">AUNDH</option>
+      <option value="Salunkhe Vihar">Salunkhe Vihar</option>
+      <option value="Saudagar">Saudagar</option>
+      <option value="Wadgaon Sheri">Wadgaon Sheri</option>
+      <option value="Yolkshire Wakad">Yolkshire Wakad</option>
+      <option value="Bavdhan">Bavdhan</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <span class="filter-label">Month</span>
+    <select class="filter-select" id="f-month" onchange="applyFilters()">
+      <option value="all">All Months (Q2)</option>
+      <option value="apr">April 2026</option>
+      <option value="may">May 2026</option>
+      <option value="jun">June 2026</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <span class="filter-label">Channel</span>
+    <select class="filter-select" id="f-channel" onchange="applyFilters()">
+      <option value="all">All Channels</option>
+      <option value="Dine In">Dine In</option>
+      <option value="Zomato">Zomato</option>
+      <option value="Swiggy">Swiggy</option>
+      <option value="Takeaway">Takeaway</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <span class="filter-label">Session</span>
+    <select class="filter-select" id="f-session" onchange="applyFilters()">
+      <option value="all">All Sessions</option>
+      <option value="breakfast">Breakfast (7-10)</option>
+      <option value="lunch">Lunch (11-14)</option>
+      <option value="snack">Snack (15-17)</option>
+      <option value="dinner">Dinner (18-23)</option>
+    </select>
+  </div>
+  <button class="filter-reset" onclick="resetFilters()">&#10005; Reset</button>
+  <div class="filter-context" id="filter-ctx">Showing: All Q2 2026 Data &middot; 40,193 orders</div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="showPage(0)">&#128202; Executive Overview</div>
+  <div class="tab" onclick="showPage(1)">&#128200; Sales Performance</div>
+  <div class="tab" onclick="showPage(2)">&#127869;&#65039; Menu Performance</div>
+  <div class="tab" onclick="showPage(3)">&#129534; Customer &amp; Transactions</div>
+  <div class="tab" onclick="showPage(4)">&#9881;&#65039; Operations</div>
+  <div class="tab" onclick="showPage(5)">&#128225; Channel Intelligence</div>
+  <div class="tab" onclick="showPage(6)">&#127978; Branch Profiles</div>
+  <div class="tab" onclick="showPage(7)">&#128302; Forecasting</div>
+  <div class="tab" onclick="showPage(8)">&#128161; Recommendations</div>
+  <div class="tab" onclick="showPage(9)">&#128196; Executive Report</div>
+</div>
+
+<!-- PAGE 0: EXECUTIVE OVERVIEW -->
+<div class="page active" id="pg0">
+  <div class="sec">Key Performance Indicators</div>
+  <div class="kpi-grid-5">
+    <div class="kpi-card c-blue"><div class="kpi-label">Net Revenue</div><div class="kpi-val c-blue" id="k-rev">&#8377;2.07Cr</div><div class="kpi-sub" id="k-rev-sub">Q2 2026 total</div><div class="kpi-icon">&#128176;</div></div>
+    <div class="kpi-card c-green"><div class="kpi-label">Total Orders</div><div class="kpi-val c-green" id="k-ord">40,193</div><div class="kpi-sub" id="k-ord-sub">441.7/day avg</div><div class="kpi-icon">&#128230;</div></div>
+    <div class="kpi-card c-amber"><div class="kpi-label">Avg Order Value</div><div class="kpi-val c-amber" id="k-aov">&#8377;516</div><div class="kpi-sub">Net &middot; incl. tax &#8377;528</div><div class="kpi-icon">&#129518;</div></div>
+    <div class="kpi-card c-purple"><div class="kpi-label">Avg Daily Revenue</div><div class="kpi-val c-purple" id="k-daily">&#8377;2.28L</div><div class="kpi-sub">per day average</div><div class="kpi-icon">&#128197;</div></div>
+    <div class="kpi-card c-amber"><div class="kpi-label">Bev. Attach Rate</div><div class="kpi-val c-amber">~40%</div><div class="kpi-sub">72% confidence &rarr; 20% gap</div><div class="kpi-icon">&#129370;</div></div>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi-card c-green"><div class="kpi-label">Best Branch</div><div class="kpi-val c-green" id="k-branch" style="font-size:16px">Kothrud</div><div class="kpi-sub" id="k-branch-sub">&#8377;62.3L &middot; 30.1%</div><div class="kpi-icon">&#127942;</div></div>
+    <div class="kpi-card c-blue"><div class="kpi-label">Best Channel</div><div class="kpi-val c-blue" id="k-channel" style="font-size:16px">Dine In</div><div class="kpi-sub" id="k-channel-sub">&#8377;96.9L &middot; AOV &#8377;590</div><div class="kpi-icon">&#127860;</div></div>
+    <div class="kpi-card c-amber"><div class="kpi-label">Peak Hour</div><div class="kpi-val c-amber">10 AM</div><div class="kpi-sub">3,752 orders &middot; &#8377;20.9L</div><div class="kpi-icon">&#9200;&#65039;</div></div>
+    <div class="kpi-card c-purple"><div class="kpi-label">Cancel Rate</div><div class="kpi-val c-purple">0.08%</div><div class="kpi-sub">Only 33 cancellations</div><div class="kpi-icon">&#9989;</div></div>
+  </div>
+
+  <div class="sec">Revenue Overview</div>
+  <div class="grid g21">
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Revenue by Month','c-monthly')">&#10178;</button>
+      <h3>Revenue by Month</h3>
+      <div class="sub" id="monthly-sub">Apr&ndash;Jun actuals + Jul&ndash;Sep forecast</div>
+      <div class="cw" style="height:210px"><canvas id="c-monthly"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Revenue by Channel','c-ch-donut')">&#10178;</button>
+      <h3>Revenue by Channel</h3>
+      <div class="sub">Q2 net revenue split</div>
+      <div class="cw" style="height:210px"><canvas id="c-ch-donut"></canvas></div>
+    </div>
+  </div>
+  <div class="grid g2">
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Revenue by Branch','c-br-bar')">&#10178;</button>
+      <h3>Revenue by Branch</h3>
+      <div class="sub">Net revenue &middot; selected period</div>
+      <div class="cw" style="height:230px"><canvas id="c-br-bar"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Revenue by Day of Week','c-dow')">&#10178;</button>
+      <h3>Revenue by Day of Week</h3>
+      <div class="sub">Chain-wide &middot; Sunday 2&times; Monday</div>
+      <div class="cw" style="height:230px"><canvas id="c-dow"></canvas></div>
+    </div>
+  </div>
+  <div class="grid g2">
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Revenue by Session','c-session-donut')">&#10178;</button>
+      <h3>Revenue by Session</h3>
+      <div class="sub">Derived from order hour</div>
+      <div class="cw" style="height:200px"><canvas id="c-session-donut"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Top 10 Items by Revenue','c-top10r')">&#10178;</button>
+      <h3>Top 10 Items by Revenue</h3>
+      <div class="sub">Chicken Stroganoff = 9.1% of item revenue</div>
+      <div class="cw" style="height:200px"><canvas id="c-top10r"></canvas></div>
+    </div>
+  </div>
+  <div class="sec">Executive Insights</div>
+  <div class="insight-grid">
+    <div class="insight good"><div class="insight-t">What's Working</div><ul>
+      <li>Kothrud anchors chain at &#8377;62.3L (30%)</li>
+      <li>Cancel rate 0.08% &mdash; industry best</li>
+      <li>Coffee growing +700% Apr&rarr;Jun</li>
+      <li>Bavdhan Month 1 AOV &#8377;593 &mdash; above chain avg</li>
+      <li>Dine In AOV &#8377;590 &mdash; strong in-store spend</li>
+    </ul></div>
+    <div class="insight warn"><div class="insight-t">Watch Closely</div><ul>
+      <li>June orders fell -1,021 vs May (&darr;7.5%)</li>
+      <li>Wadgaon Sheri declining -15.3% Apr&rarr;Jun</li>
+      <li>3&ndash;5 PM kitchen load only 28% &mdash; idle capacity</li>
+      <li>Chicken Stroganoff = 9% item revenue risk</li>
+      <li>Swiggy AOV (&#8377;441) vs Dine In (&#8377;590) gap</li>
+    </ul></div>
+    <div class="insight act"><div class="insight-t">Act Now</div><ul>
+      <li>Audit Wadgaon Sheri operations this week</li>
+      <li>Launch afternoon snack + coffee bundles</li>
+      <li>Train staff to attach beverages to every main</li>
+      <li>Add combos to Swiggy / Zomato listings</li>
+      <li>Fast-track Bavdhan to full menu rollout</li>
+    </ul></div>
+  </div>
+</div>
+
+<!-- PAGE 1: SALES PERFORMANCE -->
+<div class="page" id="pg1">
+  <div class="sec">Daily Revenue Trend</div>
+  <div class="chart-card" style="margin-bottom:20px">
+    <button class="expand-btn" onclick="openModal('Daily Revenue Trend','c-daily-rev')">&#10178;</button>
+    <h3>Daily Revenue Trend with 7-Day Rolling Average</h3>
+    <div class="sub">Apr 1 &ndash; Jun 30 &middot; Gold = daily revenue &middot; Purple dashed = 7-day moving average &middot; Weekend spikes visible</div>
+    <div class="cw" style="height:260px"><canvas id="c-daily-rev"></canvas></div>
+  </div>
+  <div class="sec">Hourly Revenue &amp; Volume</div>
+  <div class="grid g2">
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Revenue by Hour','c-hr-rev')">&#10178;</button>
+      <h3>Revenue by Hour</h3>
+      <div class="sub">Bimodal: 9&ndash;11 AM peak &middot; 9&ndash;10 PM peak</div>
+      <div class="cw" style="height:220px"><canvas id="c-hr-rev"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Orders by Hour','c-hr-ord')">&#10178;</button>
+      <h3>Orders by Hour</h3>
+      <div class="sub">Red=high load &middot; Amber=medium &middot; Green=low</div>
+      <div class="cw" style="height:220px"><canvas id="c-hr-ord"></canvas></div>
+    </div>
+  </div>
+  <div class="sec">Revenue Heatmap</div>
+  <div class="chart-card">
+    <h3>Revenue Intensity: Day of Week &times; Hour</h3>
+    <div class="sub">Darker = higher revenue &middot; Sunday 10 AM = single peak slot</div>
+    <canvas id="c-heatmap" style="width:100%;height:220px;display:block"></canvas>
+    <div class="hm-legend"><span>Low</span><div class="hm-bar"></div><span>High</span></div>
+  </div>
+  <div class="sec">Branch Trends &amp; Session Breakdown</div>
+  <div class="grid g2">
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Branch Monthly Trend','c-br-trend')">&#10178;</button>
+      <h3>Branch Revenue &mdash; Monthly Trend</h3>
+      <div class="sub" id="br-trend-sub">AUNDH growing &middot; Wadgaon Sheri declining</div>
+      <div class="cw" style="height:230px"><canvas id="c-br-trend"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Revenue by Session','c-sess-bar')">&#10178;</button>
+      <h3>Revenue &amp; Orders by Session</h3>
+      <div class="sub">Dinner leads volume &middot; Lunch leads AOV (&#8377;552)</div>
+      <div class="cw" style="height:230px"><canvas id="c-sess-bar"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 2: MENU PERFORMANCE -->
+<div class="page" id="pg2">
+  <div class="sec">Product Rankings</div>
+  <div class="grid g2">
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Top 10 Items — Revenue','c-top10r2')">&#10178;</button>
+      <h3>Top 10 Items &mdash; Revenue</h3>
+      <div class="sub">Rice Bowls dominate &mdash; 4 of top 5</div>
+      <div class="cw" style="height:270px"><canvas id="c-top10r2"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Top 10 Items — Quantity','c-top10q')">&#10178;</button>
+      <h3>Top 10 Items &mdash; Quantity</h3>
+      <div class="sub">Chicken Stroganoff leads both qty &amp; revenue</div>
+      <div class="cw" style="height:270px"><canvas id="c-top10q"></canvas></div>
+    </div>
+  </div>
+  <div class="sec">Menu Engineering Matrix</div>
+  <div class="chart-card">
+    <button class="expand-btn" onclick="openModal('Menu Engineering Matrix','c-me-scatter')">&#10178;</button>
+    <h3>Popularity vs Revenue &mdash; Menu Engineering Quadrant</h3>
+    <div class="sub">Stars: promote &middot; Plow Horses: reprice &middot; Puzzles: reposition &middot; Dogs: remove</div>
+    <div style="display:flex;gap:16px;margin-bottom:10px;flex-wrap:wrap">
+      <span style="font-size:11px;color:#9fc794">&#11044; Stars (67)</span>
+      <span style="font-size:11px;color:#94b8e3">&#11044; Plow Horses (13)</span>
+      <span style="font-size:11px;color:var(--primary)">&#11044; Puzzles (14)</span>
+      <span style="font-size:11px;color:#e68c85">&#11044; Dogs (66)</span>
+    </div>
+    <div class="cw" style="height:300px"><canvas id="c-me-scatter"></canvas></div>
+  </div>
+  <div class="grid g2">
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Fastest Growing Items','c-grow')">&#10178;</button>
+      <h3>Fastest Growing (Apr &rarr; Jun)</h3>
+      <div class="sub">Coffee category exploding &mdash; +700% avg</div>
+      <div class="cw" style="height:200px"><canvas id="c-grow"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Fastest Declining Items','c-decl')">&#10178;</button>
+      <h3>Fastest Declining (Apr &rarr; Jun)</h3>
+      <div class="sub">Several beverages dropped to zero units</div>
+      <div class="cw" style="height:200px"><canvas id="c-decl"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 3: CUSTOMER & TRANSACTIONS -->
+<div class="page" id="pg3">
+  <div class="sec">Bill Statistics</div>
+  <div class="kpi-grid">
+    <div class="kpi-card c-blue"><div class="kpi-label">Maximum Bill</div><div class="kpi-val c-blue">&#8377;28,800</div><div class="kpi-sub">Group/event dining</div></div>
+    <div class="kpi-card c-green"><div class="kpi-label">Median Bill</div><div class="kpi-val c-green">&#8377;420</div><div class="kpi-sub">50th percentile</div></div>
+    <div class="kpi-card c-amber"><div class="kpi-label">Mean Bill</div><div class="kpi-val c-amber">&#8377;528</div><div class="kpi-sub">Pulled by large orders</div></div>
+    <div class="kpi-card c-purple"><div class="kpi-label">75th Percentile</div><div class="kpi-val c-purple">&#8377;651</div><div class="kpi-sub">Premium zone</div></div>
+  </div>
+  <div class="grid g21">
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Bill Value Distribution','c-bill')">&#10178;</button>
+      <h3>Bill Value Distribution</h3>
+      <div class="sub">&#8377;300&ndash;&#8377;400 is the largest segment (24.8% of orders)</div>
+      <div class="cw" style="height:230px"><canvas id="c-bill"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('AOV by Channel','c-aov-ch')">&#10178;</button>
+      <h3>AOV by Channel</h3>
+      <div class="sub">Dine In leads at &#8377;590</div>
+      <div class="cw" style="height:230px"><canvas id="c-aov-ch"></canvas></div>
+    </div>
+  </div>
+  <div class="grid g2">
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('AOV by Branch','c-aov-br')">&#10178;</button>
+      <h3>AOV by Branch</h3>
+      <div class="sub">Salunkhe Vihar highest &middot; Wakad lowest</div>
+      <div class="cw" style="height:210px"><canvas id="c-aov-br"></canvas></div>
+    </div>
+    <div class="chart-card" style="display:flex;flex-direction:column">
+      <h3>Market Basket &mdash; Category Combos</h3>
+      <div class="sub" style="margin-bottom:12px">Frequently ordered together</div>
+      <table class="tbl">
+        <tr><th>When Customer Orders</th><th>Also Orders</th><th>Confidence</th><th>Lift</th></tr>
+        <tr><td>Main Dish</td><td>Beverage</td><td><span class="tag star">72%</span></td><td>1.8&times;</td></tr>
+        <tr><td>Egg Dish</td><td>Toast/Bread</td><td><span class="tag star">65%</span></td><td>1.6&times;</td></tr>
+        <tr><td>Rice Bowl</td><td>Cold Drink</td><td><span class="tag horse">58%</span></td><td>1.5&times;</td></tr>
+        <tr><td>Roll/Sandwich</td><td>Iced Tea</td><td><span class="tag horse">52%</span></td><td>1.4&times;</td></tr>
+        <tr><td>Breakfast Combo</td><td>Coffee</td><td><span class="tag puzzle">48%</span></td><td>1.3&times;</td></tr>
+      </table>
+      <div class="info-note" style="margin-top:12px;margin-bottom:0">Key opportunity: 72% of main-dish orders pair with a beverage. Improving attach by 20% adds ~&#8377;60/order &rarr; &#8377;24L+ annual uplift.</div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 4: OPERATIONS -->
+<div class="page" id="pg4">
+  <div class="sec">Kitchen Load Analysis</div>
+  <div class="chart-card">
+    <button class="expand-btn" onclick="openModal('Kitchen Load by Hour','c-load')">&#10178;</button>
+    <h3>Kitchen Utilization by Hour &mdash; All Branches</h3>
+    <div class="sub">Red &ge;80% &middot; Amber 50&ndash;80% &middot; Green &lt;50% &middot; Peak: 10 AM (100%)</div>
+    <div class="cw" style="height:190px"><canvas id="c-load"></canvas></div>
+  </div>
+  <div class="grid g2">
+    <div class="chart-card">
+      <h3>Staffing Guide by Hour</h3>
+      <div class="sub">Recommended minimum staff per branch</div>
+      <table class="tbl">
+        <tr><th>Hour</th><th>Daily Orders</th><th>Load</th><th>Min Staff</th></tr>
+        <tr><td>7 AM</td><td>12</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:29%;background:var(--green)"></div></div>29%</div></td><td style="font-weight:700">3</td></tr>
+        <tr><td>8 AM</td><td>26</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:64%;background:var(--amber)"></div></div>64%</div></td><td style="font-weight:700">5-6</td></tr>
+        <tr><td>9 AM</td><td>37</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:90%;background:var(--red)"></div></div>90%</div></td><td style="font-weight:700">7-8</td></tr>
+        <tr><td>10 AM</td><td>41</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:100%;background:var(--red)"></div></div>100%</div></td><td style="font-weight:700">8</td></tr>
+        <tr><td>3-5 PM</td><td>12</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:32%;background:var(--green)"></div></div>32%</div></td><td style="font-weight:700">3</td></tr>
+        <tr><td>9 PM</td><td>34</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:83%;background:var(--red)"></div></div>83%</div></td><td style="font-weight:700">6-7</td></tr>
+      </table>
+    </div>
+    <div class="chart-card">
+      <h3>Branch Scorecard</h3>
+      <div class="sub">Revenue, trend, and status</div>
+      <table class="tbl">
+        <tr><th>Branch</th><th>Revenue</th><th>AOV</th><th>Trend</th><th>Status</th></tr>
+        <tr><td>Kothrud</td><td>&#8377;62.3L</td><td>&#8377;515</td><td class="trend-up">Stable</td><td><span class="tag star">Leader</span></td></tr>
+        <tr><td>AUNDH</td><td>&#8377;39.7L</td><td>&#8377;515</td><td class="trend-up">&uarr; Growing</td><td><span class="tag star">Strong</span></td></tr>
+        <tr><td>Salunkhe Vihar</td><td>&#8377;26.9L</td><td>&#8377;556</td><td class="trend-up">&uarr; Growing</td><td><span class="tag horse">Premium</span></td></tr>
+        <tr><td>Saudagar</td><td>&#8377;26.9L</td><td>&#8377;526</td><td class="trend-dn">&darr; -10.2%</td><td><span class="tag warn">Watch</span></td></tr>
+        <tr><td>Wadgaon Sheri</td><td>&#8377;26.3L</td><td>&#8377;479</td><td class="trend-dn">&darr; -15.3%</td><td><span class="tag risk">Urgent</span></td></tr>
+        <tr><td>Yolkshire Wakad</td><td>&#8377;21.7L</td><td>&#8377;497</td><td>Mixed</td><td><span class="tag puzzle">Review</span></td></tr>
+        <tr><td>Bavdhan</td><td>&#8377;3.6L</td><td>&#8377;593</td><td>New (Jun)</td><td><span class="tag grow">High Pot.</span></td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 5: CHANNEL INTELLIGENCE -->
+<div class="page" id="pg5">
+  <div class="sec">Chain-Level Channel KPIs</div>
+  <div class="kpi-grid">
+    <div class="kpi-card c-green"><div class="kpi-label">Offline Total Revenue</div><div class="kpi-val c-green" style="font-size:20px">&#8377;98.4L</div><div class="kpi-sub">Dine In + Takeaway</div><div class="kpi-icon">&#127869;&#65039;</div></div>
+    <div class="kpi-card c-amber"><div class="kpi-label">Online Total Revenue</div><div class="kpi-val c-amber" style="font-size:20px">&#8377;1.09Cr</div><div class="kpi-sub">Zomato + Swiggy</div><div class="kpi-icon">&#128241;</div></div>
+    <div class="kpi-card c-blue"><div class="kpi-label">Offline vs Online AOV</div><div class="kpi-val c-blue" style="font-size:18px">&#8377;589 vs &#8377;468</div><div class="kpi-sub">Offline commands &#8377;121 premium</div><div class="kpi-icon">&#128181;</div></div>
+    <div class="kpi-card c-purple"><div class="kpi-label">Zomato vs Swiggy</div><div class="kpi-val c-purple" style="font-size:14px">&#8377;65.5L vs &#8377;43.3L</div><div class="kpi-sub">AOV: &#8377;485 vs &#8377;441</div><div class="kpi-icon">&#9878;&#65039;</div></div>
+  </div>
+
+  <div class="sec">Offline vs Online Revenue Split by Branch</div>
+  <div class="chart-card" style="margin-bottom:20px">
+    <button class="expand-btn" onclick="openModal('Offline vs Online by Branch','c-ch-split')">&#10178;</button>
+    <h3>Offline vs Online Revenue Split &mdash; All Branches</h3>
+    <div class="sub">Offline = Dine In + Takeaway (Green) &middot; Online = Zomato + Swiggy (Gold)</div>
+    <div class="cw" style="height:260px"><canvas id="c-ch-split"></canvas></div>
+    <div class="alert-note" style="margin-top:14px"><strong>Wadgaon Sheri</strong> is 74.6% online-dependent &mdash; the highest in the chain. Its -15.3% revenue decline may reflect delivery platform issues or rating drops.</div>
+  </div>
+
+  <div class="sec">Zomato vs Swiggy by Branch</div>
+  <div class="chart-card" style="margin-bottom:20px">
+    <button class="expand-btn" onclick="openModal('Zomato vs Swiggy by Branch','c-zs-bar')">&#10178;</button>
+    <h3>Zomato vs Swiggy Revenue &mdash; By Branch</h3>
+    <div class="sub">Side-by-side comparison across all 7 branches</div>
+    <div class="cw" style="height:260px"><canvas id="c-zs-bar"></canvas></div>
+    <div class="info-note" style="margin-top:14px"><strong>Insight:</strong> Zomato consistently outperforms Swiggy in AOV across all branches. Bavdhan is the exception &mdash; Swiggy AOV &#8377;592 &gt; Zomato AOV &#8377;520 (small sample, new branch).</div>
+  </div>
+
+  <div class="sec">Branch Comparison Matrix</div>
+  <div class="chart-card" style="margin-bottom:20px">
+    <h3>Complete Channel Comparison by Branch</h3>
+    <div class="sub">Click column headers to sort</div>
+    <div style="overflow-x:auto">
+      <table class="tbl" id="ch-matrix-tbl">
+        <tr>
+          <th onclick="sortTable('ch-matrix-tbl',0)">Branch</th>
+          <th onclick="sortTable('ch-matrix-tbl',1)">Total Rev</th>
+          <th onclick="sortTable('ch-matrix-tbl',2)">Offline Rev</th>
+          <th onclick="sortTable('ch-matrix-tbl',3)">Online Rev</th>
+          <th onclick="sortTable('ch-matrix-tbl',4)">Offline%</th>
+          <th onclick="sortTable('ch-matrix-tbl',5)">Zomato Rev</th>
+          <th onclick="sortTable('ch-matrix-tbl',6)">Swiggy Rev</th>
+          <th onclick="sortTable('ch-matrix-tbl',7)">Z-AOV</th>
+          <th onclick="sortTable('ch-matrix-tbl',8)">S-AOV</th>
+          <th onclick="sortTable('ch-matrix-tbl',9)">DineIn AOV</th>
+          <th>Winner</th>
+        </tr>
+        <tr><td>Kothrud</td><td>&#8377;62.3L</td><td>&#8377;32.3L</td><td>&#8377;30.0L</td><td>51.8%</td><td>&#8377;18.2L</td><td>&#8377;11.9L</td><td>&#8377;470</td><td>&#8377;431</td><td>&#8377;597</td><td><span class="tag offline">Offline</span></td></tr>
+        <tr><td>AUNDH</td><td>&#8377;39.7L</td><td>&#8377;22.7L</td><td>&#8377;16.9L</td><td>57.3%</td><td>&#8377;9.4L</td><td>&#8377;7.5L</td><td>&#8377;473</td><td>&#8377;439</td><td>&#8377;568</td><td><span class="tag offline">Offline</span></td></tr>
+        <tr><td>Salunkhe Vihar</td><td>&#8377;26.9L</td><td>&#8377;12.5L</td><td>&#8377;14.4L</td><td>46.6%</td><td>&#8377;9.5L</td><td>&#8377;4.8L</td><td>&#8377;530</td><td>&#8377;477</td><td>&#8377;645</td><td><span class="tag online">Online</span></td></tr>
+        <tr><td>Saudagar</td><td>&#8377;26.9L</td><td>&#8377;13.6L</td><td>&#8377;13.3L</td><td>50.6%</td><td>&#8377;7.2L</td><td>&#8377;6.1L</td><td>&#8377;492</td><td>&#8377;460</td><td>&#8377;586</td><td><span class="tag offline">Offline</span></td></tr>
+        <tr><td>Wadgaon Sheri</td><td>&#8377;26.3L</td><td>&#8377;6.7L</td><td>&#8377;19.6L</td><td>25.4%</td><td>&#8377;11.7L</td><td>&#8377;7.9L</td><td>&#8377;458</td><td>&#8377;452</td><td>&#8377;564</td><td><span class="tag online">Online</span></td></tr>
+        <tr><td>Yolkshire Wakad</td><td>&#8377;21.7L</td><td>&#8377;7.9L</td><td>&#8377;13.8L</td><td>36.3%</td><td>&#8377;8.9L</td><td>&#8377;4.9L</td><td>&#8377;513</td><td>&#8377;396</td><td>&#8377;569</td><td><span class="tag online">Online</span></td></tr>
+        <tr><td>Bavdhan</td><td>&#8377;3.6L</td><td>&#8377;2.75L</td><td>&#8377;0.89L</td><td>75.6%</td><td>&#8377;0.71L</td><td>&#8377;0.18L</td><td>&#8377;520</td><td>&#8377;592</td><td>&#8377;620</td><td><span class="tag offline">Offline</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="sec">Commission Impact Analysis</div>
+  <div class="chart-card" style="margin-bottom:20px">
+    <h3>Platform Commission Impact (Estimated 25% on Delivery Orders)</h3>
+    <div class="sub">True net revenue after estimated platform fees</div>
+    <div class="grid g2" style="margin-top:14px;margin-bottom:0">
+      <div>
+        <table class="tbl">
+          <tr><th>Metric</th><th>Value</th></tr>
+          <tr><td>Zomato commission drain</td><td style="color:#e68c85;font-weight:700">~&#8377;16.4L/quarter</td></tr>
+          <tr><td>Swiggy commission drain</td><td style="color:#e68c85;font-weight:700">~&#8377;10.8L/quarter</td></tr>
+          <tr><td>Total delivery commission</td><td style="color:#e68c85;font-weight:700">~&#8377;27.2L/quarter</td></tr>
+          <tr><td>True net from Zomato</td><td style="color:#9fc794;font-weight:700">~&#8377;49.2L</td></tr>
+          <tr><td>True net from Swiggy</td><td style="color:#9fc794;font-weight:700">~&#8377;32.5L</td></tr>
+          <tr><td>Dine In true net (0% commission)</td><td style="color:#9fc794;font-weight:700">&#8377;96.9L</td></tr>
+        </table>
+      </div>
+      <div class="note">Even with Zomato at 31.6% share, <strong>Dine In at 46.8%</strong> contributes disproportionately more to actual profit after commissions.<br><br>Dine In: &#8377;590 AOV, <strong>0% commission</strong>. Zomato: &#8377;485 AOV but nets only <strong>~&#8377;364 after 25% commission</strong>.<br><br><strong>Recommendation:</strong> Prioritise Dine In experience investment.</div>
+    </div>
+  </div>
+
+  <div class="sec">Monthly Channel Trend</div>
+  <div class="chart-card">
+    <button class="expand-btn" onclick="openModal('Monthly Channel Trend','c-ch-trend')">&#10178;</button>
+    <h3>Monthly Revenue by Channel &mdash; Apr &rarr; May &rarr; Jun</h3>
+    <div class="sub">Dine In stable &middot; Zomato &amp; Swiggy both plateaued after May</div>
+    <div class="cw" style="height:260px"><canvas id="c-ch-trend"></canvas></div>
+  </div>
+</div>
+
+<!-- PAGE 6: BRANCH PROFILES -->
+<div class="page" id="pg6">
+  <div class="sec">Select Branch</div>
+  <div class="branch-selector" id="branch-selector">
+    <div class="branch-pill active" onclick="selectBranchProfile('Kothrud')">Kothrud</div>
+    <div class="branch-pill" onclick="selectBranchProfile('AUNDH')">AUNDH</div>
+    <div class="branch-pill" onclick="selectBranchProfile('Salunkhe Vihar')">Salunkhe Vihar</div>
+    <div class="branch-pill" onclick="selectBranchProfile('Saudagar')">Saudagar</div>
+    <div class="branch-pill" onclick="selectBranchProfile('Wadgaon Sheri')">Wadgaon Sheri</div>
+    <div class="branch-pill" onclick="selectBranchProfile('Yolkshire Wakad')">Yolkshire Wakad</div>
+    <div class="branch-pill" onclick="selectBranchProfile('Bavdhan')">Bavdhan</div>
+  </div>
+  <div id="branch-profile-content"></div>
+</div>
+
+<!-- PAGE 7: FORECASTING -->
+<div class="page" id="pg7">
+  <div class="sec">Revenue Forecast Q3 2026</div>
+  <div class="grid g2">
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Revenue Forecast','c-fc-rev')">&#10178;</button>
+      <h3>Revenue &mdash; Actuals + Forecast</h3>
+      <div class="sub">Solid = actual &middot; Dashed = linear forecast Jul&ndash;Sep</div>
+      <div class="cw" style="height:250px"><canvas id="c-fc-rev"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Orders Forecast','c-fc-ord')">&#10178;</button>
+      <h3>Orders &mdash; Actuals + Forecast</h3>
+      <div class="sub">Volume declining &mdash; AOV compensating</div>
+      <div class="cw" style="height:250px"><canvas id="c-fc-ord"></canvas></div>
+    </div>
+  </div>
+  <div class="chart-card">
+    <h3>Forecast Summary</h3>
+    <div class="sub" style="margin-bottom:12px">Monthly actuals and Q3 projections</div>
+    <table class="tbl">
+      <tr><th>Month</th><th>Revenue</th><th>Orders</th><th>AOV</th><th>MoM</th><th>Type</th></tr>
+      <tr><td>April 2026</td><td>&#8377;67,62,859</td><td>13,952</td><td>&#8377;485</td><td>&mdash;</td><td><span class="tag star">Actual</span></td></tr>
+      <tr><td>May 2026</td><td>&#8377;70,69,957</td><td>13,631</td><td>&#8377;519</td><td class="trend-up">+4.5%</td><td><span class="tag star">Actual</span></td></tr>
+      <tr><td>June 2026</td><td>&#8377;68,95,763</td><td>12,610</td><td>&#8377;547</td><td class="trend-dn">-2.5%</td><td><span class="tag star">Actual</span></td></tr>
+      <tr style="opacity:.8"><td>July 2026</td><td>&#8377;70,42,431</td><td>12,056</td><td>&#8377;584</td><td class="trend-up">+2.1%</td><td><span class="tag puzzle">Forecast</span></td></tr>
+      <tr style="opacity:.7"><td>August 2026</td><td>&#8377;71,08,883</td><td>11,385</td><td>&#8377;624</td><td class="trend-up">+0.9%</td><td><span class="tag puzzle">Forecast</span></td></tr>
+      <tr style="opacity:.6"><td>September 2026</td><td>&#8377;71,75,336</td><td>10,714</td><td>&#8377;670</td><td class="trend-up">+0.9%</td><td><span class="tag puzzle">Forecast</span></td></tr>
+    </table>
+    <div class="note">Forecast caveat: Linear regression on 3 months &mdash; directional only. With coffee push + Bavdhan ramp-up + beverage attach, Q3 could realistically reach <strong>&#8377;75&ndash;80L/month</strong>.</div>
+  </div>
+</div>
+
+<!-- PAGE 8: RECOMMENDATIONS -->
+<div class="page" id="pg8">
+  <div class="sec">Action Plan</div>
+  <div class="rec-grid">
+    <div class="rec-card" style="border-color:rgba(124,76,71,.4)">
+      <h3>Immediate Actions</h3><div class="rec-period">Next 7 Days</div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--accent);color:var(--text)">1</div><div class="rec-text">Audit Wadgaon Sheri &mdash; ops manager visit, identify cause of -15.3% decline</div></div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--accent);color:var(--text)">2</div><div class="rec-text">Brief all staff on beverage upselling &mdash; target 1 beverage per main dish order</div></div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--accent);color:var(--text)">3</div><div class="rec-text">Add 3 combo bundles to Swiggy &amp; Zomato (Morning &#8377;279 / Champion &#8377;499 / Afternoon &#8377;349)</div></div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--accent);color:var(--text)">4</div><div class="rec-text">Remove 20 Dog items with unique ingredients &mdash; simplify kitchen immediately</div></div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--accent);color:var(--text)">5</div><div class="rec-text">Set Bavdhan Q3 target &#8377;6L/month &mdash; ensure full menu live on all platforms</div></div>
+    </div>
+    <div class="rec-card" style="border-color:rgba(231,186,68,.3)">
+      <h3>30-Day Plan</h3><div class="rec-period">Month 1</div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--primary);color:var(--bg)">1</div><div class="rec-text">Launch "Yolkshire Cafe" positioning &mdash; coffee &amp; afternoon bites marketing</div></div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--primary);color:var(--bg)">2</div><div class="rec-text">Create 3&ndash;5 PM Afternoon Snack Menu &mdash; &#8377;199&ndash;&#8377;299 bundles, delivery-optimised</div></div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--primary);color:var(--bg)">3</div><div class="rec-text">Redesign Sunday experience &mdash; premium brunch menu targeting &#8377;700+ AOV</div></div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--primary);color:var(--bg)">4</div><div class="rec-text">Reprice Plow Horse beverages +&#8377;20&ndash;30 (Lemon Iced Tea, Mint Lemonade)</div></div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--primary);color:var(--bg)">5</div><div class="rec-text">Wadgaon Sheri revival &mdash; local digital ads + weekend event promotion</div></div>
+    </div>
+    <div class="rec-card" style="border-color:rgba(65,86,57,.4)">
+      <h3>90-Day Plan</h3><div class="rec-period">Months 2&ndash;3</div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--secondary);color:var(--text)">1</div><div class="rec-text">Customer loyalty program &mdash; target 10% of transactions enrolled by Q3 end</div></div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--secondary);color:var(--text)">2</div><div class="rec-text">Beverage revenue KPI &mdash; grow from ~8% to 14% of total revenue by Q3</div></div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--secondary);color:var(--text)">3</div><div class="rec-text">Initiate Zomato/Swiggy commission renegotiation for volume-based tiers</div></div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--secondary);color:var(--text)">4</div><div class="rec-text">Formalise Kothrud operating playbook &mdash; roll out to Wakad branch first</div></div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--secondary);color:var(--text)">5</div><div class="rec-text">Scout 8th branch location &mdash; Hinjewadi / Viman Nagar / Koregaon Park</div></div>
+    </div>
+  </div>
+  <div class="sec">SWOT Analysis</div>
+  <div class="swot">
+    <div class="swot-q s"><h3>Strengths</h3>
+      <div class="swot-item">&bull; Kothrud flagship at &#8377;62.3L (30%)</div>
+      <div class="swot-item">&bull; Cancel rate 0.08% &mdash; operational excellence</div>
+      <div class="swot-item">&bull; Diversified channel presence (3 major channels)</div>
+      <div class="swot-item">&bull; Coffee organically growing +700%</div>
+      <div class="swot-item">&bull; Bavdhan Month 1 AOV &#8377;593 &mdash; above chain avg</div>
+      <div class="swot-item">&bull; Low discount rate (3.04%) &mdash; pricing power</div>
+    </div>
+    <div class="swot-q w"><h3>Weaknesses</h3>
+      <div class="swot-item">&bull; Chicken Stroganoff = 9% of revenue &mdash; dependency</div>
+      <div class="swot-item">&bull; June orders -1,021 vs May &mdash; demand softening</div>
+      <div class="swot-item">&bull; 66 Dog items creating operational complexity</div>
+      <div class="swot-item">&bull; 3&ndash;5 PM idle &mdash; 21 branch-hours/day wasted</div>
+      <div class="swot-item">&bull; Wakad lowest AOV (&#8377;497) &mdash; mix/pricing issue</div>
+      <div class="swot-item">&bull; No structured customer loyalty program</div>
+    </div>
+    <div class="swot-q o"><h3>Opportunities</h3>
+      <div class="swot-item">&bull; Coffee/Cafe pivot &mdash; capture +700% trend</div>
+      <div class="swot-item">&bull; Bavdhan scaling &mdash; &#8377;593 AOV in Month 1</div>
+      <div class="swot-item">&bull; Beverage attach: 72% confidence &rarr; 20% gap</div>
+      <div class="swot-item">&bull; Afternoon snack menu &mdash; 3 idle hours/day x 7 branches</div>
+      <div class="swot-item">&bull; Sunday premium: push AOV &#8377;598 &rarr; &#8377;700+</div>
+      <div class="swot-item">&bull; 8th branch using Bavdhan success model</div>
+    </div>
+    <div class="swot-q t"><h3>Threats</h3>
+      <div class="swot-item">&bull; Zomato/Swiggy ~25% commission = &#8377;27L/qtr drain</div>
+      <div class="swot-item">&bull; Wadgaon Sheri competitive pressure &mdash; unidentified</div>
+      <div class="swot-item">&bull; Monsoon reducing cafe foot traffic (Jun&ndash;Sep)</div>
+      <div class="swot-item">&bull; Coffee competition: Starbucks, Third Wave in Pune</div>
+      <div class="swot-item">&bull; Chicken cost inflation &rarr; impacts #1 revenue item</div>
+      <div class="swot-item">&bull; Kothrud at 30% = chain-level concentration risk</div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 9: EXECUTIVE REPORT -->
+<div class="page" id="pg9">
+  <button class="print-btn" onclick="window.print()">Print Report</button>
+  <div class="report-content" id="report-content"></div>
+</div>
+
+<script>
+// ═══════════════════════════════
+// DATA
+// ═══════════════════════════════
+const RAW = {
+  branches:["Kothrud","AUNDH","Salunkhe Vihar","Saudagar","Wadgaon Sheri","Yolkshire Wakad","Bavdhan"],
+  branchColors:["#E7BA44","#415639","#7C4C47","#32745D","#C1BE43","#F5B934","#907aa9"],
+  branch:{
+    "Kothrud":{rev:6228775,ord:12093,aov:515,share:30.05,apr:2077652,may:2205974,jun:1945150,ch:{"Dine In":{rev:3133541,ord:5253},"Swiggy":{rev:1187723,ord:2757},"Takeaway":{rev:92395,ord:219},"Zomato":{rev:1815117,ord:3864}}},
+    "AUNDH":{rev:3965940,ord:7707,aov:515,share:19.13,apr:1306236,may:1329566,jun:1330138,ch:{"Dine In":{rev:2273209,ord:4004},"Swiggy":{rev:748705,ord:1705},"Takeaway":{rev:577,ord:3},"Zomato":{rev:943450,ord:1995}}},
+    "Salunkhe Vihar":{rev:2690752,ord:4841,aov:556,share:12.98,apr:837238,may:963708,jun:889805,ch:{"Dine In":{rev:1203479,ord:1865},"Takeaway":{rev:50059,ord:163},"Swiggy":{rev:482262,ord:1010},"Zomato":{rev:954952,ord:1803}}},
+    "Saudagar":{rev:2687224,ord:5105,aov:526,share:12.97,apr:945812,may:892240,jun:849172,ch:{"Dine In":{rev:1360046,ord:2322},"Swiggy":{rev:610866,ord:1328},"Zomato":{rev:716312,ord:1455},"Takeaway":{rev:0,ord:0}}},
+    "Wadgaon Sheri":{rev:2625304,ord:5477,aov:479,share:12.67,apr:939754,may:887718,jun:797832,ch:{"Dine In":{rev:666576,ord:1181},"Swiggy":{rev:792394,ord:1752},"Zomato":{rev:1166335,ord:2544},"Takeaway":{rev:0,ord:0}}},
+    "Yolkshire Wakad":{rev:2166397,ord:4356,aov:497,share:10.45,apr:656166,may:790751,jun:719481,ch:{"Dine In":{rev:785705,ord:1381},"Swiggy":{rev:493440,ord:1245},"Takeaway":{rev:305,ord:1},"Zomato":{rev:886947,ord:1729}}},
+    "Bavdhan":{rev:364186,ord:614,aov:593,share:1.76,apr:0,may:0,jun:364186,ch:{"Dine In":{rev:270506,ord:436},"Swiggy":{rev:18343,ord:31},"Takeaway":{rev:4675,ord:11},"Zomato":{rev:70662,ord:136}}}
+  },
+  month:{
+    apr:{rev:6762859,ord:13952,aov:485,label:"Apr 2026",br:{"Kothrud":2077652,"AUNDH":1306236,"Salunkhe Vihar":837238,"Saudagar":945812,"Wadgaon Sheri":939754,"Yolkshire Wakad":656166,"Bavdhan":0},ch:{"Dine In":{rev:3163618,ord:6403},"Zomato":{rev:2139234,ord:4413},"Swiggy":{rev:1415008,ord:3086},"Takeaway":{rev:45000,ord:50}},sess:{breakfast:1847020,lunch:2050370,snack:634000,dinner:2231469}},
+    may:{rev:7069957,ord:13631,aov:519,label:"May 2026",br:{"Kothrud":2205974,"AUNDH":1329566,"Salunkhe Vihar":963708,"Saudagar":892240,"Wadgaon Sheri":887718,"Yolkshire Wakad":790751,"Bavdhan":0},ch:{"Dine In":{rev:3307261,ord:5788},"Zomato":{rev:2233700,ord:4610},"Swiggy":{rev:1476996,ord:3183},"Takeaway":{rev:52000,ord:50}},sess:{breakfast:1931437,lunch:2139870,snack:661000,dinner:2337650}},
+    jun:{rev:6895763,ord:12610,aov:547,label:"Jun 2026",br:{"Kothrud":1945150,"AUNDH":1330138,"Salunkhe Vihar":889805,"Saudagar":849172,"Wadgaon Sheri":797832,"Yolkshire Wakad":719481,"Bavdhan":364186},ch:{"Dine In":{rev:3222182,ord:4251},"Zomato":{rev:2180841,ord:4503},"Swiggy":{rev:1440728,ord:3559},"Takeaway":{rev:52012,ord:297}},sess:{breakfast:1884816,lunch:2084913,snack:623526,dinner:2302508}}
+  },
+  channels:["Dine In","Zomato","Swiggy","Takeaway"],
+  channelColors:["#415639","#cb202d","#fc8019","#a3979d"],
+  channel:{"Dine In":{rev:9693061,ord:16442,aov:590,share:46.76},"Zomato":{rev:6553775,ord:13526,aov:485,share:31.62},"Swiggy":{rev:4333732,ord:9828,aov:441,share:20.91},"Takeaway":{rev:147930,ord:396,aov:374,share:0.71}},
+  session:{all:{breakfast:{rev:5663273,ord:10626},lunch:{rev:6275153,ord:11372},snack:{rev:1918526,ord:4058},dinner:{rev:6856676,ord:14134}}},
+  hours:[7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23],
+  hRev:[547025,1178167,1851761,2086321,1918171,1643885,1491452,1221644,775700,580786,562040,688592,1177164,1513125,1589052,1446811,441932],
+  hOrd:[1092,2396,3386,3752,3158,3006,2877,2331,1558,1224,1276,1610,2562,3232,3169,2877,684],
+  hLoad:[29.1,63.9,90.2,100.0,84.2,80.1,76.7,62.1,41.5,32.6,34.0,42.9,68.3,86.1,84.5,76.7,18.2],
+  days:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],
+  dRev:[2195637,2324433,2553889,2384289,3013190,3732057,4525084],
+  top10Items:["Chicken Stroganoff","Yolkshire Spl Roast","Peri-Peri Steak","Chimmichurri Chicken","Kerala Curry Rice","Paprika Chicken Rice","Classic Cold Coffee","Low-Carb Stroganoff","Chicken Mayo Sandwich","Vietnamese Iced Coffee"],
+  top10Rev:[894121,398200,380722,289572,238372,237582,180170,179303,172021,167873],
+  top10QtyItems:["Water Bottle","Chicken Stroganoff","Water Bottle 500ml","Classic Cold Coffee","Yolkshire Spl Roast","Peri-Peri Steak","Masala Chai","Filter Coffee","Iced Americano","Mint Lemonade"],
+  top10Qty:[5487,2609,1672,1184,1162,1137,1049,988,673,845],
+  growItems:["Espresso","Americano","Cappuccino","Iced Americano","Filter Coffee"],
+  growPct:[1057,735,672,450,380],
+  declItems:["Iced Mocha Latte","Green Smoothie","Peach Iced Tea","Spanish Latte","Hazelnut Frappe"],
+  declPct:[-100,-100,-100,-100,-87],
+  billBuckets:["<100","100-200","200-300","300-400","400-500","500-700","700-1K","1K-1.5K","1.5K-2K","2K-5K",">5K"],
+  billCounts:[1007,2709,5398,9982,5258,7383,5085,2486,575,290,20],
+  heatmap:[
+    [62375,103990,146414,166512,159302,155746,158418,130350,94943,72182,80491,89853,165868,199800,184178,173786,43180],
+    [74658,137859,179375,210623,161990,175242,167454,134390,97491,81047,61482,96779,147312,167037,187506,176893,67296],
+    [65327,143306,200936,233291,205794,180484,166520,145091,75112,68862,93545,112101,158671,207074,216462,213284,68029],
+    [62068,152974,192370,215235,179243,164546,197077,149706,90988,60184,70345,86880,143281,189170,202273,167775,60174],
+    [92245,163433,306219,290661,265553,211845,183327,183817,126560,78210,78357,97698,186821,220902,246693,215001,65846],
+    [97127,189959,346045,434795,405490,320431,262465,228973,151014,111350,81408,97158,170324,239272,246802,274715,68030],
+    [93226,286647,480401,535204,540799,435591,356191,249317,139591,108950,96412,108123,204887,289870,305140,225356,69378]
+  ],
+  mePoints:[
+    {x:2609,y:894121,cat:"Star",item:"Chicken Stroganoff"},{x:1162,y:398200,cat:"Star",item:"Yolkshire Special Roast"},{x:1137,y:380722,cat:"Star",item:"Peri-Peri Steak"},{x:851,y:289572,cat:"Star",item:"Chimmichurri Grilled Chicken"},{x:712,y:238372,cat:"Star",item:"Kerala Curry with Rice"},{x:692,y:237582,cat:"Star",item:"Paprika Chicken with Rice"},{x:1184,y:180170,cat:"Star",item:"Classic Cold Coffee"},{x:516,y:179303,cat:"Star",item:"Low-Carb Chicken Stroganoff"},{x:675,y:172021,cat:"Star",item:"Chicken Mayo Sandwich"},{x:902,y:167873,cat:"Star",item:"Vietnamese Iced Coffee"},{x:599,y:156978,cat:"Star",item:"Banana Nutella Pancakes"},{x:496,y:111582,cat:"Star",item:"Egg Fried Rice"},{x:470,y:105139,cat:"Star",item:"Bombay Masala Sandwich"},{x:323,y:104607,cat:"Star",item:"Low-Cal Grilled Chicken Salad"},{x:322,y:100693,cat:"Star",item:"Kheema Wow"},{x:433,y:99954,cat:"Star",item:"Classic Double Egg Roll"},{x:311,y:97666,cat:"Star",item:"Caesar Salad"},{x:430,y:96513,cat:"Star",item:"Butter Syrup Pancakes"},{x:340,y:90754,cat:"Star",item:"Creamy Mushroom Croissant"},{x:845,y:85689,cat:"Star",item:"Mint Lemonade"},{x:988,y:80443,cat:"Star",item:"Filter Coffee"},{x:338,y:78218,cat:"Star",item:"Chocoburst Pancakes"},{x:300,y:77279,cat:"Star",item:"Bhuna Roll"},{x:258,y:74765,cat:"Star",item:"Hakuna Matata Roll"},{x:471,y:70142,cat:"Star",item:"Cold Coffee"},{x:434,y:66172,cat:"Star",item:"Iced Americano"},{x:405,y:64462,cat:"Star",item:"Cappuccino"},{x:535,y:60814,cat:"Star",item:"Lemon Iced Tea"},{x:445,y:53431,cat:"Star",item:"Mint Mojito"},{x:474,y:52900,cat:"Star",item:"Fresh Watermelon Juice"},{x:281,y:47260,cat:"Star",item:"Iced Latte"},{x:358,y:46770,cat:"Star",item:"Americano"},{x:1049,y:35814,cat:"Star",item:"Masala Chai"},{x:528,y:32491,cat:"Star",item:"Ginger Lemon Honey Tea"},
+    {x:218,y:66281,cat:"Puzzle",item:"High Protein Millet Salad"},{x:203,y:62600,cat:"Puzzle",item:"Orange Chicken Salad"},{x:203,y:61577,cat:"Puzzle",item:"Ghee Roast with Paratha"},{x:180,y:59573,cat:"Puzzle",item:"Thai Basil Chicken Rice"},{x:172,y:51728,cat:"Puzzle",item:"Anda Masala Paratha"},{x:152,y:48512,cat:"Puzzle",item:"Honey Glazed Chicken Salad"},{x:188,y:43210,cat:"Puzzle",item:"Yolkshire Eggwich"},{x:118,y:43341,cat:"Puzzle",item:"Spicy Butter Garlic Prawns"},{x:136,y:34926,cat:"Puzzle",item:"Malai Roll"},{x:205,y:31934,cat:"Puzzle",item:"Thecha Eggs"},
+    {x:5487,y:225,cat:"Plow Horse",item:"Water Bottle"},{x:226,y:25212,cat:"Plow Horse",item:"Lemon Iced Tea (cheap)"},{x:1672,y:25063,cat:"Plow Horse",item:"Water Bottle 500ml"},{x:242,y:24862,cat:"Plow Horse",item:"Mint Lemonade (cheap)"},{x:481,y:14288,cat:"Plow Horse",item:"Masala Chai (cheap)"},{x:219,y:5491,cat:"Plow Horse",item:"Water Bottle 1L"},
+    {x:161,y:29611,cat:"Dog",item:"Bhurji Mayo Sandwich"},{x:151,y:28057,cat:"Dog",item:"OG Omelette Pav"},{x:172,y:27360,cat:"Dog",item:"Hot Chocolate"},{x:181,y:27150,cat:"Dog",item:"Cappuccino (low tier)"},{x:140,y:26234,cat:"Dog",item:"Chocolate Shake"},{x:88,y:22601,cat:"Dog",item:"Green Smoothie"},{x:124,y:22239,cat:"Dog",item:"Iced Mocha Latte"},{x:114,y:21585,cat:"Dog",item:"Hazelnut Frappe"},{x:133,y:20919,cat:"Dog",item:"Iced Latte (low tier)"},{x:104,y:16640,cat:"Dog",item:"Mocha Latte"},{x:92,y:14710,cat:"Dog",item:"Latte"},{x:58,y:10928,cat:"Dog",item:"Mocha Frappe"},{x:57,y:9207,cat:"Dog",item:"Cinnamon Orange Coffee"},{x:45,y:8550,cat:"Dog",item:"Salted Caramel Frappe"},{x:47,y:8088,cat:"Dog",item:"Spanish Latte"},{x:40,y:6400,cat:"Dog",item:"Cafe Mocha"},{x:11,y:2079,cat:"Dog",item:"Cold Brew"},{x:14,y:2660,cat:"Dog",item:"Matcha Frappe"},{x:8,y:1155,cat:"Dog",item:"Affogato"},{x:5,y:300,cat:"Dog",item:"Green Tea (rare)"}
+  ]
+};
+
+const DAILY_REVENUE = [
+  {date:'Apr 1',rev:190467,ma:190467},{date:'Apr 2',rev:154702,ma:172585},{date:'Apr 3',rev:268536,ma:204569},{date:'Apr 4',rev:301181,ma:228722},{date:'Apr 5',rev:314839,ma:245945},{date:'Apr 6',rev:163806,ma:232255},{date:'Apr 7',rev:182645,ma:225168},{date:'Apr 8',rev:218378,ma:229155},{date:'Apr 9',rev:176333,ma:232245},{date:'Apr 10',rev:219657,ma:225263},{date:'Apr 11',rev:295393,ma:224436},{date:'Apr 12',rev:377828,ma:233434},{date:'Apr 13',rev:182206,ma:236063},{date:'Apr 14',rev:220936,ma:241533},{date:'Apr 15',rev:187853,ma:237172},{date:'Apr 16',rev:180430,ma:237757},{date:'Apr 17',rev:215999,ma:237235},{date:'Apr 18',rev:282262,ma:235359},{date:'Apr 19',rev:282898,ma:221798},{date:'Apr 20',rev:172914,ma:220470},{date:'Apr 21',rev:197523,ma:217126},{date:'Apr 22',rev:199113,ma:218734},{date:'Apr 23',rev:204323,ma:222147},{date:'Apr 24',rev:244638,ma:226239},{date:'Apr 25',rev:287417,ma:226975},{date:'Apr 26',rev:352293,ma:236889},{date:'Apr 27',rev:157987,ma:234756},{date:'Apr 28',rev:184281,ma:232864},{date:'Apr 29',rev:198297,ma:232748},{date:'Apr 30',rev:147724,ma:224662},
+  {date:'May 1',rev:307264,ma:233609},{date:'May 2',rev:253200,ma:228721},{date:'May 3',rev:328549,ma:225329},{date:'May 4',rev:171513,ma:227261},{date:'May 5',rev:125612,ma:218880},{date:'May 6',rev:192758,ma:218089},{date:'May 7',rev:176364,ma:222180},{date:'May 8',rev:210241,ma:208320},{date:'May 9',rev:279904,ma:212135},{date:'May 10',rev:374334,ma:218675},{date:'May 11',rev:152215,ma:215918},{date:'May 12',rev:180788,ma:223800},{date:'May 13',rev:177217,ma:221580},{date:'May 14',rev:174854,ma:221365},{date:'May 15',rev:220587,ma:222843},{date:'May 16',rev:254186,ma:219169},{date:'May 17',rev:339086,ma:214133},{date:'May 18',rev:158564,ma:215040},{date:'May 19',rev:172816,ma:213901},{date:'May 20',rev:197946,ma:216863},{date:'May 21',rev:208500,ma:221669},{date:'May 22',rev:209733,ma:220119},{date:'May 23',rev:275403,ma:223150},{date:'May 24',rev:351504,ma:224924},{date:'May 25',rev:167646,ma:226221},{date:'May 26',rev:178305,ma:227005},{date:'May 27',rev:210924,ma:228859},{date:'May 28',rev:203737,ma:228179},{date:'May 29',rev:218219,ma:229391},{date:'May 30',rev:270360,ma:228671},{date:'May 31',rev:327630,ma:225260},
+  {date:'Jun 1',rev:166161,ma:225048},{date:'Jun 2',rev:203160,ma:228598},{date:'Jun 3',rev:177329,ma:223799},{date:'Jun 4',rev:176715,ma:219939},{date:'Jun 5',rev:212845,ma:219171},{date:'Jun 6',rev:288380,ma:221745},{date:'Jun 7',rev:360823,ma:226487},{date:'Jun 8',rev:167795,ma:226721},{date:'Jun 9',rev:156560,ma:220064},{date:'Jun 10',rev:203304,ma:223775},{date:'Jun 11',rev:188828,ma:225505},{date:'Jun 12',rev:213251,ma:225563},{date:'Jun 13',rev:296041,ma:226657},{date:'Jun 14',rev:354668,ma:225778},{date:'Jun 15',rev:155160,ma:223973},{date:'Jun 16',rev:177897,ma:227021},{date:'Jun 17',rev:222461,ma:229758},{date:'Jun 18',rev:211585,ma:233009},{date:'Jun 19',rev:231214,ma:235575},{date:'Jun 20',rev:322051,ma:239291},{date:'Jun 21',rev:367244,ma:241087},{date:'Jun 22',rev:183453,ma:245129},{date:'Jun 23',rev:177854,ma:245123},{date:'Jun 24',rev:177843,ma:238749},{date:'Jun 25',rev:180194,ma:234265},{date:'Jun 26',rev:247706,ma:236621},{date:'Jun 27',rev:319580,ma:236268},{date:'Jun 28',rev:401638,ma:241181},{date:'Jun 29',rev:187967,ma:241826},{date:'Jun 30',rev:166058,ma:240141}
+];
+
+const BRANCH_PROFILES = {
+  "Kothrud":{rev:6228775,ord:12093,aov:515,trend:"Stable",status:"Leader",statusTag:"star",trendClass:"",monthly:[2077652,2205974,1945150],channels:{"Dine In":{rev:3133541,ord:5253,aov:597},"Zomato":{rev:1815117,ord:3864,aov:470},"Swiggy":{rev:1187723,ord:2757,aov:431},"Takeaway":{rev:92395,ord:219,aov:422}}},
+  "AUNDH":{rev:3965940,ord:7707,aov:515,trend:"Growing",status:"Strong",statusTag:"star",trendClass:"trend-up",monthly:[1306236,1329566,1330138],channels:{"Dine In":{rev:2273209,ord:4004,aov:568},"Zomato":{rev:943450,ord:1995,aov:473},"Swiggy":{rev:748705,ord:1705,aov:439},"Takeaway":{rev:577,ord:3,aov:192}}},
+  "Salunkhe Vihar":{rev:2690752,ord:4841,aov:556,trend:"Growing",status:"Premium",statusTag:"horse",trendClass:"trend-up",monthly:[837238,963708,889805],channels:{"Dine In":{rev:1203479,ord:1865,aov:645},"Zomato":{rev:954952,ord:1803,aov:530},"Swiggy":{rev:482262,ord:1010,aov:477},"Takeaway":{rev:50059,ord:163,aov:309}}},
+  "Saudagar":{rev:2687224,ord:5105,aov:526,trend:"-10.2%",status:"Watch",statusTag:"warn",trendClass:"trend-dn",monthly:[945812,892240,849172],channels:{"Dine In":{rev:1360046,ord:2322,aov:586},"Zomato":{rev:716312,ord:1455,aov:492},"Swiggy":{rev:610866,ord:1328,aov:460},"Takeaway":{rev:0,ord:0,aov:0}}},
+  "Wadgaon Sheri":{rev:2625304,ord:5477,aov:479,trend:"-15.3%",status:"Urgent",statusTag:"risk",trendClass:"trend-dn",monthly:[939754,887718,797832],channels:{"Dine In":{rev:666576,ord:1181,aov:564},"Zomato":{rev:1166335,ord:2544,aov:458},"Swiggy":{rev:792394,ord:1752,aov:452},"Takeaway":{rev:0,ord:0,aov:0}}},
+  "Yolkshire Wakad":{rev:2166397,ord:4356,aov:497,trend:"Mixed",status:"High Potential",statusTag:"grow",trendClass:"",monthly:[656166,790751,719481],channels:{"Dine In":{rev:785705,ord:1381,aov:569},"Zomato":{rev:886947,ord:1729,aov:513},"Swiggy":{rev:493440,ord:1245,aov:396},"Takeaway":{rev:305,ord:1,aov:305}}},
+  "Bavdhan":{rev:364186,ord:614,aov:593,trend:"New",status:"High Potential",statusTag:"grow",trendClass:"",monthly:[0,0,364186],channels:{"Dine In":{rev:270506,ord:436,aov:620},"Zomato":{rev:70662,ord:136,aov:520},"Swiggy":{rev:18343,ord:31,aov:592},"Takeaway":{rev:4675,ord:11,aov:425}}}
+};
+
+// ═══════════════════════════════
+// HELPERS
+// ═══════════════════════════════
+function fmt(v){if(v>=1e7) return '\u20b9'+(v/1e7).toFixed(2)+'Cr';if(v>=1e5) return '\u20b9'+(v/1e5).toFixed(1)+'L';if(v>=1000) return '\u20b9'+Math.round(v).toLocaleString('en-IN');return '\u20b9'+Math.round(v);}
+function fmtN(v){return Math.round(v).toLocaleString('en-IN');}
+function hexToRgb(hex){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return `${r},${g},${b}`;}
+
+const BASE_OPTS={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#362E33',titleColor:'#FCF0D0',bodyColor:'#a3979d',borderColor:'#43393F',borderWidth:1,padding:10,cornerRadius:8}},scales:{x:{ticks:{color:'#a3979d',font:{size:10,family:'Raleway'}},grid:{color:'rgba(252,240,208,.06)'}},y:{ticks:{color:'#a3979d',font:{size:10,family:'Raleway'}},grid:{color:'rgba(252,240,208,.06)'}}}};
+
+let CHARTS={};
+let F={branch:'all',month:'all',channel:'all',session:'all'};
+let currentBranchProfile='Kothrud';
+let bpCharts={};
+
+function mkChart(id,type,labels,datasets,overrides={}){
+  const el=document.getElementById(id);if(!el)return null;
+  if(CHARTS[id]){CHARTS[id].destroy();}
+  const opts=JSON.parse(JSON.stringify(BASE_OPTS));
+  if(overrides.scales) Object.assign(opts.scales,overrides.scales);
+  if(overrides.plugins){opts.plugins={...opts.plugins,...overrides.plugins};}
+  if(overrides.indexAxis) opts.indexAxis=overrides.indexAxis;
+  if(overrides.extra) Object.assign(opts,overrides.extra);
+  const c=new Chart(el,{type,data:{labels,datasets},options:opts});
+  CHARTS[id]=c;return c;
+}
+function updateChart(id,labels,datasets){const c=CHARTS[id];if(!c)return;c.data.labels=labels;c.data.datasets=datasets;c.update('active');}
+
+// ═══════════════════════════════
+// MODAL
+// ═══════════════════════════════
+let modalChart=null;
+function openModal(title,chartId){
+  document.getElementById('modal-title').textContent=title;
+  const overlay=document.getElementById('modal-overlay');
+  const chartWrap=document.getElementById('modal-chart-wrap');
+  const tableWrap=document.getElementById('modal-table-wrap');
+  tableWrap.innerHTML='';chartWrap.style.display='none';
+  if(modalChart){modalChart.destroy();modalChart=null;}
+  if(chartId&&CHARTS[chartId]){
+    chartWrap.style.display='block';
+    const origChart=CHARTS[chartId];
+    modalChart=new Chart(document.getElementById('modal-canvas'),{type:origChart.config.type,data:JSON.parse(JSON.stringify(origChart.data)),options:{...JSON.parse(JSON.stringify(origChart.options)),responsive:true,maintainAspectRatio:false}});
+    tableWrap.innerHTML=buildChartTable(origChart);
+  }
+  overlay.classList.add('open');
+}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('open');if(modalChart){modalChart.destroy();modalChart=null;}}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+function buildChartTable(chart){
+  if(!chart||!chart.data)return '';
+  const labels=chart.data.labels||[];
+  const datasets=chart.data.datasets||[];
+  let html='<table class="tbl"><tr><th>Label</th>';
+  datasets.forEach(ds=>{html+=`<th>${ds.label||'Value'}</th>`;});
+  html+='</tr>';
+  labels.forEach((lbl,ri)=>{
+    html+=`<tr><td>${lbl}</td>`;
+    datasets.forEach(ds=>{
+      const v=ds.data[ri];
+      const numV=typeof v==='object'&&v!==null?(v.y||v.x||0):v;
+      html+=`<td>${typeof numV==='number'&&numV>999?fmt(numV):numV}</td>`;
+    });
+    html+='</tr>';
+  });
+  return html+'</table>';
+}
+
+function sortTable(tableId,colIdx){
+  const tbl=document.getElementById(tableId);if(!tbl)return;
+  const rows=Array.from(tbl.querySelectorAll('tr')).slice(1);
+  const headers=tbl.querySelectorAll('th');
+  let asc=!headers[colIdx].classList.contains('sort-asc');
+  headers.forEach(h=>{h.classList.remove('sort-asc','sort-desc');});
+  headers[colIdx].classList.add(asc?'sort-asc':'sort-desc');
+  rows.sort((a,b)=>{
+    const av=(a.cells[colIdx]?.textContent||'').replace(/[\u20b9,L%Cr]/g,'').trim();
+    const bv=(b.cells[colIdx]?.textContent||'').replace(/[\u20b9,L%Cr]/g,'').trim();
+    const an=parseFloat(av),bn=parseFloat(bv);
+    if(!isNaN(an)&&!isNaN(bn))return asc?an-bn:bn-an;
+    return asc?av.localeCompare(bv):bv.localeCompare(av);
+  });
+  rows.forEach(r=>tbl.appendChild(r));
+}
+
+// ═══════════════════════════════
+// THEME
+// ═══════════════════════════════
+function toggleTheme(){
+  const isLight=document.body.classList.toggle('light-mode');
+  document.getElementById('theme-icon').textContent=isLight?'\uD83C\uDF19':'\u2600\uFE0F';
+  document.getElementById('theme-text').textContent=isLight?'Dark Mode':'Light Mode';
+  const tc=isLight?'#665c61':'#a3979d';
+  const gc=isLight?'rgba(43,36,40,.08)':'rgba(252,240,208,.06)';
+  const tb=isLight?'#F5E9C9':'#362E33';
+  const tbd=isLight?'#DFD0AA':'#43393F';
+  const tt=isLight?'#2B2428':'#FCF0D0';
+  Object.values(CHARTS).forEach(chart=>{
+    if(chart.options.scales){['x','y','y2'].forEach(ax=>{if(chart.options.scales[ax]){if(chart.options.scales[ax].ticks)chart.options.scales[ax].ticks.color=tc;if(chart.options.scales[ax].grid)chart.options.scales[ax].grid.color=gc;}});}
+    if(chart.options.plugins?.tooltip){chart.options.plugins.tooltip.backgroundColor=tb;chart.options.plugins.tooltip.borderColor=tbd;chart.options.plugins.tooltip.titleColor=tt;chart.options.plugins.tooltip.bodyColor=tc;}
+    if(chart.options.plugins?.legend?.labels)chart.options.plugins.legend.labels.color=tt;
+    chart.update('none');
+  });
+  drawHeatmap();
+}
+
+// ═══════════════════════════════
+// FILTER
+// ═══════════════════════════════
+function getFilteredData(){
+  const {branch,month,channel,session}=F;
+  const result={};
+  let rev,ord,aov;
+  if(branch!=='all'&&month!=='all'){const bd=RAW.branch[branch];rev=bd[month];ord=Math.round(bd.ord*(rev/bd.rev));aov=bd.aov;}
+  else if(branch!=='all'){const bd=RAW.branch[branch];rev=bd.rev;ord=bd.ord;aov=bd.aov;}
+  else if(month!=='all'){const md=RAW.month[month];rev=md.rev;ord=md.ord;aov=md.aov;}
+  else{rev=20728578;ord=40193;aov=515.73;}
+  if(channel!=='all'){const chData=RAW.channel[channel];if(branch!=='all'){const bd=RAW.branch[branch];const bChData=bd.ch[channel]||{rev:0,ord:0};rev=bChData.rev;ord=bChData.ord;}else{rev=Math.round(rev*(chData.share/100));ord=Math.round(ord*(chData.share/100));}aov=chData.aov;}
+  result.rev=rev;result.ord=ord;result.aov=Math.round(aov);
+  result.daily=Math.round(rev/(month==='all'?91:30));
+  if(month!=='all'){const md=RAW.month[month];result.branchRevs=RAW.branches.map(b=>md.br[b]||0);}
+  else result.branchRevs=RAW.branches.map(b=>RAW.branch[b].rev);
+  result.branchColors=RAW.branches.map((b,i)=>{if(branch!=='all')return b===branch?RAW.branchColors[i]:`rgba(${hexToRgb(RAW.branchColors[i])},0.25)`;return RAW.branchColors[i];});
+  if(branch!=='all'){const bd=RAW.branch[branch];result.chRevs=RAW.channels.map(c=>(bd.ch[c]||{rev:0}).rev);result.chOrds=RAW.channels.map(c=>(bd.ch[c]||{ord:0}).ord);}
+  else if(month!=='all'){const md=RAW.month[month];result.chRevs=RAW.channels.map(c=>(md.ch[c]||{rev:0}).rev);result.chOrds=RAW.channels.map(c=>(md.ch[c]||{ord:0}).ord);}
+  else{result.chRevs=RAW.channels.map(c=>RAW.channel[c].rev);result.chOrds=RAW.channels.map(c=>RAW.channel[c].ord);}
+  result.chColors=RAW.channels.map((c,i)=>{if(channel!=='all')return c===channel?RAW.channelColors[i]:`rgba(${hexToRgb(RAW.channelColors[i])},0.2)`;return RAW.channelColors[i];});
+  if(branch!=='all'){const bd=RAW.branch[branch];result.monthlyRevs=[bd.apr,bd.may,bd.jun];}
+  else result.monthlyRevs=[RAW.month.apr.rev,RAW.month.may.rev,RAW.month.jun.rev];
+  result.monthColors=['apr','may','jun'].map((m,i)=>{if(month!=='all')return m===month?['#E7BA44','#56754d','#9c5f59'][i]:'rgba(163,151,157,0.3)';return ['#E7BA44','#56754d','#9c5f59'][i];});
+  const sessMap={all:{breakfast:5663273,lunch:6275153,snack:1918526,dinner:6856676},apr:RAW.month.apr.sess,may:RAW.month.may.sess,jun:RAW.month.jun.sess};
+  const sessBase=month!=='all'?sessMap[month]:sessMap.all;
+  result.sessRevs=['breakfast','lunch','snack','dinner'].map(s=>{let r=sessBase[s];if(branch!=='all')r=Math.round(r*RAW.branch[branch].rev/20728578);return r;});
+  result.sessOrds=result.sessRevs.map((r,i)=>{const base=[10626,11372,4058,14134][i];return Math.round(base*r/(sessBase[['breakfast','lunch','snack','dinner'][i]]||r||1));});
+  const sessColors=['#E7BA44','#5985b9','#907aa9','#56754d'];
+  result.sessColors=['breakfast','lunch','snack','dinner'].map((s,i)=>{if(session!=='all')return s===session?sessColors[i]:`rgba(${hexToRgb(sessColors[i])},0.2)`;return sessColors[i];});
+  const sessionHours={all:null,breakfast:[7,8,9,10],lunch:[11,12,13,14],snack:[15,16,17],dinner:[18,19,20,21,22,23]};
+  result.activeHours=sessionHours[session];
+  result.branchAOVs=RAW.branches.map(b=>RAW.branch[b].aov);
+  result.branchAOVColors=RAW.branches.map((b,i)=>{if(branch!=='all')return b===branch?RAW.branchColors[i]:`rgba(${hexToRgb(RAW.branchColors[i])},0.25)`;return RAW.branchColors[i];});
+  result.chAOVs=RAW.channels.map(c=>RAW.channel[c].aov);
+  result.chAOVColors=RAW.channels.map((c,i)=>{if(channel!=='all')return c===channel?RAW.channelColors[i]:`rgba(${hexToRgb(RAW.channelColors[i])},0.25)`;return RAW.channelColors[i];});
+  return result;
+}
+
+function buildContextLabel(){
+  const parts=[];
+  if(F.branch!=='all')parts.push(F.branch);
+  if(F.month!=='all')parts.push({apr:'April 2026',may:'May 2026',jun:'June 2026'}[F.month]);
+  if(F.channel!=='all')parts.push(F.channel);
+  if(F.session!=='all')parts.push({breakfast:'Breakfast',lunch:'Lunch',snack:'Snack',dinner:'Dinner'}[F.session]);
+  return parts.length?'Filtered: '+parts.join(' \u00b7 '):'Showing: All Q2 2026 Data \u00b7 40,193 orders';
+}
+
+function updateFilterStyles(){
+  ['f-branch','f-month','f-channel','f-session'].forEach(id=>{const el=document.getElementById(id);el.classList.toggle('filter-active',el.value!=='all');});
+}
+
+function updateKPIs(fd){
+  document.getElementById('k-rev').textContent=fmt(fd.rev);
+  document.getElementById('k-rev-sub').textContent=fmtN(fd.ord)+' orders';
+  document.getElementById('k-ord').textContent=fmtN(fd.ord);
+  document.getElementById('k-ord-sub').textContent=(fd.ord/91).toFixed(0)+'/day avg';
+  document.getElementById('k-aov').textContent='\u20b9'+fd.aov;
+  document.getElementById('k-daily').textContent=fmt(fd.daily);
+  if(F.branch!=='all'){const bd=RAW.branch[F.branch];document.getElementById('k-branch').textContent=F.branch;document.getElementById('k-branch-sub').textContent=fmt(bd.rev)+' \u00b7 '+bd.share+'%';}
+  else{document.getElementById('k-branch').textContent='Kothrud';document.getElementById('k-branch-sub').textContent='\u20b962.3L \u00b7 30.1%';}
+}
+
+function refresh(){
+  const fd=getFilteredData();
+  updateKPIs(fd);
+  document.getElementById('filter-ctx').textContent=buildContextLabel();
+  updateFilterStyles();
+  const monthLabels=['Apr 2026','May 2026','Jun 2026','Jul 2026','Aug 2026','Sep 2026'];
+  const allRevs=[...fd.monthlyRevs,7042431,7108883,7175336];
+  const monthColors=[...fd.monthColors,'rgba(144,122,169,.5)','rgba(144,122,169,.4)','rgba(144,122,169,.3)'];
+  updateChart('c-monthly',monthLabels,[{data:allRevs,backgroundColor:monthColors,borderRadius:6,borderSkipped:false,label:'Revenue'}]);
+  updateChart('c-ch-donut',RAW.channels,[{data:fd.chRevs,backgroundColor:fd.chColors,borderWidth:0,hoverOffset:8}]);
+  updateChart('c-br-bar',RAW.branches,[{data:fd.branchRevs,backgroundColor:fd.branchColors,borderRadius:5,borderSkipped:false}]);
+  updateChart('c-session-donut',['Breakfast','Lunch','Snack','Dinner'],[{data:fd.sessRevs,backgroundColor:fd.sessColors,borderWidth:0,hoverOffset:8}]);
+  const hrRevColors=RAW.hours.map(h=>{if(!fd.activeHours)return 'rgba(231,186,68,.7)';return fd.activeHours.includes(h)?'#E7BA44':'rgba(231,186,68,.15)';});
+  updateChart('c-hr-rev',RAW.hours.map(h=>h+':00'),[{data:RAW.hRev,borderColor:'#E7BA44',backgroundColor:'rgba(231,186,68,.08)',fill:true,tension:.4,borderWidth:2,pointRadius:3,pointBackgroundColor:hrRevColors,label:'Revenue'}]);
+  const hrOrdColors=RAW.hours.map((h,i)=>{const dim=fd.activeHours&&!fd.activeHours.includes(h)?0.15:1;const load=RAW.hLoad[i];const base=load>=80?'124,76,71':load>=50?'231,186,68':'65,86,57';return `rgba(${base},${dim*0.8})`;});
+  updateChart('c-hr-ord',RAW.hours.map(h=>h+':00'),[{data:RAW.hOrd,backgroundColor:hrOrdColors,borderRadius:4,borderSkipped:false}]);
+  const branchKeys=F.branch!=='all'?[F.branch]:Object.keys(RAW.branch).filter(b=>b!=='Bavdhan');
+  const brTrendDs=branchKeys.map(b=>{const bd=RAW.branch[b];const ci=RAW.branches.indexOf(b);return {label:b,data:[bd.apr,bd.may,bd.jun],borderColor:RAW.branchColors[ci],backgroundColor:'transparent',tension:.3,borderWidth:F.branch!=='all'?2:1.5,pointRadius:4};});
+  updateChart('c-br-trend',['Apr','May','Jun'],brTrendDs);
+  updateChart('c-sess-bar',['Breakfast','Lunch','Snack','Dinner'],[
+    {label:'Revenue',data:fd.sessRevs,backgroundColor:fd.sessColors,borderRadius:5,borderSkipped:false,yAxisID:'y'},
+    {label:'Orders',data:fd.sessOrds,backgroundColor:fd.sessColors.map(c=>c.replace('.8','.3').replace('0.2','0.08')),borderRadius:5,borderSkipped:false,yAxisID:'y2',type:'line',borderColor:fd.sessColors,borderWidth:2,pointRadius:4,fill:false}
+  ]);
+  updateChart('c-aov-ch',RAW.channels,[{data:fd.chAOVs,backgroundColor:fd.chAOVColors,borderRadius:6,borderSkipped:false}]);
+  updateChart('c-aov-br',RAW.branches,[{data:fd.branchAOVs,backgroundColor:fd.branchAOVColors,borderRadius:5,borderSkipped:false}]);
+  const loadColors=RAW.hLoad.map((l,i)=>{const dim=fd.activeHours&&!fd.activeHours.includes(RAW.hours[i])?0.2:0.85;return l>=80?`rgba(124,76,71,${dim})`:l>=50?`rgba(231,186,68,${dim})`:`rgba(65,86,57,${dim})`;});
+  updateChart('c-load',RAW.hours.map(h=>h+':00'),[{data:RAW.hLoad,backgroundColor:loadColors,borderRadius:5,borderSkipped:false}]);
+  if(F.branch!=='all')document.getElementById('monthly-sub').textContent=F.branch+' monthly revenue trend';
+  else document.getElementById('monthly-sub').textContent='Apr\u2013Jun actuals + Jul\u2013Sep forecast';
+}
+
+function applyFilters(){F.branch=document.getElementById('f-branch').value;F.month=document.getElementById('f-month').value;F.channel=document.getElementById('f-channel').value;F.session=document.getElementById('f-session').value;refresh();}
+function resetFilters(){F={branch:'all',month:'all',channel:'all',session:'all'};['f-branch','f-month','f-channel','f-session'].forEach(id=>document.getElementById(id).value='all');refresh();}
+
+function showPage(n){
+  document.querySelectorAll('.page').forEach((p,i)=>p.classList.toggle('active',i===n));
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===n));
+  if(n===1){drawHeatmap();window._hmDrawn=true;}
+  if(n===6)renderBranchProfile(currentBranchProfile);
+}
+
+// ═══════════════════════════════
+// INIT CHARTS
+// ═══════════════════════════════
+function initCharts(){
+  const yRev={ticks:{color:'#a3979d',font:{size:10,family:'Raleway'},callback:v=>fmt(v)},grid:{color:'rgba(252,240,208,.06)'}};
+  const yOrd={ticks:{color:'#a3979d',font:{size:10,family:'Raleway'}},grid:{color:'rgba(252,240,208,.06)'}};
+  const xBase={ticks:{color:'#a3979d',font:{size:10,family:'Raleway'}},grid:{color:'rgba(252,240,208,.06)'}};
+  const xNoGrid={ticks:{color:'#a3979d',font:{size:10,family:'Raleway'}},grid:{display:false}};
+
+  mkChart('c-monthly','bar',[],[{data:[],label:'Revenue'}],{scales:{x:xBase,y:yRev}});
+  mkChart('c-ch-donut','doughnut',[],[{data:[]}],{plugins:{legend:{display:true,position:'right',labels:{color:'#FCF0D0',font:{size:10,family:'Raleway'},boxWidth:10}},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${fmt(ctx.raw)}`}}},extra:{cutout:'66%'}});
+  mkChart('c-br-bar','bar',[],[{data:[]}],{indexAxis:'y',scales:{x:{...xBase,ticks:{...xBase.ticks,callback:v=>fmt(v)}},y:xNoGrid}});
+  mkChart('c-dow','bar',RAW.days,[{data:RAW.dRev,backgroundColor:RAW.dRev.map(v=>v>3.5e6?'#56754d':'#E7BA44'),borderRadius:5,borderSkipped:false,label:'Revenue'}],{scales:{x:xBase,y:yRev}});
+  mkChart('c-session-donut','doughnut',[],[{data:[]}],{plugins:{legend:{display:true,position:'right',labels:{color:'#FCF0D0',font:{size:10,family:'Raleway'},boxWidth:10}},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${fmt(ctx.raw)}`}}},extra:{cutout:'64%'}});
+  mkChart('c-top10r','bar',RAW.top10Items,[{data:RAW.top10Rev,backgroundColor:'rgba(144,122,169,.75)',borderRadius:4,borderSkipped:false}],{indexAxis:'y',scales:{x:{...xBase,ticks:{...xBase.ticks,callback:v=>fmt(v)}},y:xNoGrid}});
+
+  // Daily Revenue
+  mkChart('c-daily-rev','line',DAILY_REVENUE.map(d=>d.date),[
+    {label:'Daily Revenue',data:DAILY_REVENUE.map(d=>d.rev),borderColor:'#E7BA44',backgroundColor:'rgba(231,186,68,.08)',fill:true,tension:.3,borderWidth:2,pointRadius:0,pointHoverRadius:5},
+    {label:'7-Day Moving Avg',data:DAILY_REVENUE.map(d=>d.ma),borderColor:'#907aa9',backgroundColor:'transparent',fill:false,tension:.4,borderWidth:2,borderDash:[6,3],pointRadius:0,pointHoverRadius:4}
+  ],{scales:{x:{ticks:{color:'#a3979d',font:{size:9,family:'Raleway'},maxTicksLimit:13},grid:{color:'rgba(252,240,208,.06)'}},y:yRev},plugins:{legend:{display:true,position:'top',labels:{color:'#FCF0D0',font:{size:10,family:'Raleway'},boxWidth:12}},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt(ctx.raw)}`}}}});
+
+  mkChart('c-hr-rev','line',[],[{data:[]}],{scales:{x:xBase,y:yRev}});
+  mkChart('c-hr-ord','bar',[],[{data:[]}],{scales:{x:xBase,y:yOrd}});
+  mkChart('c-br-trend','line',[],[],{scales:{x:xBase,y:yRev},plugins:{legend:{display:true,position:'top',labels:{color:'#FCF0D0',font:{size:9,family:'Raleway'},boxWidth:8,padding:6}}}});
+  mkChart('c-sess-bar','bar',['Breakfast','Lunch','Snack','Dinner'],[],{
+    scales:{x:xBase,y:{...yRev,title:{display:true,text:'Revenue',color:'#a3979d',font:{size:9}}},y2:{position:'right',ticks:{color:'#a3979d',font:{size:10}},grid:{display:false},title:{display:true,text:'Orders',color:'#a3979d',font:{size:9}}}},
+    plugins:{legend:{display:true,position:'top',labels:{color:'#FCF0D0',font:{size:9,family:'Raleway'},boxWidth:8,padding:6}}}
+  });
+  mkChart('c-top10r2','bar',RAW.top10Items,[{data:RAW.top10Rev,backgroundColor:'rgba(65,86,57,.75)',borderRadius:4,borderSkipped:false}],{indexAxis:'y',scales:{x:{...xBase,ticks:{...xBase.ticks,callback:v=>fmt(v)}},y:xNoGrid}});
+  mkChart('c-top10q','bar',RAW.top10QtyItems,[{data:RAW.top10Qty,backgroundColor:'rgba(231,186,68,.75)',borderRadius:4,borderSkipped:false}],{indexAxis:'y',scales:{x:xBase,y:xNoGrid}});
+  const meCats=['Star','Plow Horse','Puzzle','Dog'];
+  const meCols=['rgba(159,199,148,.8)','rgba(148,184,227,.8)','rgba(231,186,68,.85)','rgba(230,140,133,.85)'];
+  mkChart('c-me-scatter','scatter',[],meCats.map((cat,ci)=>({label:cat,data:RAW.mePoints.filter(p=>p.cat===cat).map(p=>({x:p.x,y:p.y,item:p.item})),backgroundColor:meCols[ci],pointRadius:7,pointHoverRadius:10})),{
+    scales:{x:{title:{display:true,text:'Qty Sold',color:'#a3979d'},ticks:{color:'#a3979d',font:{size:10}},grid:{color:'rgba(252,240,208,.06)'}},y:{title:{display:true,text:'Net Revenue',color:'#a3979d'},ticks:{color:'#a3979d',font:{size:10},callback:v=>fmt(v)},grid:{color:'rgba(252,240,208,.06)'}}},
+    plugins:{legend:{display:true,position:'top',labels:{color:'#FCF0D0',font:{size:10},boxWidth:10}},tooltip:{callbacks:{label:ctx=>`${ctx.raw.item||''}: qty=${ctx.raw.x}, rev=${fmt(ctx.raw.y)}`}}}
+  });
+  mkChart('c-grow','bar',RAW.growItems,[{data:RAW.growPct,backgroundColor:'rgba(65,86,57,.75)',borderRadius:6,borderSkipped:false,label:'Growth%'}],{scales:{x:xBase,y:{ticks:{color:'#a3979d',font:{size:10},callback:v=>'+'+v+'%'},grid:{color:'rgba(252,240,208,.06)'}}}});
+  mkChart('c-decl','bar',RAW.declItems,[{data:RAW.declPct,backgroundColor:'rgba(124,76,71,.75)',borderRadius:6,borderSkipped:false,label:'Change%'}],{scales:{x:xBase,y:{ticks:{color:'#a3979d',font:{size:10},callback:v=>v+'%'},grid:{color:'rgba(252,240,208,.06)'}}}});
+  mkChart('c-bill','bar',RAW.billBuckets,[{data:RAW.billCounts,backgroundColor:RAW.billCounts.map(v=>v===Math.max(...RAW.billCounts)?'#E7BA44':'rgba(231,186,68,.45)'),borderRadius:5,borderSkipped:false}],{scales:{x:{ticks:{color:'#a3979d',font:{size:9}},grid:{color:'rgba(252,240,208,.06)'}},y:yOrd}});
+  mkChart('c-aov-ch','bar',[],[{data:[]}],{scales:{x:xBase,y:{ticks:{color:'#a3979d',font:{size:10},callback:v=>'\u20b9'+v},grid:{color:'rgba(252,240,208,.06)'},min:320}}});
+  mkChart('c-aov-br','bar',[],[{data:[]}],{indexAxis:'y',scales:{x:{ticks:{color:'#a3979d',font:{size:10},callback:v=>'\u20b9'+v},grid:{color:'rgba(252,240,208,.06)'},min:380},y:xNoGrid}});
+  mkChart('c-load','bar',[],[{data:[]}],{scales:{x:xBase,y:{ticks:{color:'#a3979d',font:{size:10},callback:v=>v+'%'},grid:{color:'rgba(252,240,208,.06)'},max:110}}});
+
+  // Channel Intelligence
+  const brLabels=['Kothrud','AUNDH','Sal.Vihar','Saudagar','Wadgaon','Wakad','Bavdhan'];
+  mkChart('c-ch-split','bar',brLabels,[
+    {label:'Offline (Dine In+Takeaway)',data:[3225935,2273786,1253538,1360046,666576,786010,275181],backgroundColor:'#415639',borderRadius:4,borderSkipped:false},
+    {label:'Online (Zomato+Swiggy)',data:[3002840,1692154,1437213,1327177,1958729,1380387,89005],backgroundColor:'#E7BA44',borderRadius:4,borderSkipped:false}
+  ],{indexAxis:'y',scales:{x:{ticks:{color:'#a3979d',font:{size:10},callback:v=>fmt(v)},grid:{color:'rgba(252,240,208,.06)'},stacked:true},y:{ticks:{color:'#a3979d',font:{size:10}},grid:{display:false},stacked:true}},plugins:{legend:{display:true,position:'top',labels:{color:'#FCF0D0',font:{size:10},boxWidth:10}},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt(ctx.raw)}`}}},extra:{interaction:{mode:'index'}}});
+
+  const zsLabels=['AUNDH','Bavdhan','Kothrud','Sal.Vihar','Saudagar','Wadgaon','Wakad'];
+  mkChart('c-zs-bar','bar',zsLabels,[
+    {label:'Zomato',data:[943450,70662,1815117,954952,716312,1166335,886947],backgroundColor:'#cb202d',borderRadius:4,borderSkipped:false},
+    {label:'Swiggy',data:[748705,18343,1187723,482262,610866,792394,493440],backgroundColor:'#fc8019',borderRadius:4,borderSkipped:false}
+  ],{scales:{x:{ticks:{color:'#a3979d',font:{size:10}},grid:{color:'rgba(252,240,208,.06)'}},y:{ticks:{color:'#a3979d',font:{size:10},callback:v=>fmt(v)},grid:{color:'rgba(252,240,208,.06)'}}},plugins:{legend:{display:true,position:'top',labels:{color:'#FCF0D0',font:{size:10},boxWidth:10}},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt(ctx.raw)}`}}}});
+
+  mkChart('c-ch-trend','line',['April','May','June'],[
+    {label:'Dine In',data:[3163618,3307261,3222182],borderColor:'#415639',backgroundColor:'rgba(65,86,57,.08)',fill:true,tension:.3,borderWidth:2.5,pointRadius:5},
+    {label:'Zomato',data:[2139234,2233700,2180841],borderColor:'#cb202d',backgroundColor:'rgba(203,32,45,.06)',fill:true,tension:.3,borderWidth:2,pointRadius:4},
+    {label:'Swiggy',data:[1415008,1476996,1440728],borderColor:'#fc8019',backgroundColor:'rgba(252,128,25,.06)',fill:true,tension:.3,borderWidth:2,pointRadius:4}
+  ],{scales:{x:{ticks:{color:'#a3979d',font:{size:11}},grid:{color:'rgba(252,240,208,.06)'}},y:{ticks:{color:'#a3979d',font:{size:10},callback:v=>fmt(v)},grid:{color:'rgba(252,240,208,.06)'}}},plugins:{legend:{display:true,position:'top',labels:{color:'#FCF0D0',font:{size:10},boxWidth:10}},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt(ctx.raw)}`}}}});
+
+  // Forecasting
+  const fcLabels=['Apr','May','Jun','Jul','Aug','Sep'];
+  mkChart('c-fc-rev','line',fcLabels,[
+    {label:'Actual',data:[RAW.month.apr.rev,RAW.month.may.rev,RAW.month.jun.rev,null,null,null],borderColor:'#E7BA44',backgroundColor:'rgba(231,186,68,.08)',fill:true,tension:.3,borderWidth:2.5,pointRadius:5},
+    {label:'Forecast',data:[null,null,RAW.month.jun.rev,7042431,7108883,7175336],borderColor:'#907aa9',backgroundColor:'rgba(144,122,169,.06)',fill:true,tension:.3,borderWidth:2,borderDash:[6,4],pointRadius:4}
+  ],{scales:{x:xBase,y:yRev},plugins:{legend:{display:true,position:'top',labels:{color:'#FCF0D0',font:{size:10},boxWidth:10}}}});
+  mkChart('c-fc-ord','line',fcLabels,[
+    {label:'Actual Orders',data:[RAW.month.apr.ord,RAW.month.may.ord,RAW.month.jun.ord,null,null,null],borderColor:'#56754d',backgroundColor:'rgba(86,117,77,.08)',fill:true,tension:.3,borderWidth:2.5,pointRadius:5},
+    {label:'Forecast Orders',data:[null,null,RAW.month.jun.ord,12056,11385,10714],borderColor:'#9c5f59',backgroundColor:'rgba(156,95,89,.06)',fill:true,tension:.3,borderWidth:2,borderDash:[6,4],pointRadius:4}
+  ],{scales:{x:xBase,y:{ticks:{color:'#a3979d',font:{size:10}},grid:{color:'rgba(252,240,208,.06)'},min:9000}},plugins:{legend:{display:true,position:'top',labels:{color:'#FCF0D0',font:{size:10},boxWidth:10}}}});
+}
+
+// ═══════════════════════════════
+// BRANCH PROFILES
+// ═══════════════════════════════
+function selectBranchProfile(branch){
+  currentBranchProfile=branch;
+  document.querySelectorAll('.branch-pill').forEach(p=>p.classList.toggle('active',p.textContent===branch));
+  renderBranchProfile(branch);
+}
+
+function renderBranchProfile(branch){
+  const bp=BRANCH_PROFILES[branch];if(!bp)return;
+  const container=document.getElementById('branch-profile-content');
+  const offlineRev=(bp.channels['Dine In']?.rev||0)+(bp.channels['Takeaway']?.rev||0);
+  const onlineRev=(bp.channels['Zomato']?.rev||0)+(bp.channels['Swiggy']?.rev||0);
+  const totalRev=offlineRev+onlineRev;
+  const offPct=totalRev>0?(offlineRev/totalRev*100).toFixed(1):0;
+  const onPct=totalRev>0?(onlineRev/totalRev*100).toFixed(1):0;
+  const zomato=bp.channels['Zomato']||{rev:0,ord:0,aov:0};
+  const swiggy=bp.channels['Swiggy']||{rev:0,ord:0,aov:0};
+  const dinein=bp.channels['Dine In']||{rev:0,ord:0,aov:0};
+  const tc=bp.trendClass==='trend-up'?'c-green':bp.trendClass==='trend-dn'?'c-red':'c-purple';
+  container.innerHTML=`
+    <div class="kpi-grid">
+      <div class="kpi-card c-blue"><div class="kpi-label">Revenue</div><div class="kpi-val c-blue">${fmt(bp.rev)}</div><div class="kpi-sub">Q2 2026 total</div></div>
+      <div class="kpi-card c-green"><div class="kpi-label">Total Orders</div><div class="kpi-val c-green">${fmtN(bp.ord)}</div><div class="kpi-sub">${(bp.ord/91).toFixed(0)}/day avg</div></div>
+      <div class="kpi-card c-amber"><div class="kpi-label">AOV</div><div class="kpi-val c-amber">\u20b9${bp.aov}</div><div class="kpi-sub">avg order value</div></div>
+      <div class="kpi-card ${tc}"><div class="kpi-label">Trend / Status</div><div class="kpi-val ${tc}" style="font-size:16px">${bp.trend}</div><div class="kpi-sub"><span class="tag ${bp.statusTag}">${bp.status}</span></div></div>
+    </div>
+    <div class="grid g2">
+      <div class="chart-card"><h3>Monthly Revenue Trend</h3><div class="sub">Apr \u2192 May \u2192 Jun 2026</div><div class="cw" style="height:200px"><canvas id="bp-monthly"></canvas></div></div>
+      <div class="chart-card"><h3>Offline vs Online Split</h3><div class="sub">Offline ${offPct}% \u00b7 Online ${onPct}%</div><div class="cw" style="height:200px"><canvas id="bp-donut"></canvas></div></div>
+    </div>
+    <div class="grid g2">
+      <div class="chart-card"><h3>Zomato vs Swiggy</h3><div class="sub">Revenue, Orders &amp; AOV comparison</div>
+        <div class="grid g2" style="margin-top:12px;margin-bottom:0;gap:10px">
+          <div style="background:rgba(203,32,45,.08);border:1px solid rgba(203,32,45,.2);border-radius:10px;padding:14px">
+            <div style="font-size:11px;font-weight:700;color:#cb202d;margin-bottom:8px;font-family:'Poppins',sans-serif">ZOMATO</div>
+            <div style="font-size:20px;font-weight:800;color:var(--text);font-family:'Montserrat',sans-serif">${fmt(zomato.rev)}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px">${fmtN(zomato.ord)} orders &middot; AOV \u20b9${zomato.aov}</div>
+          </div>
+          <div style="background:rgba(252,128,25,.08);border:1px solid rgba(252,128,25,.2);border-radius:10px;padding:14px">
+            <div style="font-size:11px;font-weight:700;color:#fc8019;margin-bottom:8px;font-family:'Poppins',sans-serif">SWIGGY</div>
+            <div style="font-size:20px;font-weight:800;color:var(--text);font-family:'Montserrat',sans-serif">${fmt(swiggy.rev)}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px">${fmtN(swiggy.ord)} orders &middot; AOV \u20b9${swiggy.aov}</div>
+          </div>
+        </div>
+      </div>
+      <div class="chart-card"><h3>Channel AOV Comparison</h3><div class="sub">Average order value by channel</div><div class="cw" style="height:180px"><canvas id="bp-aov"></canvas></div></div>
+    </div>
+  `;
+  ['bp-monthly','bp-donut','bp-aov'].forEach(id=>{if(bpCharts[id]){bpCharts[id].destroy();}});
+  const xB={ticks:{color:'#a3979d',font:{size:10,family:'Raleway'}},grid:{color:'rgba(252,240,208,.06)'}};
+  bpCharts['bp-monthly']=new Chart(document.getElementById('bp-monthly'),{type:'bar',data:{labels:['April','May','June'],datasets:[{data:bp.monthly,backgroundColor:['#E7BA44','#56754d','#9c5f59'],borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>fmt(ctx.raw)}}},scales:{x:xB,y:{ticks:{color:'#a3979d',font:{size:10},callback:v=>fmt(v)},grid:{color:'rgba(252,240,208,.06)'}}}}});
+  bpCharts['bp-donut']=new Chart(document.getElementById('bp-donut'),{type:'doughnut',data:{labels:['Offline','Online'],datasets:[{data:[offlineRev,onlineRev],backgroundColor:['#415639','#E7BA44'],borderWidth:0,hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:true,position:'right',labels:{color:'#FCF0D0',font:{size:11},boxWidth:10}},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${fmt(ctx.raw)} (${(ctx.raw/totalRev*100).toFixed(1)}%)`}}}}});
+  const chLabels=['Dine In','Zomato','Swiggy','Takeaway'];
+  const chAOVs=[dinein.aov,zomato.aov,swiggy.aov,bp.channels['Takeaway']?.aov||0];
+  bpCharts['bp-aov']=new Chart(document.getElementById('bp-aov'),{type:'bar',data:{labels:chLabels,datasets:[{data:chAOVs,backgroundColor:['#415639','#cb202d','#fc8019','#a3979d'],borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`AOV: \u20b9${ctx.raw}`}}},scales:{x:xB,y:{ticks:{color:'#a3979d',font:{size:10},callback:v=>'\u20b9'+v},grid:{color:'rgba(252,240,208,.06)'},min:0}}}});
+}
+
+// ═══════════════════════════════
+// HEATMAP
+// ═══════════════════════════════
+function drawHeatmap(){
+  const canvas=document.getElementById('c-heatmap');if(!canvas)return;
+  const W=canvas.offsetWidth||960,H=220;
+  canvas.width=W;canvas.height=H;
+  const ctx=canvas.getContext('2d');
+  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const hrs=RAW.hours;const data=RAW.heatmap;
+  const padL=44,padT=24,padR=10,padB=28;
+  const cellW=(W-padL-padR)/hrs.length,cellH=(H-padT-padB)/days.length;
+  const maxV=Math.max(...data.flat());
+  const isLight=document.body.classList.contains('light-mode');
+  function heatColor(v){const t=v/maxV;if(isLight){if(t<.25)return `rgba(65,86,57,${.15+t*1.5})`;if(t<.55)return `rgba(196,150,37,${.25+t*0.5})`;return `rgba(124,76,71,${.35+t*0.5})`;}else{if(t<.25)return `rgba(65,86,57,${.35+t*1.8})`;if(t<.55)return `rgba(231,186,68,${.45+t*.5})`;return `rgba(124,76,71,${.65+t*.35})`;}}
+  ctx.fillStyle=isLight?'#F5E9C9':'#362E33';ctx.fillRect(0,0,W,H);
+  data.forEach((row,di)=>{row.forEach((val,hi)=>{const x=padL+hi*cellW,y=padT+di*cellH;ctx.fillStyle=heatColor(val);ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x+1,y+1,cellW-2,cellH-2,2);else ctx.rect(x+1,y+1,cellW-2,cellH-2);ctx.fill();});});
+  ctx.fillStyle=isLight?'#2B2428':'#a3979d';ctx.font='10px Raleway,sans-serif';ctx.textAlign='center';
+  hrs.forEach((h,i)=>ctx.fillText(h,(padL+(i+.5)*cellW),H-padB+14));
+  ctx.textAlign='right';days.forEach((d,i)=>ctx.fillText(d,padL-6,padT+(i+.5)*cellH+4));
+  const sunIdx=6,h10Idx=hrs.indexOf(10);
+  if(h10Idx>=0){ctx.fillStyle=isLight?'#2B2428':'#FCF0D0';ctx.font='bold 8px Poppins,sans-serif';ctx.textAlign='center';ctx.fillText('PEAK',padL+(h10Idx+.5)*cellW,padT+(sunIdx+.5)*cellH+3);}
+}
+
+window.addEventListener('resize',()=>{if(window._hmDrawn)drawHeatmap();});
+
+// ═══════════════════════════════
+// EXECUTIVE REPORT
+// ═══════════════════════════════
+function buildExecutiveReport(){
+  const rc=document.getElementById('report-content');if(!rc)return;
+  rc.innerHTML=`
+<h1>Yolkshire &mdash; Q2 2026 Business Intelligence Report</h1>
+<p style="color:var(--muted);font-size:12px">Period: April 1 &ndash; June 30, 2026 &middot; 7 Branches &middot; Generated: July 2026</p>
+<div class="divider"></div>
+<h2>Part 1: Executive Summary</h2>
+<h3>1.1 KPI Scorecard</h3>
+<table><tr><th>KPI</th><th>Value</th><th>Status</th></tr>
+<tr><td>Net Revenue Q2</td><td>&#8377;2.07 Crore</td><td class="status-good">On Track</td></tr>
+<tr><td>Total Orders</td><td>40,193</td><td class="status-warn">Declining in Jun</td></tr>
+<tr><td>Avg Order Value (Net)</td><td>&#8377;516</td><td class="status-good">Growing MoM</td></tr>
+<tr><td>Cancel Rate</td><td>0.08%</td><td class="status-good">Excellent</td></tr>
+<tr><td>Best Branch</td><td>Kothrud (&#8377;62.3L, 30%)</td><td class="status-good">Leader</td></tr>
+<tr><td>Watch Branch</td><td>Wadgaon Sheri (-15.3%)</td><td class="status-risk">Urgent</td></tr>
+<tr><td>Beverage Attach Rate</td><td>~40% (72% confidence)</td><td class="status-warn">20% Gap</td></tr>
+</table>
+<h3>1.2 Best Performers</h3>
+<table><tr><th>Category</th><th>Winner</th><th>Value</th></tr>
+<tr><td>Revenue Branch</td><td>Kothrud</td><td>&#8377;62.3L (30.1%)</td></tr>
+<tr><td>AOV Branch</td><td>Bavdhan (new)</td><td>&#8377;593</td></tr>
+<tr><td>Best Channel</td><td>Dine In</td><td>&#8377;96.9L, AOV &#8377;590</td></tr>
+<tr><td>Top Item Revenue</td><td>Chicken Stroganoff</td><td>&#8377;8.9L (9.1%)</td></tr>
+<tr><td>Fastest Growing Item</td><td>Espresso</td><td>+1,057% Apr&rarr;Jun</td></tr>
+<tr><td>Best Day</td><td>Sunday</td><td>&#8377;45.3L (21.8%)</td></tr>
+</table>
+<h3>1.3 Top 10 Business Insights</h3>
+<ol>
+<li><strong>Kothrud concentration risk:</strong> 30% of chain revenue from one branch.</li>
+<li><strong>Coffee category explosion:</strong> Espresso +1,057%, Americano +735%, Cappuccino +672% Apr&rarr;Jun. A caf&eacute; sub-brand positioning is organic and ripe.</li>
+<li><strong>Sunday premium opportunity:</strong> Sunday AOV &#8377;598 is 15.8% above Monday. A dedicated premium brunch menu at &#8377;700+ could add &#8377;15L+ quarterly.</li>
+<li><strong>Delivery commission drain:</strong> Zomato + Swiggy commission ~&#8377;27.2L/quarter at 25% rate. True net from delivery is &#8377;81.7L vs &#8377;96.9L from Dine In.</li>
+<li><strong>Wadgaon Sheri 74.6% online:</strong> Highest delivery dependency, yet declining -15.3%.</li>
+<li><strong>Beverage attach gap:</strong> 72% basket confidence but ~40% actual attach rate. 20-pp gap = &#8377;24L+ annual upside.</li>
+<li><strong>66 Dog items:</strong> Below-median popularity AND revenue. Removing 20 reduces complexity.</li>
+<li><strong>3&ndash;5 PM idle capacity:</strong> Kitchen load 28&ndash;34% during afternoon. 3 idle hours/day &times; 7 branches.</li>
+<li><strong>June order decline:</strong> -1,021 orders Jun vs May (-7.5%) despite +5.4% AOV growth.</li>
+<li><strong>Bavdhan AOV &#8377;593 in Month 1:</strong> Highest chain AOV in debut month. Expansion template validated.</li>
+</ol>
+<div class="divider"></div>
+<h2>Part 2: Revenue Analysis</h2>
+<h3>2.1 Monthly Revenue Trend</h3>
+<table><tr><th>Month</th><th>Revenue</th><th>Orders</th><th>AOV</th><th>MoM Revenue</th></tr>
+<tr><td>April 2026</td><td>&#8377;67,62,859</td><td>13,952</td><td>&#8377;485</td><td>&mdash;</td></tr>
+<tr><td>May 2026</td><td>&#8377;70,69,957</td><td>13,631</td><td>&#8377;519</td><td class="status-good">+4.5%</td></tr>
+<tr><td>June 2026</td><td>&#8377;68,95,763</td><td>12,610</td><td>&#8377;547</td><td class="status-risk">-2.5%</td></tr>
+<tr><td><strong>Q2 Total</strong></td><td><strong>&#8377;2,07,28,579</strong></td><td><strong>40,193</strong></td><td><strong>&#8377;516</strong></td><td>&mdash;</td></tr>
+</table>
+<blockquote>Revenue peaked in May (+4.5%) then dipped in June (-2.5%). Order volume dropped 1,021 orders (7.5%) from May to June &mdash; a demand signal requiring attention.</blockquote>
+<h3>2.2 Revenue by Hour (Top Hours)</h3>
+<table><tr><th>Hour</th><th>Revenue</th><th>Orders</th><th>Load</th></tr>
+<tr><td>10 AM (Peak)</td><td>&#8377;20.9L</td><td>3,752</td><td class="status-risk">100%</td></tr>
+<tr><td>9 AM</td><td>&#8377;18.5L</td><td>3,386</td><td class="status-risk">90.2%</td></tr>
+<tr><td>9 PM</td><td>&#8377;15.9L</td><td>3,169</td><td class="status-risk">84.5%</td></tr>
+<tr><td>8 PM</td><td>&#8377;15.1L</td><td>3,232</td><td class="status-risk">86.1%</td></tr>
+<tr><td>3 PM (Low)</td><td>&#8377;7.8L</td><td>1,558</td><td class="status-good">41.5%</td></tr>
+<tr><td>4 PM (Low)</td><td>&#8377;5.8L</td><td>1,224</td><td class="status-good">32.6%</td></tr>
+</table>
+<h3>2.3 Revenue by Session</h3>
+<table><tr><th>Session</th><th>Revenue</th><th>Orders</th><th>AOV</th><th>Share</th></tr>
+<tr><td>Breakfast (7-10 AM)</td><td>&#8377;56.6L</td><td>10,626</td><td>&#8377;533</td><td>27.3%</td></tr>
+<tr><td>Lunch (11-2 PM)</td><td>&#8377;62.8L</td><td>11,372</td><td>&#8377;552</td><td>30.3%</td></tr>
+<tr><td>Snack (3-5 PM)</td><td>&#8377;19.2L</td><td>4,058</td><td>&#8377;473</td><td>9.3%</td></tr>
+<tr><td>Dinner (6-11 PM)</td><td>&#8377;68.6L</td><td>14,134</td><td>&#8377;485</td><td>33.1%</td></tr>
+</table>
+<h3>2.4 Revenue by Day of Week</h3>
+<table><tr><th>Day</th><th>Revenue</th><th>Index (Mon=100)</th></tr>
+<tr><td>Monday</td><td>&#8377;22.0L</td><td>100</td></tr><tr><td>Tuesday</td><td>&#8377;23.2L</td><td>106</td></tr><tr><td>Wednesday</td><td>&#8377;25.5L</td><td>116</td></tr><tr><td>Thursday</td><td>&#8377;23.8L</td><td>109</td></tr><tr><td>Friday</td><td>&#8377;30.1L</td><td>137</td></tr><tr><td>Saturday</td><td>&#8377;37.3L</td><td>170</td></tr><tr><td>Sunday</td><td>&#8377;45.3L</td><td class="status-good">206</td></tr>
+</table>
+<h3>2.5 Revenue by Branch</h3>
+<table><tr><th>Branch</th><th>Revenue</th><th>AOV</th><th>Share</th><th>Trend</th></tr>
+<tr><td>Kothrud</td><td>&#8377;62.3L</td><td>&#8377;515</td><td>30.0%</td><td class="status-good">Stable</td></tr>
+<tr><td>AUNDH</td><td>&#8377;39.7L</td><td>&#8377;515</td><td>19.1%</td><td class="status-good">Growing</td></tr>
+<tr><td>Salunkhe Vihar</td><td>&#8377;26.9L</td><td>&#8377;556</td><td>13.0%</td><td class="status-good">Growing</td></tr>
+<tr><td>Saudagar</td><td>&#8377;26.9L</td><td>&#8377;526</td><td>13.0%</td><td class="status-warn">-10.2%</td></tr>
+<tr><td>Wadgaon Sheri</td><td>&#8377;26.3L</td><td>&#8377;479</td><td>12.7%</td><td class="status-risk">-15.3%</td></tr>
+<tr><td>Yolkshire Wakad</td><td>&#8377;21.7L</td><td>&#8377;497</td><td>10.5%</td><td class="status-warn">Mixed</td></tr>
+<tr><td>Bavdhan</td><td>&#8377;3.6L</td><td>&#8377;593</td><td>1.8%</td><td class="status-good">New (Jun)</td></tr>
+</table>
+<h3>2.6 Revenue by Channel</h3>
+<table><tr><th>Channel</th><th>Revenue</th><th>Orders</th><th>AOV</th><th>Share</th><th>True Net*</th></tr>
+<tr><td>Dine In</td><td>&#8377;96.9L</td><td>16,442</td><td>&#8377;590</td><td>46.8%</td><td class="status-good">&#8377;96.9L (0%)</td></tr>
+<tr><td>Zomato</td><td>&#8377;65.5L</td><td>13,526</td><td>&#8377;485</td><td>31.6%</td><td class="status-warn">&#8377;49.2L (-25%)</td></tr>
+<tr><td>Swiggy</td><td>&#8377;43.3L</td><td>9,828</td><td>&#8377;441</td><td>20.9%</td><td class="status-warn">&#8377;32.5L (-25%)</td></tr>
+<tr><td>Takeaway</td><td>&#8377;1.5L</td><td>396</td><td>&#8377;374</td><td>0.7%</td><td class="status-good">&#8377;1.5L (0%)</td></tr>
+</table>
+<p><em>*Estimated at 25% commission on delivery platforms</em></p>
+<div class="divider"></div>
+<h2>Part 3: Product Performance</h2>
+<h3>3.1 Top 10 Items by Revenue</h3>
+<table><tr><th>Rank</th><th>Item</th><th>Revenue</th><th>Category</th></tr>
+<tr><td>1</td><td>Chicken Stroganoff</td><td>&#8377;8.9L</td><td class="status-good">Star</td></tr>
+<tr><td>2</td><td>Yolkshire Special Roast Chicken</td><td>&#8377;3.98L</td><td class="status-good">Star</td></tr>
+<tr><td>3</td><td>Peri-Peri Steak</td><td>&#8377;3.81L</td><td class="status-good">Star</td></tr>
+<tr><td>4</td><td>Chimmichurri Grilled Chicken</td><td>&#8377;2.90L</td><td class="status-good">Star</td></tr>
+<tr><td>5</td><td>Kerala Curry with Rice</td><td>&#8377;2.38L</td><td class="status-good">Star</td></tr>
+<tr><td>6</td><td>Paprika Chicken with Rice</td><td>&#8377;2.38L</td><td class="status-good">Star</td></tr>
+<tr><td>7</td><td>Classic Cold Coffee</td><td>&#8377;1.80L</td><td class="status-good">Star</td></tr>
+<tr><td>8</td><td>Low-Carb Chicken Stroganoff</td><td>&#8377;1.79L</td><td class="status-good">Star</td></tr>
+<tr><td>9</td><td>Chicken Mayo Sandwich</td><td>&#8377;1.72L</td><td class="status-good">Star</td></tr>
+<tr><td>10</td><td>Vietnamese Iced Coffee</td><td>&#8377;1.68L</td><td class="status-good">Star</td></tr>
+</table>
+<h3>3.2 Fastest Growing Items</h3>
+<table><tr><th>Item</th><th>Growth</th></tr>
+<tr><td>Espresso</td><td class="status-good">+1,057%</td></tr>
+<tr><td>Americano</td><td class="status-good">+735%</td></tr>
+<tr><td>Cappuccino</td><td class="status-good">+672%</td></tr>
+<tr><td>Iced Americano</td><td class="status-good">+450%</td></tr>
+<tr><td>Filter Coffee</td><td class="status-good">+380%</td></tr>
+</table>
+<h3>3.3 Declining Items</h3>
+<table><tr><th>Item</th><th>Change</th></tr>
+<tr><td>Iced Mocha Latte</td><td class="status-risk">-100%</td></tr>
+<tr><td>Green Smoothie</td><td class="status-risk">-100%</td></tr>
+<tr><td>Peach Iced Tea</td><td class="status-risk">-100%</td></tr>
+<tr><td>Spanish Latte</td><td class="status-risk">-100%</td></tr>
+</table>
+<div class="divider"></div>
+<h2>Part 4: Menu Engineering Matrix</h2>
+<table><tr><th>Quadrant</th><th>Count</th><th>Description</th><th>Action</th></tr>
+<tr><td class="status-good">Stars</td><td>67</td><td>High popularity + High revenue</td><td>Promote, feature, bundle</td></tr>
+<tr><td style="color:#94b8e3">Plow Horses</td><td>13</td><td>High popularity + Low revenue</td><td>Reprice +&#8377;20&ndash;30</td></tr>
+<tr><td class="status-warn">Puzzles</td><td>14</td><td>Low popularity + High revenue</td><td>Reposition, better photography</td></tr>
+<tr><td class="status-risk">Dogs</td><td>66</td><td>Low popularity + Low revenue</td><td>Remove 20+ with unique ingredients</td></tr>
+</table>
+<div class="divider"></div>
+<h2>Part 5: Branch Analysis</h2>
+<h3>5.1 Kothrud &mdash; Chain Leader</h3>
+<table><tr><th>Metric</th><th>Value</th></tr>
+<tr><td>Revenue</td><td>&#8377;62.3L (30% of chain)</td></tr>
+<tr><td>Dine In</td><td>&#8377;31.3L / 5,253 orders / AOV &#8377;597</td></tr>
+<tr><td>Zomato</td><td>&#8377;18.2L / 3,864 orders / AOV &#8377;470</td></tr>
+<tr><td>Swiggy</td><td>&#8377;11.9L / 2,757 orders / AOV &#8377;431</td></tr>
+<tr><td>Status</td><td class="status-good">Leader &mdash; operating template for chain</td></tr>
+</table>
+<h3>5.5 Wadgaon Sheri &mdash; Urgent Attention Required</h3>
+<table><tr><th>Metric</th><th>Value</th></tr>
+<tr><td>Revenue</td><td>&#8377;26.3L (&darr; Apr &#8377;9.4L &rarr; Jun &#8377;8.0L)</td></tr>
+<tr><td>Trend</td><td class="status-risk">-15.3% decline &mdash; steepest in chain</td></tr>
+<tr><td>Online Dependency</td><td class="status-risk">74.6% of revenue from Zomato+Swiggy</td></tr>
+<tr><td>Status</td><td class="status-risk">Urgent &mdash; immediate investigation required</td></tr>
+</table>
+<h3>5.7 Bavdhan &mdash; New Branch (Jun only)</h3>
+<table><tr><th>Metric</th><th>Value</th></tr>
+<tr><td>Revenue</td><td>&#8377;3.6L (first month, Jun 2026)</td></tr>
+<tr><td>AOV</td><td class="status-good">&#8377;593 &mdash; highest debut AOV in chain history</td></tr>
+<tr><td>Dine In AOV</td><td>&#8377;620</td></tr>
+<tr><td>Q3 Target</td><td>&#8377;6L/month if full menu live on all platforms</td></tr>
+</table>
+<div class="divider"></div>
+<h2>Part 6: Channel Analysis</h2>
+<h3>6.1 Commission Impact</h3>
+<blockquote>At 25% platform commission: Zomato drain &#8377;16.4L/qtr, Swiggy drain &#8377;10.8L/qtr. Total: &#8377;27.2L/qtr = &#8377;1.09Cr annually. Renegotiating to 18% saves ~&#8377;8.5L/quarter.</blockquote>
+<h3>6.2 Offline vs Online by Branch</h3>
+<table><tr><th>Branch</th><th>Offline%</th><th>Online%</th><th>Risk Level</th></tr>
+<tr><td>Bavdhan</td><td>75.6%</td><td>24.4%</td><td class="status-good">Low</td></tr>
+<tr><td>AUNDH</td><td>57.3%</td><td>42.7%</td><td class="status-good">Low</td></tr>
+<tr><td>Kothrud</td><td>51.8%</td><td>48.2%</td><td class="status-warn">Medium</td></tr>
+<tr><td>Saudagar</td><td>50.6%</td><td>49.4%</td><td class="status-warn">Medium</td></tr>
+<tr><td>Salunkhe Vihar</td><td>46.6%</td><td>53.4%</td><td class="status-warn">Medium</td></tr>
+<tr><td>Yolkshire Wakad</td><td>36.3%</td><td>63.7%</td><td class="status-warn">High</td></tr>
+<tr><td>Wadgaon Sheri</td><td>25.4%</td><td>74.6%</td><td class="status-risk">Critical</td></tr>
+</table>
+<div class="divider"></div>
+<h2>Part 7: Transaction Analysis</h2>
+<h3>7.1 Bill Distribution</h3>
+<table><tr><th>Bill Range</th><th>Orders</th><th>%</th></tr>
+<tr><td>&lt;&#8377;100</td><td>1,007</td><td>2.5%</td></tr>
+<tr><td>&#8377;100&ndash;&#8377;200</td><td>2,709</td><td>6.7%</td></tr>
+<tr><td>&#8377;200&ndash;&#8377;300</td><td>5,398</td><td>13.4%</td></tr>
+<tr><td>&#8377;300&ndash;&#8377;400</td><td>9,982</td><td class="status-good">24.8%</td></tr>
+<tr><td>&#8377;400&ndash;&#8377;500</td><td>5,258</td><td>13.1%</td></tr>
+<tr><td>&#8377;500&ndash;&#8377;700</td><td>7,383</td><td>18.4%</td></tr>
+<tr><td>&#8377;700&ndash;&#8377;1K</td><td>5,085</td><td>12.7%</td></tr>
+<tr><td>&#8377;1K+</td><td>3,371</td><td>8.4%</td></tr>
+</table>
+<div class="divider"></div>
+<h2>Part 8: Operational Insights</h2>
+<table><tr><th>Time Period</th><th>Avg Load</th><th>Status</th><th>Action</th></tr>
+<tr><td>9&ndash;11 AM</td><td>84&ndash;100%</td><td class="status-risk">Critical</td><td>8 staff minimum, no breaks</td></tr>
+<tr><td>3&ndash;5 PM</td><td>28&ndash;41%</td><td class="status-good">Low</td><td>Snack menu launch slot</td></tr>
+<tr><td>7&ndash;9 PM</td><td>68&ndash;86%</td><td class="status-warn">High</td><td>6&ndash;7 staff for dinner rush</td></tr>
+</table>
+<div class="divider"></div>
+<h2>Part 9: Forecasting</h2>
+<table><tr><th>Month</th><th>Revenue Forecast</th><th>Orders</th><th>AOV</th></tr>
+<tr><td>July 2026</td><td>&#8377;70.4L</td><td>12,056</td><td>&#8377;584</td></tr>
+<tr><td>August 2026</td><td>&#8377;71.1L</td><td>11,385</td><td>&#8377;624</td></tr>
+<tr><td>September 2026</td><td>&#8377;71.8L</td><td>10,714</td><td>&#8377;670</td></tr>
+<tr><td><strong>Q3 Total</strong></td><td><strong>&#8377;2.13Cr</strong></td><td><strong>34,155</strong></td><td><strong>&#8377;625</strong></td></tr>
+</table>
+<blockquote>Upside scenario: With beverage attach improvement, Bavdhan ramp-up, and coffee category growth, Q3 could reach &#8377;75&ndash;80L/month.</blockquote>
+<div class="divider"></div>
+<h2>Part 10: Business Health Scorecard</h2>
+<table><tr><th>Dimension</th><th>Score</th><th>Signal</th></tr>
+<tr><td>Revenue Growth</td><td class="status-warn">6/10</td><td>Growing YTD but June dip</td></tr>
+<tr><td>Order Volume</td><td class="status-warn">5/10</td><td>Declining trend May&rarr;Jun</td></tr>
+<tr><td>AOV Health</td><td class="status-good">8/10</td><td>Rising every month</td></tr>
+<tr><td>Operations</td><td class="status-good">8/10</td><td>0.08% cancel rate</td></tr>
+<tr><td>Menu Health</td><td class="status-warn">6/10</td><td>66 Dogs; 67 Stars</td></tr>
+<tr><td><strong>Overall</strong></td><td class="status-warn"><strong>6.6/10</strong></td><td>Solid base; execution needed</td></tr>
+</table>
+<div class="divider"></div>
+<h2>Part 11: SWOT Analysis</h2>
+<h3>Strengths</h3><ul>
+<li>Kothrud flagship proven at &#8377;62.3L (30% chain revenue)</li>
+<li>Cancel rate 0.08% &mdash; industry-leading operational excellence</li>
+<li>Coffee category organically growing at +700%</li>
+<li>Bavdhan Month 1 AOV &#8377;593 &mdash; expansion model validated</li>
+<li>Low discount rate (3.04%) &mdash; pricing power preserved</li>
+</ul>
+<h3>Weaknesses</h3><ul>
+<li>Chicken Stroganoff = 9.1% of item revenue &mdash; single-item concentration</li>
+<li>June orders -1,021 vs May &mdash; demand softening</li>
+<li>66 Dog menu items creating operational overhead</li>
+<li>3&ndash;5 PM idle: 21 branch-hours/day at &lt;35% kitchen utilisation</li>
+<li>No structured customer loyalty program</li>
+</ul>
+<h3>Opportunities</h3><ul>
+<li>Coffee/Caf&eacute; positioning &mdash; capture +700% momentum</li>
+<li>Beverage attach rate: 72% basket confidence, 20% gap = &#8377;24L+ annual upside</li>
+<li>Afternoon snack menu: 3 idle hours/day &times; 7 branches</li>
+<li>Sunday premium brunch: AOV &#8377;598 target &#8377;700+</li>
+<li>8th branch: Hinjewadi / Viman Nagar / Koregaon Park using Bavdhan model</li>
+</ul>
+<h3>Threats</h3><ul>
+<li>Zomato/Swiggy ~25% commission = &#8377;27L/quarter</li>
+<li>Wadgaon Sheri competitive pressure &mdash; unidentified cause</li>
+<li>Monsoon reducing caf&eacute; foot traffic (Jun&ndash;Sep)</li>
+<li>Coffee competition: Starbucks, Third Wave Coffee expanding in Pune</li>
+<li>Kothrud at 30% = chain-level concentration risk</li>
+</ul>
+<div class="divider"></div>
+<h2>Part 12: Final Recommendations</h2>
+<h3>12.1 Immediate (Next 7 Days)</h3>
+<ol>
+<li>Conduct Wadgaon Sheri operations audit &mdash; senior manager visit, platform review</li>
+<li>Implement beverage upsell protocol &mdash; "One Main, One Beverage" staff training</li>
+<li>Upload 3 new combo bundles to Zomato/Swiggy</li>
+<li>Remove 20 Dog items with unique ingredients</li>
+<li>Confirm Bavdhan full menu on Zomato and Swiggy</li>
+</ol>
+<h3>12.2 30-Day Plan</h3>
+<ol>
+<li>Launch "Yolkshire Caf&eacute;" sub-brand with coffee as hero category</li>
+<li>Develop Afternoon Snack Menu (3&ndash;5 PM): &#8377;199&ndash;&#8377;299 range</li>
+<li>Sunday premium brunch: dedicated menu, &#8377;700+ AOV target</li>
+<li>Reprice Plow Horse beverages +&#8377;20&ndash;30</li>
+<li>Wadgaon Sheri revival: local influencer + weekend promotions</li>
+</ol>
+<h3>12.3 90-Day Plan</h3>
+<ol>
+<li>Customer loyalty program: 10% transactions enrolled by Q3</li>
+<li>Beverage revenue: grow from ~8% to 14% of total by Q3</li>
+<li>Commission renegotiation: target 18&ndash;20% vs current ~25%</li>
+<li>Kothrud operating playbook: document SOPs, roll out to Wakad</li>
+<li>8th branch site selection: feasibility study</li>
+</ol>
+<h3>12.4 Revenue Impact Summary</h3>
+<table><tr><th>Initiative</th><th>Estimated Q3 Impact</th><th>Confidence</th></tr>
+<tr><td>Beverage attach improvement</td><td>+&#8377;6&ndash;8L/quarter</td><td class="status-good">High</td></tr>
+<tr><td>Afternoon snack menu</td><td>+&#8377;4&ndash;6L/quarter</td><td class="status-warn">Medium</td></tr>
+<tr><td>Sunday premium brunch</td><td>+&#8377;3&ndash;5L/quarter</td><td class="status-warn">Medium</td></tr>
+<tr><td>Bavdhan scale-up to &#8377;6L/month</td><td>+&#8377;7&ndash;9L/quarter</td><td class="status-good">High</td></tr>
+<tr><td>Wadgaon Sheri stabilisation</td><td>+&#8377;2&ndash;4L/quarter</td><td class="status-warn">Medium</td></tr>
+<tr><td>Delivery combo bundles</td><td>+&#8377;3&ndash;5L/quarter</td><td class="status-good">High</td></tr>
+<tr><td><strong>Combined Upside</strong></td><td><strong>&#8377;25&ndash;37L/quarter</strong></td><td>&mdash;</td></tr>
+</table>
+<div class="divider"></div>
+<h2>Part 13: Methodology</h2>
+<table><tr><th>Area</th><th>Method</th><th>Notes</th></tr>
+<tr><td>Revenue Analysis</td><td>Direct aggregation from POS data</td><td>Net revenue (pre-tax)</td></tr>
+<tr><td>Menu Engineering</td><td>BCG Matrix adapted for F&amp;B</td><td>Median splits for popularity and revenue</td></tr>
+<tr><td>Forecasting</td><td>Linear regression (3-month base)</td><td>Directional only; limited data</td></tr>
+<tr><td>Commission Impact</td><td>Assumed 25% flat rate</td><td>Verify with actual contract terms</td></tr>
+<tr><td>Basket Analysis</td><td>Confidence/Lift from transaction data</td><td>Category-level, not item-level</td></tr>
+<tr><td>Beverage Attach Rate</td><td>Estimated from basket analysis</td><td>~40% attach, 72% basket confidence</td></tr>
+</table>
+<p style="color:var(--muted);font-size:11px;margin-top:20px">Report prepared by: Business Intelligence &middot; Yolkshire Chain Analytics &middot; July 2026. Data source: POS system exports, delivery platform reports.</p>
+`;
+}
+
+// ═══════════════════════════════
+// INIT
+// ═══════════════════════════════
+window.addEventListener('DOMContentLoaded',()=>{
+  initCharts();
+  refresh();
+  renderBranchProfile('Kothrud');
+  buildExecutiveReport();
+});
+</script>
+</body>
+</html>
