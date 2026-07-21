@@ -2,6 +2,9 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "q2-report",
   "compatibility_date": "2026-07-21",
+  "build": {
+    "command": "npm run build"
+  },
   "observability": {
     "enabled": true
   },
