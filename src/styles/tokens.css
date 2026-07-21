@@ -1,0 +1,54 @@
+:root {
+  --bg: #2B2428;
+  --bg2: #362E33;
+  --bg3: #43393F;
+  --bg4: #50444C;
+  --primary: #E7BA44;
+  --secondary: #415639;
+  --accent: #7C4C47;
+  --text: #FCF0D0;
+  --muted: #a3979d;
+  --border: #43393F;
+  --grid: rgba(252, 240, 208, 0.06);
+  --blue: #5985b9;
+  --green: #56754d;
+  --amber: #E7BA44;
+  --red: #9c5f59;
+  --purple: #907aa9;
+}
+
+body.light-mode {
+  --bg: #FCF0D0;
+  --bg2: #F5E9C9;
+  --bg3: #EBDDB8;
+  --bg4: #DFD0AA;
+  --primary: #E7BA44;
+  --secondary: #415639;
+  --accent: #7C4C47;
+  --text: #2B2428;
+  --muted: #665c61;
+  --border: #DFD0AA;
+  --grid: rgba(43, 36, 40, 0.08);
+  --blue: #3b6594;
+  --green: #415639;
+  --amber: #c49625;
+  --red: #7C4C47;
+  --purple: #755b91;
+}
+
+body {
+  font-family: 'Raleway', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition: background 0.25s, color 0.25s;
+}
+
+h1, h2, h3, h4, .logo-text h1, .tab, .sec {
+  font-family: 'Poppins', sans-serif;
+}
+
+.kpi-val {
+  font-family: 'Montserrat', sans-serif;
+}

@@ -5,3 +5,5 @@ __pycache__/
 .agents/
 scratch/
 .gemini/
+node_modules/
+dist/
