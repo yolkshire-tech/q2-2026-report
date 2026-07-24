@@ -544,6 +544,15 @@ function initCharts() {
     { label: 'Dine-In %', data: [50.3, 56.7, 25.0, 35.9], backgroundColor: '#56754d', borderRadius: 4 },
     { label: 'Delivery %', data: [48.2, 42.7, 74.6, 63.7], backgroundColor: '#E7BA44', borderRadius: 4 }
   ], { scales: { x: xBase, y: { ticks: { color: '#a3979d', callback: v => v + '%' }, grid: { color: 'rgba(252,240,208,.06)' } } } });
+
+  mkChart('c-q1q2-monthly', 'bar', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [
+    { label: 'Monthly Net Revenue', data: [5542180, 5612400, 6083578, 6762859, 7069957, 6895763], backgroundColor: ['#907aa9', '#907aa9', '#907aa9', '#E7BA44', '#56754d', '#9c5f59'], borderRadius: 5 }
+  ], { scales: { x: xBase, y: yRev }, plugins: { legend: { display: false } } });
+
+  mkChart('c-q1q2-branch', 'bar', RAW.branches.filter(b => b !== 'Bavdhan'), [
+    { label: 'Q1 Net Revenue', data: [5118196, 3702194, 2365690, 2135474, 2255003, 1661599], backgroundColor: 'rgba(144,122,169,.75)', borderRadius: 4 },
+    { label: 'Q2 Net Revenue', data: [6228775, 3965940, 2690751, 2687223, 2625305, 2166397], backgroundColor: '#E7BA44', borderRadius: 4 }
+  ], { scales: { x: xBase, y: yRev }, plugins: { legend: { display: true, position: 'top', labels: { color: '#FCF0D0', font: { size: 10 } } } } });
 }
 
 export function buildExecutiveReport() {

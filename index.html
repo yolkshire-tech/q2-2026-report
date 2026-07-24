@@ -103,9 +103,10 @@
   <div class="tab" onclick="showPage(5)">&#128225; Channel Intelligence</div>
   <div class="tab" onclick="showPage(6)">&#127978; Branch Profiles</div>
   <div class="tab" onclick="showPage(7)">&#127942; Kothrud Playbook</div>
-  <div class="tab" onclick="showPage(8)">&#128302; Forecasting</div>
-  <div class="tab" onclick="showPage(9)">&#128161; Recommendations</div>
-  <div class="tab" onclick="showPage(10)">&#128196; Executive Report</div>
+  <div class="tab" onclick="showPage(8)">&#9878;&#65039; Q1 vs Q2 Comparison</div>
+  <div class="tab" onclick="showPage(9)">&#128302; Forecasting</div>
+  <div class="tab" onclick="showPage(10)">&#128161; Recommendations</div>
+  <div class="tab" onclick="showPage(11)">&#128196; Executive Report</div>
 </div>
 
 <!-- PAGE 0: EXECUTIVE OVERVIEW -->
@@ -514,8 +515,45 @@
   </div>
 </div>
 
-<!-- PAGE 8: FORECASTING -->
+<!-- PAGE 8: Q1 VS Q2 COMPARATIVE ANALYSIS -->
 <div class="page" id="pg8">
+  <div class="sec">Quarter-over-Quarter Growth Metrics (Q1 2026 vs Q2 2026)</div>
+  <div class="kpi-grid">
+    <div class="kpi-card c-green"><div class="kpi-label">QoQ Revenue Growth</div><div class="kpi-val c-green">+20.2%</div><div class="kpi-sub">&#8377;1.72Cr &rarr; &#8377;2.07Cr</div></div>
+    <div class="kpi-card c-blue"><div class="kpi-label">QoQ Volume Growth</div><div class="kpi-val c-blue">+17.8%</div><div class="kpi-sub">34,120 &rarr; 40,193 orders</div></div>
+    <div class="kpi-card c-amber"><div class="kpi-label">QoQ AOV Improvement</div><div class="kpi-val c-amber">+2.1%</div><div class="kpi-sub">&#8377;505 &rarr; &#8377;516 net</div></div>
+    <div class="kpi-card c-purple"><div class="kpi-label">Top Growth Branch</div><div class="kpi-val c-purple" style="font-size:16px">Kothrud</div><div class="kpi-sub">+21.7% QoQ revenue</div></div>
+  </div>
+  <div class="grid g2">
+    <div class="chart-card">
+      <h3>Monthly Revenue Trajectory: Q1 vs Q2</h3>
+      <div class="sub">Continuous month-on-month revenue progression</div>
+      <div class="cw" style="height:230px"><canvas id="c-q1q2-monthly"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Branch Revenue Comparison: Q1 vs Q2</h3>
+      <div class="sub">Side-by-side branch growth performance</div>
+      <div class="cw" style="height:230px"><canvas id="c-q1q2-branch"></canvas></div>
+    </div>
+  </div>
+  <div class="chart-card" style="margin-bottom:20px">
+    <h3>Q1 vs Q2 Detailed Performance Scorecard</h3>
+    <div class="sub">Metrics comparison across branches</div>
+    <table class="tbl">
+      <tr><th>Metric / Branch</th><th>Q1 Revenue</th><th>Q2 Revenue</th><th>QoQ Change</th><th>Q1 AOV</th><th>Q2 AOV</th><th>Status</th></tr>
+      <tr><td>Kothrud</td><td>&#8377;51.18L</td><td>&#8377;62.29L</td><td class="trend-up">+21.7%</td><td>&#8377;509</td><td>&#8377;516</td><td><span class="tag star">Flagship Peak</span></td></tr>
+      <tr><td>AUNDH</td><td>&#8377;37.02L</td><td>&#8377;39.66L</td><td class="trend-up">+7.1%</td><td>&#8377;520</td><td>&#8377;515</td><td><span class="tag star">Solid Growth</span></td></tr>
+      <tr><td>Salunkhe Vihar</td><td>&#8377;23.66L</td><td>&#8377;26.91L</td><td class="trend-up">+13.7%</td><td>&#8377;534</td><td>&#8377;556</td><td><span class="tag horse">AOV Leader</span></td></tr>
+      <tr><td>Saudagar</td><td>&#8377;21.35L</td><td>&#8377;26.87L</td><td class="trend-up">+25.8%</td><td>&#8377;488</td><td>&#8377;526</td><td><span class="tag grow">Recovered</span></td></tr>
+      <tr><td>Wadgaon Sheri</td><td>&#8377;22.55L</td><td>&#8377;26.25L</td><td class="trend-up">+16.4%</td><td>&#8377;460</td><td>&#8377;479</td><td><span class="tag risk">Delivery Dependent</span></td></tr>
+      <tr><td>Yolkshire Wakad</td><td>&#8377;16.62L</td><td>&#8377;21.66L</td><td class="trend-up">+30.3%</td><td>&#8377;513</td><td>&#8377;497</td><td><span class="tag warn">High Volatility</span></td></tr>
+      <tr><td>Bavdhan</td><td>&#8377;0.00L</td><td>&#8377;3.64L</td><td class="trend-up">New</td><td>&mdash;</td><td>&#8377;593</td><td><span class="tag star">Debut</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- PAGE 9: FORECASTING -->
+<div class="page" id="pg9">
   <div class="sec">Revenue Forecast Q3 2026</div>
   <div class="grid g2">
     <div class="chart-card">
@@ -547,8 +585,8 @@
   </div>
 </div>
 
-<!-- PAGE 9: RECOMMENDATIONS -->
-<div class="page" id="pg9">
+<!-- PAGE 10: RECOMMENDATIONS -->
+<div class="page" id="pg10">
   <div class="sec">Action Plan &amp; Financial Priorities</div>
   <div class="rec-grid">
     <div class="rec-card" style="border-color:rgba(124,76,71,.4)">
@@ -613,8 +651,8 @@
   </div>
 </div>
 
-<!-- PAGE 10: EXECUTIVE REPORT -->
-<div class="page" id="pg10">
+<!-- PAGE 11: EXECUTIVE REPORT -->
+<div class="page" id="pg11">
   <button class="print-btn" onclick="window.print()">Print Report</button>
   <div class="report-content" id="report-content"></div>
 <p style="color:var(--muted);font-size:11px;margin-top:20px">Report prepared by: Business Intelligence &middot; Yolkshire Chain Analytics &middot; July 2026. Data source: POS system exports, delivery platform reports.</p>

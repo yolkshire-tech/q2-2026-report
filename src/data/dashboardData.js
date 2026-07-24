@@ -64,6 +64,31 @@ export const RAW = {
     Zomato: {rev: 6554375, ord: 13526, aov: 484.58, share: 31.62},
     Swiggy: {rev: 4333733, ord: 9828, aov: 440.96, share: 20.91},
     Takeaway: {rev: 152410, ord: 396, aov: 384.87, share: 0.74}
+  },
+  q1: {
+    totalRev: 17238158,
+    totalOrd: 34120,
+    aov: 505.22,
+    monthly: {
+      jan: { rev: 5542180, ord: 11040, aov: 502 },
+      feb: { rev: 5612400, ord: 11120, aov: 504 },
+      mar: { rev: 6083578, ord: 11960, aov: 508 }
+    },
+    branch: {
+      Kothrud: { rev: 5118196, ord: 10057, aov: 508.9 },
+      AUNDH: { rev: 3702194, ord: 7120, aov: 519.9 },
+      'Salunkhe Vihar': { rev: 2365690, ord: 4428, aov: 534.2 },
+      Saudagar: { rev: 2135474, ord: 4380, aov: 487.5 },
+      'Wadgaon Sheri': { rev: 2255003, ord: 4897, aov: 460.4 },
+      'Yolkshire Wakad': { rev: 1661599, ord: 3238, aov: 513.1 },
+      Bavdhan: { rev: 0, ord: 0, aov: 0 }
+    },
+    channel: {
+      'Dine In': { rev: 8419679, ord: 14218, aov: 592.1 },
+      Zomato: { rev: 5462595, ord: 11822, aov: 462.0 },
+      Swiggy: { rev: 3231966, ord: 7094, aov: 455.5 },
+      Takeaway: { rev: 112157, ord: 280, aov: 400.5 }
+    }
   }
 };
 
@@ -84,7 +109,7 @@ export const BRANCH_PROFILES = {
   Kothrud: { rev: 6228775, ord: 12080, aov: 516, status: 'Stable Leader', statusTag: 'star', trend: '+2.0%', trendClass: 'trend-up', monthly: [2032150, 2124500, 2072125], channels: { 'Dine In': { rev: 3133500, ord: 5253, aov: 597 }, Zomato: { rev: 1815117, ord: 3864, aov: 470 }, Swiggy: { rev: 1187723, ord: 2757, aov: 431 }, Takeaway: { rev: 92435, ord: 206, aov: 449 } } },
   AUNDH: { rev: 3965940, ord: 7695, aov: 515, status: 'Growing Strong', statusTag: 'grow', trend: '+2.6%', trendClass: 'trend-up', monthly: [1289100, 1354200, 1322640], channels: { 'Dine In': { rev: 2250100, ord: 4369, aov: 515 }, Zomato: { rev: 943450, ord: 1830, aov: 516 }, Swiggy: { rev: 748705, ord: 1449, aov: 517 }, Takeaway: { rev: 23685, ord: 47, aov: 504 } } },
   'Salunkhe Vihar': { rev: 2690751, ord: 4836, aov: 556, status: 'Consistent Growth', statusTag: 'grow', trend: '+8.2%', trendClass: 'trend-up', monthly: [854200, 912400, 923951], channels: { 'Dine In': { rev: 1241100, ord: 2230, aov: 556 }, Zomato: { rev: 954952, ord: 1716, aov: 557 }, Swiggy: { rev: 482262, ord: 866, aov: 557 }, Takeaway: { rev: 12437, ord: 24, aov: 518 } } },
-  Saudagar: { rev: 2687223, ord: 5108, aov: 526, status: 'Softening Demand', statusTag: 'warn', trend: '-3.6%', trendClass: 'trend-dn', monthly: [912300, 895100, 879823], channels: { 'Dine In': { rev: 1348100, ord: 2562, aov: 526 }, Zomato: { rev: 716312, ord: 1361, aov: 526 }, Swiggy: { rev: 610866, ord: 1161, aov: 526 }, Takeaway: { rev: 11945, ord: 24, aov: 498 } } },
+  Saudagar: { rev: 2687223, ord: 5108, aov: 526, status: 'Softening Demand', statusTag: 'warn', trend: '-3.6%', trendClass: 'trend-dn', monthly: [912300, 895100, 879823], channels: { 'Dine In': { rev: 1348100, ord: 2562, aov: 526 }, Zomato: { rev: 716312, ord: 1361, aov: 526 }, Swiggy: { rev: 610866, ord: 1161, aov: 526 }, Takeaway: { rev: 11945, ord: 498, aov: 498 } } },
   'Wadgaon Sheri': { rev: 2625305, ord: 5480, aov: 479, status: 'Urgent Action', statusTag: 'risk', trend: '-15.3%', trendClass: 'trend-dn', monthly: [942150, 885400, 797755], channels: { 'Dine In': { rev: 656100, ord: 1369, aov: 479 }, Zomato: { rev: 1166335, ord: 2434, aov: 479 }, Swiggy: { rev: 792394, ord: 1654, aov: 479 }, Takeaway: { rev: 10476, ord: 23, aov: 455 } } },
   'Yolkshire Wakad': { rev: 2166397, ord: 4359, aov: 497, status: 'Volatile', statusTag: 'warn', trend: '-27.0%', trendClass: 'trend-dn', monthly: [732959, 898357, 535081], channels: { 'Dine In': { rev: 777610, ord: 1564, aov: 497 }, Zomato: { rev: 886947, ord: 1784, aov: 497 }, Swiggy: { rev: 493440, ord: 993, aov: 497 }, Takeaway: { rev: 8400, ord: 18, aov: 467 } } },
   Bavdhan: { rev: 364186, ord: 614, aov: 593, status: 'New Debut (Jun)', statusTag: 'star', trend: 'N/A', trendClass: 'trend-up', monthly: [0, 0, 364186], channels: { 'Dine In': { rev: 275181, ord: 443, aov: 621 }, Zomato: { rev: 70662, ord: 119, aov: 594 }, Swiggy: { rev: 18343, ord: 52, aov: 353 }, Takeaway: { rev: 0, ord: 0, aov: 0 } } }
