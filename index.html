@@ -88,6 +88,9 @@
       <option value="snack">Snack (15-17)</option>
       <option value="dinner">Dinner (18-23)</option>
     </select>
+  <div class="filter-group">
+    <span class="filter-label">Non-Menu Filter</span>
+    <button class="filter-select" id="btn-exclude-nonmenu" style="cursor:pointer;font-weight:600;background:var(--bg2);color:var(--text);border:1px solid var(--border)" onclick="toggleNonMenuFilter()">💧 Exclude Water/Misc (OFF)</button>
   </div>
   <button class="filter-reset" style="background:var(--primary);color:var(--bg);border-color:var(--primary);font-weight:700" onclick="openTargetModal()">🎯 Set Sales Target</button>
   <button class="filter-reset" onclick="resetFilters()">&#10005; Reset</button>
