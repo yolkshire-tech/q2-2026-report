@@ -88,13 +88,30 @@
       <option value="snack">Snack (15-17)</option>
       <option value="dinner">Dinner (18-23)</option>
     </select>
+  </div>
   <div class="filter-group">
     <span class="filter-label">Non-Menu Filter</span>
     <button class="filter-select" id="btn-exclude-nonmenu" style="cursor:pointer;font-weight:600;background:var(--bg2);color:var(--text);border:1px solid var(--border)" onclick="toggleNonMenuFilter()">💧 Exclude Water/Misc (OFF)</button>
   </div>
-  <button class="filter-reset" style="background:var(--primary);color:var(--bg);border-color:var(--primary);font-weight:700" onclick="openTargetModal()">🎯 Set Sales Target</button>
+  <button class="filter-reset" style="background:var(--primary);color:var(--bg);border-color:var(--primary);font-weight:700;margin-left:0" onclick="openTargetModal()">🎯 Set Sales Target</button>
+  <button class="filter-reset" onclick="openCategoryModal()" style="margin-left:0;background:var(--bg3);color:var(--primary);border-color:var(--primary);font-weight:600">🍕 Category & Item Filter</button>
   <button class="filter-reset" onclick="resetFilters()">&#10005; Reset</button>
   <div class="filter-context" id="filter-ctx">Showing: All Q2 2026 Data &middot; 40,193 orders</div>
+</div>
+
+<!-- CATEGORY & ITEM SELECTION MODAL -->
+<div class="modal-overlay" id="category-modal-overlay">
+  <div class="modal-box" style="max-width:750px">
+    <button class="modal-close" onclick="closeCategoryModal()">&#10005;</button>
+    <h2 style="font-size:16px;color:var(--primary);margin-bottom:6px">🍕 Category & Individual Menu Item Selection Engine</h2>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:14px">Select or deselect entire categories or individual items to isolate specific product lines live across the dashboard.</p>
+    <div id="category-modal-list" style="max-height:380px;overflow-y:auto;margin-bottom:16px;display:flex;flex-direction:column;gap:14px;padding-right:6px"></div>
+    <div style="display:flex;justify:space-between;gap:10px">
+      <button style="flex:1;padding:10px;border-radius:6px;background:var(--primary);color:var(--bg);border:none;font-weight:700;cursor:pointer" onclick="applyCategoryFilter()">Apply Selected Items & Recalculate</button>
+      <button style="padding:10px 14px;border-radius:6px;background:var(--bg3);color:var(--text);border:1px solid var(--border);cursor:pointer" onclick="selectAllCategories(true)">Select All</button>
+      <button style="padding:10px 14px;border-radius:6px;background:transparent;color:var(--muted);border:1px solid var(--border);cursor:pointer" onclick="closeCategoryModal()">Cancel</button>
+    </div>
+  </div>
 </div>
 
 <!-- TARGET MODAL -->

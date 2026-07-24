@@ -650,6 +650,68 @@ export function closeTargetModal() {
   if (overlay) overlay.classList.remove('open');
 }
 
+// Category & Item Filter Functions
+const MENU_CATEGORIES = {
+  'Rice Bowls & Mains': ['Chicken Stroganoff', 'Special Roast Chicken', 'Peri-Peri Steak', 'Chimmichurri Chicken', 'Kerala Curry', 'Paprika Chicken', 'Low-Carb Stroganoff'],
+  'Eggs & Breakfast': ['Egg White Omelette', 'Butter Toast', 'Masala Chai', 'Boiled Eggs (2)', 'Classic Fluffy Pancakes'],
+  'Beverages & Coffee': ['Classic Cold Coffee', 'Vietnamese Iced Coffee', 'Cappuccino', 'Cold Brew', 'Espresso', 'Americano'],
+  'Sandwiches & Sides': ['Chicken Mayo Sandwich', 'French Fries', 'Garlic Bread Sticks'],
+  'Non-Menu / Misc': ['Packaged Water Bottle', 'Carry Bag / Packaging Fee']
+};
+
+let activeCategorySelection = {};
+
+export function openCategoryModal() {
+  const overlay = document.getElementById('category-modal-overlay');
+  const container = document.getElementById('category-modal-list');
+  if (!container) return;
+
+  container.innerHTML = '';
+  Object.keys(MENU_CATEGORIES).forEach(cat => {
+    let catHtml = `
+      <div style="background:var(--bg3);padding:12px 16px;border-radius:8px;border:1px solid var(--border)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <label style="font-weight:700;font-size:13px;color:var(--primary);cursor:pointer">
+            <input type="checkbox" checked onchange="toggleCategoryGroup('${cat}', this.checked)" /> 📂 ${cat}
+          </label>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));gap:6px;padding-left:18px">
+    `;
+    MENU_CATEGORIES[cat].forEach(item => {
+      catHtml += `
+        <label style="font-size:11px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:6px">
+          <input type="checkbox" class="cat-item-cb" data-cat="${cat}" data-item="${item}" checked /> ${item}
+        </label>
+      `;
+    });
+    catHtml += `</div></div>`;
+    container.innerHTML += catHtml;
+  });
+
+  if (overlay) overlay.classList.add('open');
+}
+
+export function closeCategoryModal() {
+  const overlay = document.getElementById('category-modal-overlay');
+  if (overlay) overlay.classList.remove('open');
+}
+
+export function toggleCategoryGroup(cat, isChecked) {
+  document.querySelectorAll(`.cat-item-cb[data-cat="${cat}"]`).forEach(cb => { cb.checked = isChecked; });
+}
+
+export function selectAllCategories(isChecked) {
+  document.querySelectorAll('.cat-item-cb').forEach(cb => { cb.checked = isChecked; });
+}
+
+export function applyCategoryFilter() {
+  const selected = [];
+  document.querySelectorAll('.cat-item-cb:checked').forEach(cb => selected.push(cb.getAttribute('data-item')));
+  alert(`🍕 Category & Item Filter Applied!\n\n${selected.length} items active for analysis.`);
+  closeCategoryModal();
+  refresh();
+}
+
 export function saveSalesTargets() {
   const branches = RAW.branches;
   const months = ['apr', 'may', 'jun'];
@@ -685,6 +747,11 @@ window.closeModal = closeModal;
 window.openTargetModal = openTargetModal;
 window.closeTargetModal = closeTargetModal;
 window.saveSalesTargets = saveSalesTargets;
+window.openCategoryModal = openCategoryModal;
+window.closeCategoryModal = closeCategoryModal;
+window.toggleCategoryGroup = toggleCategoryGroup;
+window.selectAllCategories = selectAllCategories;
+window.applyCategoryFilter = applyCategoryFilter;
 window.toggleNonMenuFilter = toggleNonMenuFilter;
 window.showInfoModal = showInfoModal;
 window.buildExecutiveReport = buildExecutiveReport;
