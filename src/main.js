@@ -518,6 +518,24 @@ function initCharts() {
   ], { scales: { x: xBase, y: { ticks: { color: '#a3979d', font: { size: 10 } }, grid: { color: 'rgba(252,240,208,.06)' }, min: 9000 } }, plugins: { legend: { display: true, position: 'top', labels: { color: '#FCF0D0', font: { size: 10 }, boxWidth: 10 } } } });
 }
 
+export function buildExecutiveReport() {
+  const el = document.getElementById('report-content');
+  if (!el) return;
+  el.innerHTML = `
+    <h2 style="font-size:18px;margin-bottom:12px;color:var(--primary)">Q2 2026 Executive Summary & Analysis Report</h2>
+    <p style="margin-bottom:14px;line-height:1.6">During Q2 2026 (April 1 – June 30, 2026), Yolkshire generated a total net revenue of <strong>₹2.07 Crore</strong> across <strong>40,193 orders</strong> with an overall Average Order Value (AOV) of <strong>₹516</strong>.</p>
+    <h3 style="font-size:14px;margin:16px 0 8px;color:var(--text)">Key Highlights & Branch Performance</h3>
+    <ul style="margin-left:20px;margin-bottom:14px;line-height:1.6">
+      <li><strong>Kothrud Flagship:</strong> Anchors chain revenue at ₹62.3L (30.1% share) with consistent performance and high Dine-In contribution.</li>
+      <li><strong>Aundh & Salunkhe Vihar:</strong> Strong trajectory with growing AOVs (₹515 & ₹556 respectively).</li>
+      <li><strong>Wadgaon Sheri Alert:</strong> Decline of -15.3% Apr→Jun due to high online reliance (74.6%) and potential delivery visibility drops.</li>
+      <li><strong>Bavdhan Debut:</strong> Launched in June generating ₹3.64L with top-tier AOV of ₹593.</li>
+    </ul>
+    <h3 style="font-size:14px;margin:16px 0 8px;color:var(--text)">Channel & Operations Analysis</h3>
+    <p style="line-height:1.6">Offline Dine In remains the most profitable channel (₹96.9L revenue, ₹590 AOV, 0% platform commission). Delivery platforms (Zomato & Swiggy) account for ₹1.09Cr gross revenue, incurring approximately ₹27.2L in combined quarterly platform fees.</p>
+  `;
+}
+
 // Window Event Listeners & Global Attachments
 window.toggleTheme = toggleTheme;
 window.applyFilters = applyFilters;
@@ -525,6 +543,7 @@ window.resetFilters = resetFilters;
 window.showPage = showPage;
 window.openModal = openModal;
 window.closeModal = closeModal;
+window.buildExecutiveReport = buildExecutiveReport;
 window.selectBranchProfile = (b) => {
   currentBranchProfile = b;
   document.querySelectorAll('.branch-pill').forEach(p => p.classList.toggle('active', p.textContent === b));
@@ -538,4 +557,5 @@ window.addEventListener('DOMContentLoaded', () => {
   initCharts();
   refresh();
   renderBranchProfile('Kothrud');
+  buildExecutiveReport();
 });
