@@ -96,23 +96,21 @@
 
 <!-- TARGET MODAL -->
 <div class="modal-overlay" id="target-modal-overlay">
-  <div class="modal-box" style="max-width:480px">
+  <div class="modal-box" style="max-width:680px">
     <button class="modal-close" onclick="closeTargetModal()">&#10005;</button>
-    <h2 style="font-size:16px;color:var(--primary);margin-bottom:12px">🎯 Monthly & Quarterly Sales Target Manager</h2>
-    <p style="font-size:11px;color:var(--muted);margin-bottom:14px">Set target revenue goals to calculate live variance % and target achievement alerts across all tabs.</p>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
-      <div>
-        <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">April 2026 Target (₹)</label>
-        <input type="number" id="t-apr" value="6500000" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--card-bg);color:var(--text)" />
-      </div>
-      <div>
-        <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">May 2026 Target (₹)</label>
-        <input type="number" id="t-may" value="6800000" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--card-bg);color:var(--text)" />
-      </div>
-      <div>
-        <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">June 2026 Target (₹)</label>
-        <input type="number" id="t-jun" value="7000000" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--card-bg);color:var(--text)" />
-      </div>
+    <h2 style="font-size:16px;color:var(--primary);margin-bottom:6px">🎯 Branch-Wise Monthly Sales Target Matrix</h2>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:14px">Set specific monthly sales targets for each individual branch. Overall targets and variance % auto-aggregate live.</p>
+    <div style="max-height:360px;overflow-y:auto;margin-bottom:16px">
+      <table class="tbl" style="font-size:12px">
+        <tr><th>Branch</th><th>Apr Target (₹)</th><th>May Target (₹)</th><th>Jun Target (₹)</th></tr>
+        <tr><td><strong>Kothrud</strong></td><td><input type="number" id="t-Kothrud-apr" value="2000000" style="width:100px;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--card-bg);color:var(--text)" /></td><td><input type="number" id="t-Kothrud-may" value="2100000" style="width:100px;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--card-bg);color:var(--text)" /></td><td><input type="number" id="t-Kothrud-jun" value="2100000" style="width:100px;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--card-bg);color:var(--text)" /></td></tr>
+        <tr><td><strong>AUNDH</strong></td><td><input type="number" id="t-AUNDH-apr" value="1300000" style="width:100px;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--card-bg);color:var(--text)" /></td><td><input type="number" id="t-AUNDH-may" value="1350000" style="width:100px;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--card-bg);color:var(--text)" /></td><td><input type="number" id="t-AUNDH-jun" value="1350000" style="width:100px;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--card-bg);color:var(--text)" /></td></tr>
+        <tr><td><strong>Salunkhe Vihar</strong></td><td><input type="number" id="t-Salunkhe Vihar-apr" value="850000" style="width:100px;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--card-bg);color:var(--text)" /></td><td><input type="number" id="t-Salunkhe Vihar-may" value="900000" style="width:100px;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--card-bg);color:var(--text)" /></td><td><input type="number" id="t-Salunkhe Vihar-jun" value="950000" style="width:100px;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--card-bg);color:var(--text)" /></td></tr>
+        <tr><td><strong>Saudagar</strong></td><td><input type="number" id="t-Saudagar-apr" value="900000" style="width:100px;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--card-bg);color:var(--text)" /></td><td><input type="number" id="t-Saudagar-may" value="900000" style="width:100px;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--card-bg);color:var(--text)" /></td><td><input type="number" id="t-Saudagar-jun" value="900000" style="width:100px;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--card-bg);color:var(--text)" /></td></tr>
+        <tr><td><strong>Wadgaon Sheri</strong></td><td><input type="number" id="t-Wadgaon Sheri-apr" value="950000" style="width:100px;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--card-bg);color:var(--text)" /></td><td><input type="number" id="t-Wadgaon Sheri-may" value="900000" style="width:100px;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--card-bg);color:var(--text)" /></td><td><input type="number" id="t-Wadgaon Sheri-jun" value="850000" style="width:100px;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--card-bg);color:var(--text)" /></td></tr>
+        <tr><td><strong>Yolkshire Wakad</strong></td><td><input type="number" id="t-Yolkshire Wakad-apr" value="750000" style="width:100px;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--card-bg);color:var(--text)" /></td><td><input type="number" id="t-Yolkshire Wakad-may" value="850000" style="width:100px;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--card-bg);color:var(--text)" /></td><td><input type="number" id="t-Yolkshire Wakad-jun" value="750000" style="width:100px;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--card-bg);color:var(--text)" /></td></tr>
+        <tr><td><strong>Bavdhan</strong></td><td><input type="number" id="t-Bavdhan-apr" value="0" style="width:100px;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--card-bg);color:var(--text)" /></td><td><input type="number" id="t-Bavdhan-may" value="0" style="width:100px;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--card-bg);color:var(--text)" /></td><td><input type="number" id="t-Bavdhan-jun" value="350000" style="width:100px;padding:4px;border-radius:4px;border:1px solid var(--border);background:var(--card-bg);color:var(--text)" /></td></tr>
+      </table>
     </div>
     <div style="display:flex;justify:space-between;gap:10px">
       <button style="flex:1;padding:10px;border-radius:6px;background:var(--primary);color:var(--bg);border:none;font-weight:700;cursor:pointer" onclick="saveSalesTargets()">Save & Recalculate Dashboard</button>

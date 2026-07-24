@@ -609,19 +609,25 @@ export function closeTargetModal() {
 }
 
 export function saveSalesTargets() {
-  const aprT = parseFloat(document.getElementById('t-apr').value) || 6500000;
-  const mayT = parseFloat(document.getElementById('t-may').value) || 6800000;
-  const junT = parseFloat(document.getElementById('t-jun').value) || 7000000;
+  const branches = RAW.branches;
+  const months = ['apr', 'may', 'jun'];
+  RAW.branchTargets = {};
 
-  RAW.targets = { apr: aprT, may: mayT, jun: junT, total: aprT + mayT + junT };
+  let totalChainTarget = 0;
+  branches.forEach(b => {
+    RAW.branchTargets[b] = {};
+    months.forEach(m => {
+      const inputEl = document.getElementById(`t-${b}-${m}`);
+      const val = inputEl ? parseFloat(inputEl.value) || 0 : 0;
+      RAW.branchTargets[b][m] = val;
+      totalChainTarget += val;
+    });
+  });
 
-  // Calculate live achievement %
-  const aprPct = ((RAW.month.apr.rev / aprT) * 100).toFixed(1);
-  const mayPct = ((RAW.month.may.rev / mayT) * 100).toFixed(1);
-  const junPct = ((RAW.month.jun.rev / junT) * 100).toFixed(1);
-  const totalPct = ((RAW.q1 ? 20728578 : 20728578) / RAW.targets.total * 100).toFixed(1);
+  const totalAchieved = 20728578;
+  const totalPct = ((totalAchieved / (totalChainTarget || 1)) * 100).toFixed(1);
 
-  alert(`🎯 Sales Targets Updated Live!\n\nApril: ${aprPct}% achieved (Target: ${fmt(aprT)})\nMay: ${mayPct}% achieved (Target: ${fmt(mayT)})\nJune: ${junPct}% achieved (Target: ${fmt(junT)})\nOverall Q2: ${totalPct}% achieved of ${fmt(RAW.targets.total)} target!`);
+  alert(`🎯 Branch-Wise Targets Updated Live!\n\nOverall Chain Q2 Target: ${fmt(totalChainTarget)}\nActual Q2 Revenue: ${fmt(totalAchieved)}\nChain Achievement: ${totalPct}% of target!`);
 
   closeTargetModal();
   refresh();
