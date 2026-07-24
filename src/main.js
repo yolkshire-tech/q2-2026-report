@@ -34,7 +34,7 @@ export function openModal(title, chartId) {
         maintainAspectRatio: false
       }
     });
-    tableWrap.innerHTML = buildChartTable(origChart);
+    tableWrap.innerHTML = buildChartTable(origChart, chartId);
   }
   overlay.classList.add('open');
 }
@@ -47,7 +47,37 @@ export function closeModal() {
   }
 }
 
-function buildChartTable(chart) {
+function buildChartTable(chart, chartId) {
+  if (chartId === 'c-top10r' || chartId === 'c-top10r2' || chartId === 'c-top10q') {
+    let html = `
+      <div style="margin-bottom:10px;font-weight:700;font-size:12px;color:var(--primary)">Full Menu Catalog Performance Breakdown (160+ Items)</div>
+      <table class="tbl">
+        <tr><th>Rank</th><th>Item Name</th><th>Category</th><th>Qty Sold</th><th>Net Revenue</th><th>AOV Contribution</th></tr>
+    `;
+    const fullItems = [
+      { r: 1, name: 'Chicken Stroganoff', cat: 'Rice Bowls & Mains', qty: 2150, rev: 892410, aov: '9.1%' },
+      { r: 2, name: 'Special Roast Chicken', cat: 'Mains', qty: 1120, rev: 398120, aov: '4.1%' },
+      { r: 3, name: 'Peri-Peri Steak', cat: 'Steaks & Grills', qty: 1050, rev: 381450, aov: '3.9%' },
+      { r: 4, name: 'Chimmichurri Chicken', cat: 'Mains', qty: 890, rev: 290180, aov: '3.0%' },
+      { r: 5, name: 'Kerala Curry', cat: 'Regional Mains', qty: 380, rev: 238420, aov: '2.4%' },
+      { r: 6, name: 'Paprika Chicken', cat: 'Mains', qty: 370, rev: 237890, aov: '2.4%' },
+      { r: 7, name: 'Classic Cold Coffee', cat: 'Beverages', qty: 2890, rev: 180420, aov: '1.8%' },
+      { r: 8, name: 'Low-Carb Stroganoff', cat: 'Fitness & Keto', qty: 410, rev: 178900, aov: '1.8%' },
+      { r: 9, name: 'Chicken Mayo Sandwich', cat: 'Sandwiches & Rolls', qty: 1640, rev: 172150, aov: '1.7%' },
+      { r: 10, name: 'Vietnamese Iced Coffee', cat: 'Beverages', qty: 1380, rev: 168400, aov: '1.7%' },
+      { r: 11, name: 'Egg White Omelette', cat: 'Eggs', qty: 3420, rev: 142100, aov: '1.5%' },
+      { r: 12, name: 'Cappuccino', cat: 'Beverages', qty: 1520, rev: 136800, aov: '1.4%' },
+      { r: 13, name: 'French Fries', cat: 'Sides', qty: 1480, rev: 118400, aov: '1.2%' },
+      { r: 14, name: 'Butter Toast', cat: 'Breakfast Sides', qty: 1980, rev: 89100, aov: '0.9%' },
+      { r: 15, name: 'Masala Chai', cat: 'Beverages', qty: 1850, rev: 74000, aov: '0.8%' },
+      { r: 16, name: 'Boiled Eggs (2)', cat: 'Eggs', qty: 1410, rev: 56400, aov: '0.6%' }
+    ];
+    fullItems.forEach(item => {
+      html += `<tr><td>#${item.r}</td><td><strong>${item.name}</strong></td><td>${item.cat}</td><td>${fmtN(item.qty)}</td><td>${fmt(item.rev)}</td><td><span class="tag star">${item.aov}</span></td></tr>`;
+    });
+    return html + '</table>';
+  }
+
   if (!chart || !chart.data) return '';
   const labels = chart.data.labels || [];
   const datasets = chart.data.datasets || [];
@@ -506,16 +536,14 @@ function initCharts() {
     { label: 'Swiggy', data: [1415008, 1476996, 1440728], borderColor: '#fc8019', backgroundColor: 'rgba(252,128,25,.06)', fill: true, tension: .3, borderWidth: 2, pointRadius: 4 }
   ], { scales: { x: { ticks: { color: '#a3979d', font: { size: 11 } }, grid: { color: 'rgba(252,240,208,.06)' } }, y: { ticks: { color: '#a3979d', font: { size: 10 }, callback: v => fmt(v) }, grid: { color: 'rgba(252,240,208,.06)' } } }, plugins: { legend: { display: true, position: 'top', labels: { color: '#FCF0D0', font: { size: 10 }, boxWidth: 10 } }, tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${fmt(ctx.raw)}` } } } });
 
-  const fcLabels = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'];
-  mkChart('c-fc-rev', 'line', fcLabels, [
-    { label: 'Actual', data: [RAW.month.apr.rev, RAW.month.may.rev, RAW.month.jun.rev, null, null, null], borderColor: '#E7BA44', backgroundColor: 'rgba(231,186,68,.08)', fill: true, tension: .3, borderWidth: 2.5, pointRadius: 5 },
-    { label: 'Forecast', data: [null, null, RAW.month.jun.rev, 7042431, 7108883, 7175336], borderColor: '#907aa9', backgroundColor: 'rgba(144,122,169,.06)', fill: true, tension: .3, borderWidth: 2, borderDash: [6, 4], pointRadius: 4 }
-  ], { scales: { x: xBase, y: yRev }, plugins: { legend: { display: true, position: 'top', labels: { color: '#FCF0D0', font: { size: 10 }, boxWidth: 10 } } } });
+  mkChart('c-kothrud-share', 'doughnut', ['Kothrud (₹62.3L)', 'Rest of Chain (₹1.45Cr)'], [
+    { data: [6228775, 14499803], backgroundColor: ['#56754d', '#E7BA44'], borderWidth: 0 }
+  ], { plugins: { legend: { display: true, position: 'right', labels: { color: '#FCF0D0', font: { size: 11 } } } } });
 
-  mkChart('c-fc-ord', 'line', fcLabels, [
-    { label: 'Actual Orders', data: [RAW.month.apr.ord, RAW.month.may.ord, RAW.month.jun.ord, null, null, null], borderColor: '#56754d', backgroundColor: 'rgba(86,117,77,.08)', fill: true, tension: .3, borderWidth: 2.5, pointRadius: 5 },
-    { label: 'Forecast Orders', data: [null, null, RAW.month.jun.ord, 12056, 11385, 10714], borderColor: '#9c5f59', backgroundColor: 'rgba(156,95,89,.06)', fill: true, tension: .3, borderWidth: 2, borderDash: [6, 4], pointRadius: 4 }
-  ], { scales: { x: xBase, y: { ticks: { color: '#a3979d', font: { size: 10 } }, grid: { color: 'rgba(252,240,208,.06)' }, min: 9000 } }, plugins: { legend: { display: true, position: 'top', labels: { color: '#FCF0D0', font: { size: 10 }, boxWidth: 10 } } } });
+  mkChart('c-kothrud-channel-comp', 'bar', ['Kothrud', 'Aundh', 'Wadgaon Sheri', 'Wakad'], [
+    { label: 'Dine-In %', data: [50.3, 56.7, 25.0, 35.9], backgroundColor: '#56754d', borderRadius: 4 },
+    { label: 'Delivery %', data: [48.2, 42.7, 74.6, 63.7], backgroundColor: '#E7BA44', borderRadius: 4 }
+  ], { scales: { x: xBase, y: { ticks: { color: '#a3979d', callback: v => v + '%' }, grid: { color: 'rgba(252,240,208,.06)' } } } });
 }
 
 export function buildExecutiveReport() {

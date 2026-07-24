@@ -18,22 +18,22 @@
 }
 
 body.light-mode {
-  --bg: #FCF0D0;
-  --bg2: #F5E9C9;
-  --bg3: #EBDDB8;
-  --bg4: #DFD0AA;
-  --primary: #E7BA44;
-  --secondary: #415639;
-  --accent: #7C4C47;
-  --text: #2B2428;
-  --muted: #665c61;
-  --border: #DFD0AA;
-  --grid: rgba(43, 36, 40, 0.08);
-  --blue: #3b6594;
-  --green: #415639;
-  --amber: #c49625;
-  --red: #7C4C47;
-  --purple: #755b91;
+  --bg: #F7F1E5;
+  --bg2: #FFFFFF;
+  --bg3: #EDE4D3;
+  --bg4: #DCCBB0;
+  --primary: #B8820A;
+  --secondary: #2C4225;
+  --accent: #5E342F;
+  --text: #1C1618;
+  --muted: #52474C;
+  --border: #D8C8AF;
+  --grid: rgba(28, 22, 24, 0.08);
+  --blue: #1D4ED8;
+  --green: #15803D;
+  --amber: #B8820A;
+  --red: #B91C1C;
+  --purple: #6D28D9;
 }
 
 body {

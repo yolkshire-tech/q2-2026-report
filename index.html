@@ -50,7 +50,7 @@
     <span class="filter-label">Branch</span>
     <select class="filter-select" id="f-branch" onchange="applyFilters()">
       <option value="all">All Branches</option>
-      <option value="Kothrud">Kothrud</option>
+      <option value="Kothrud">Kothrud (Benchmark)</option>
       <option value="AUNDH">AUNDH</option>
       <option value="Salunkhe Vihar">Salunkhe Vihar</option>
       <option value="Saudagar">Saudagar</option>
@@ -69,13 +69,14 @@
     </select>
   </div>
   <div class="filter-group">
-    <span class="filter-label">Channel</span>
+    <span class="filter-label">Channel Mode</span>
     <select class="filter-select" id="f-channel" onchange="applyFilters()">
-      <option value="all">All Channels</option>
-      <option value="Dine In">Dine In</option>
-      <option value="Zomato">Zomato</option>
-      <option value="Swiggy">Swiggy</option>
-      <option value="Takeaway">Takeaway</option>
+      <option value="all">All Channels (Overall)</option>
+      <option value="Dine In">Dine In Only</option>
+      <option value="Delivery">Delivery Only (Zomato + Swiggy)</option>
+      <option value="Zomato">Zomato Only</option>
+      <option value="Swiggy">Swiggy Only</option>
+      <option value="Takeaway">Takeaway Only</option>
     </select>
   </div>
   <div class="filter-group">
@@ -101,9 +102,10 @@
   <div class="tab" onclick="showPage(4)">&#9881;&#65039; Operations</div>
   <div class="tab" onclick="showPage(5)">&#128225; Channel Intelligence</div>
   <div class="tab" onclick="showPage(6)">&#127978; Branch Profiles</div>
-  <div class="tab" onclick="showPage(7)">&#128302; Forecasting</div>
-  <div class="tab" onclick="showPage(8)">&#128161; Recommendations</div>
-  <div class="tab" onclick="showPage(9)">&#128196; Executive Report</div>
+  <div class="tab" onclick="showPage(7)">&#127942; Kothrud Playbook</div>
+  <div class="tab" onclick="showPage(8)">&#128302; Forecasting</div>
+  <div class="tab" onclick="showPage(9)">&#128161; Recommendations</div>
+  <div class="tab" onclick="showPage(10)">&#128196; Executive Report</div>
 </div>
 
 <!-- PAGE 0: EXECUTIVE OVERVIEW -->
@@ -474,8 +476,46 @@
   <div id="branch-profile-content"></div>
 </div>
 
-<!-- PAGE 7: FORECASTING -->
+<!-- PAGE 7: KOTHRUD PLAYBOOK & BENCHMARK -->
 <div class="page" id="pg7">
+  <div class="sec">Kothrud Flagship Benchmark Analysis</div>
+  <div class="kpi-grid">
+    <div class="kpi-card c-green"><div class="kpi-label">Quarterly Revenue</div><div class="kpi-val c-green">&#8377;62.3L</div><div class="kpi-sub">30.1% of entire chain</div></div>
+    <div class="kpi-card c-blue"><div class="kpi-label">Dine-In Preference</div><div class="kpi-val c-blue">50.3%</div><div class="kpi-sub">&#8377;31.3L non-commissioned</div></div>
+    <div class="kpi-card c-amber"><div class="kpi-label">Beverage Attach</div><div class="kpi-val c-amber">54%</div><div class="kpi-sub">Chain benchmark leader</div></div>
+    <div class="kpi-card c-purple"><div class="kpi-label">Dine-In AOV</div><div class="kpi-val c-purple">&#8377;597</div><div class="kpi-sub">Top in major branches</div></div>
+  </div>
+  <div class="grid g2">
+    <div class="chart-card">
+      <h3>Revenue Contribution: Kothrud vs Rest of Chain</h3>
+      <div class="sub">Kothrud alone matches top 3 franchises combined</div>
+      <div class="cw" style="height:230px"><canvas id="c-kothrud-share"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Dine-In vs Delivery Share Comparison</h3>
+      <div class="sub">Kothrud maintains healthier 50%+ in-store revenue</div>
+      <div class="cw" style="height:230px"><canvas id="c-kothrud-channel-comp"></canvas></div>
+    </div>
+  </div>
+  <div class="chart-card" style="margin-bottom:20px">
+    <h3>Kothrud Success Playbook & Key Takeaways</h3>
+    <div class="sub">Strategies required to replicate in Wadgaon Sheri & Wakad</div>
+    <div class="grid g3" style="margin-top:12px;margin-bottom:0">
+      <div class="note" style="margin-top:0">
+        <strong>1. Dine-In First Mindset:</strong> Kothrud generates ₹31.3L from Dine-In with 0% platform commission fee drain.
+      </div>
+      <div class="note" style="margin-top:0">
+        <strong>2. High Beverage Upsell:</strong> 54% attach rate on hot/cold coffees during breakfast hours boosting overall AOV to ₹516.
+      </div>
+      <div class="note" style="margin-top:0">
+        <strong>3. Operational Consistency:</strong> Low cancellation rate (0.05%) and peak kitchen throughput execution.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 8: FORECASTING -->
+<div class="page" id="pg8">
   <div class="sec">Revenue Forecast Q3 2026</div>
   <div class="grid g2">
     <div class="chart-card">
@@ -507,8 +547,8 @@
   </div>
 </div>
 
-<!-- PAGE 8: RECOMMENDATIONS -->
-<div class="page" id="pg8">
+<!-- PAGE 9: RECOMMENDATIONS -->
+<div class="page" id="pg9">
   <div class="sec">Action Plan &amp; Financial Priorities</div>
   <div class="rec-grid">
     <div class="rec-card" style="border-color:rgba(124,76,71,.4)">
@@ -573,8 +613,8 @@
   </div>
 </div>
 
-<!-- PAGE 9: EXECUTIVE REPORT -->
-<div class="page" id="pg9">
+<!-- PAGE 10: EXECUTIVE REPORT -->
+<div class="page" id="pg10">
   <button class="print-btn" onclick="window.print()">Print Report</button>
   <div class="report-content" id="report-content"></div>
 <p style="color:var(--muted);font-size:11px;margin-top:20px">Report prepared by: Business Intelligence &middot; Yolkshire Chain Analytics &middot; July 2026. Data source: POS system exports, delivery platform reports.</p>
