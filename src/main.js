@@ -597,6 +597,36 @@ export function buildExecutiveReport() {
   `;
 }
 
+// Target Modal Functions
+export function openTargetModal() {
+  const overlay = document.getElementById('target-modal-overlay');
+  if (overlay) overlay.classList.add('open');
+}
+
+export function closeTargetModal() {
+  const overlay = document.getElementById('target-modal-overlay');
+  if (overlay) overlay.classList.remove('open');
+}
+
+export function saveSalesTargets() {
+  const aprT = parseFloat(document.getElementById('t-apr').value) || 6500000;
+  const mayT = parseFloat(document.getElementById('t-may').value) || 6800000;
+  const junT = parseFloat(document.getElementById('t-jun').value) || 7000000;
+
+  RAW.targets = { apr: aprT, may: mayT, jun: junT, total: aprT + mayT + junT };
+
+  // Calculate live achievement %
+  const aprPct = ((RAW.month.apr.rev / aprT) * 100).toFixed(1);
+  const mayPct = ((RAW.month.may.rev / mayT) * 100).toFixed(1);
+  const junPct = ((RAW.month.jun.rev / junT) * 100).toFixed(1);
+  const totalPct = ((RAW.q1 ? 20728578 : 20728578) / RAW.targets.total * 100).toFixed(1);
+
+  alert(`🎯 Sales Targets Updated Live!\n\nApril: ${aprPct}% achieved (Target: ${fmt(aprT)})\nMay: ${mayPct}% achieved (Target: ${fmt(mayT)})\nJune: ${junPct}% achieved (Target: ${fmt(junT)})\nOverall Q2: ${totalPct}% achieved of ${fmt(RAW.targets.total)} target!`);
+
+  closeTargetModal();
+  refresh();
+}
+
 // Window Event Listeners & Global Attachments
 window.toggleTheme = toggleTheme;
 window.applyFilters = applyFilters;
@@ -604,6 +634,9 @@ window.resetFilters = resetFilters;
 window.showPage = showPage;
 window.openModal = openModal;
 window.closeModal = closeModal;
+window.openTargetModal = openTargetModal;
+window.closeTargetModal = closeTargetModal;
+window.saveSalesTargets = saveSalesTargets;
 window.buildExecutiveReport = buildExecutiveReport;
 window.selectBranchProfile = (b) => {
   currentBranchProfile = b;
