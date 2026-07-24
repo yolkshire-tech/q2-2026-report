@@ -89,7 +89,24 @@ body.light-mode .kpi-val.c-purple { color: #755b91; }
   z-index: 10;
 }
 
-.expand-btn:hover { border-color: var(--primary); color: var(--primary); }
+.info-btn {
+  position: absolute;
+  top: 14px; right: 44px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--primary);
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+  z-index: 10;
+}
+
+.expand-btn:hover, .info-btn:hover { border-color: var(--primary); color: var(--text); background: var(--primary); }
 
 .tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
 .tbl th {

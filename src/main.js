@@ -47,6 +47,30 @@ export function closeModal() {
   }
 }
 
+export function showInfoModal(title, hintText) {
+  document.getElementById('modal-title').textContent = '💡 How to Read: ' + title;
+  const overlay = document.getElementById('modal-overlay');
+  const chartWrap = document.getElementById('modal-chart-wrap');
+  const tableWrap = document.getElementById('modal-table-wrap');
+  chartWrap.style.display = 'none';
+
+  if (modalChart) {
+    modalChart.destroy();
+    modalChart = null;
+  }
+
+  tableWrap.innerHTML = `
+    <div style="background:var(--bg3);padding:18px;border-radius:12px;border-left:4px solid var(--primary);line-height:1.6">
+      <h4 style="font-size:14px;color:var(--primary);margin-bottom:8px">Executive Insights & Layman's Guide</h4>
+      <p style="font-size:13px;color:var(--text);margin-bottom:12px">${hintText}</p>
+      <div style="font-size:11px;color:var(--muted);border-top:1px solid var(--border);padding-top:8px">
+        <strong>💡 Key Takeaway for Decision Making:</strong> Use this metric to determine whether sales growth is coming from higher volume, menu pricing power, or specific operational channels.
+      </div>
+    </div>
+  `;
+  overlay.classList.add('open');
+}
+
 function buildChartTable(chart, chartId) {
   if (chartId === 'c-top10r' || chartId === 'c-top10r2' || chartId === 'c-top10q') {
     let html = `
@@ -643,6 +667,7 @@ window.closeModal = closeModal;
 window.openTargetModal = openTargetModal;
 window.closeTargetModal = closeTargetModal;
 window.saveSalesTargets = saveSalesTargets;
+window.showInfoModal = showInfoModal;
 window.buildExecutiveReport = buildExecutiveReport;
 window.selectBranchProfile = (b) => {
   currentBranchProfile = b;

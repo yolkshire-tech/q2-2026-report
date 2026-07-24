@@ -155,12 +155,14 @@
   <div class="sec">Revenue Overview</div>
   <div class="grid g21">
     <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Revenue by Month', 'Shows net revenue progression across April, May, and June 2026 along with linear forecast for July–September. Look for upward trajectory or month-on-month dips to gauge demand consistency.')">i</button>
       <button class="expand-btn" onclick="openModal('Revenue by Month','c-monthly')">&#10178;</button>
       <h3>Revenue by Month</h3>
       <div class="sub" id="monthly-sub">Apr&ndash;Jun actuals + Jul&ndash;Sep forecast</div>
       <div class="cw" style="height:210px"><canvas id="c-monthly"></canvas></div>
     </div>
     <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Revenue by Channel', 'Breaks down net revenue by channel: Dine In, Zomato, Swiggy, and Takeaway. Dine-In provides 100% net margin with zero commission fees, while delivery channels incur 20–25% platform fees.')">i</button>
       <button class="expand-btn" onclick="openModal('Revenue by Channel','c-ch-donut')">&#10178;</button>
       <h3>Revenue by Channel</h3>
       <div class="sub">Q2 net revenue split</div>
@@ -169,12 +171,14 @@
   </div>
   <div class="grid g2">
     <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Revenue by Branch', 'Compares total quarterly revenue contributed by each branch. Kothrud anchors 30% of sales, while smaller or newer branches (like Bavdhan) show their initial launch share.')">i</button>
       <button class="expand-btn" onclick="openModal('Revenue by Branch','c-br-bar')">&#10178;</button>
       <h3>Revenue by Branch</h3>
       <div class="sub">Net revenue &middot; selected period</div>
       <div class="cw" style="height:230px"><canvas id="c-br-bar"></canvas></div>
     </div>
     <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Revenue by Day of Week', 'Displays revenue distribution across weekdays vs weekends. Sundays generate over 2x Monday revenue. Use this to design weekday promotions like Student Tuesdays or Monday Breakfast specials.')">i</button>
       <button class="expand-btn" onclick="openModal('Revenue by Day of Week','c-dow')">&#10178;</button>
       <h3>Revenue by Day of Week</h3>
       <div class="sub">Chain-wide &middot; Sunday 2&times; Monday</div>
@@ -183,12 +187,14 @@
   </div>
   <div class="grid g2">
     <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Revenue by Session', 'Groups revenue into Breakfast (7–10 AM), Lunch (11 AM–2 PM), Snack (3–5 PM), and Dinner (6–11 PM). Snack hours show lower contribution, highlighting an opportunity for afternoon workspace deals.')">i</button>
       <button class="expand-btn" onclick="openModal('Revenue by Session','c-session-donut')">&#10178;</button>
       <h3>Revenue by Session</h3>
       <div class="sub">Derived from order hour</div>
       <div class="cw" style="height:200px"><canvas id="c-session-donut"></canvas></div>
     </div>
     <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Top 10 Items by Revenue', 'Identifies the top 10 revenue-generating dishes. Chicken Stroganoff is the #1 anchor product accounting for 9.1% of item sales.')">i</button>
       <button class="expand-btn" onclick="openModal('Top 10 Items by Revenue','c-top10r')">&#10178;</button>
       <h3>Top 10 Items by Revenue</h3>
       <div class="sub">Chicken Stroganoff = 9.1% of item revenue</div>
@@ -225,6 +231,7 @@
 <div class="page" id="pg1">
   <div class="sec">Daily Revenue Trend</div>
   <div class="chart-card" style="margin-bottom:20px">
+    <button class="info-btn" onclick="showInfoModal('Daily Revenue Trend', 'Tracks daily sales alongside a 7-day moving average (purple line) to smooth out weekday/weekend volatility. Sharp upward spikes represent weekend surge days (Friday–Sunday).')">i</button>
     <button class="expand-btn" onclick="openModal('Daily Revenue Trend','c-daily-rev')">&#10178;</button>
     <h3>Daily Revenue Trend with 7-Day Rolling Average</h3>
     <div class="sub">Apr 1 &ndash; Jun 30 &middot; Gold = daily revenue &middot; Purple dashed = 7-day moving average &middot; Weekend spikes visible</div>
@@ -233,12 +240,14 @@
   <div class="sec">Hourly Revenue &amp; Volume</div>
   <div class="grid g2">
     <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Revenue by Hour', 'Displays revenue earned per hour from 7 AM to 11 PM. Shows a bimodal peak pattern: 9–11 AM (Breakfast peak) and 8–10 PM (Dinner peak).')">i</button>
       <button class="expand-btn" onclick="openModal('Revenue by Hour','c-hr-rev')">&#10178;</button>
       <h3>Revenue by Hour</h3>
       <div class="sub">Bimodal: 9&ndash;11 AM peak &middot; 9&ndash;10 PM peak</div>
       <div class="cw" style="height:220px"><canvas id="c-hr-rev"></canvas></div>
     </div>
     <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Orders by Hour', 'Measures order volume per hour. Colors reflect kitchen load: Red indicates peak kitchen stress (100% capacity), Amber is moderate load, and Green is low load.')">i</button>
       <button class="expand-btn" onclick="openModal('Orders by Hour','c-hr-ord')">&#10178;</button>
       <h3>Orders by Hour</h3>
       <div class="sub">Red=high load &middot; Amber=medium &middot; Green=low</div>
@@ -247,6 +256,7 @@
   </div>
   <div class="sec">Revenue Heatmap</div>
   <div class="chart-card">
+    <button class="info-btn" onclick="showInfoModal('Revenue Heatmap', '2D grid mapping Day of Week vs Hour of Day. Darkest cells (like Sunday 10 AM) mark absolute peak revenue windows across the entire week.')">i</button>
     <h3>Revenue Intensity: Day of Week &times; Hour</h3>
     <div class="sub">Darker = higher revenue &middot; Sunday 10 AM = single peak slot</div>
     <canvas id="c-heatmap" style="width:100%;height:220px;display:block"></canvas>
@@ -255,12 +265,14 @@
   <div class="sec">Branch Trends &amp; Session Breakdown</div>
   <div class="grid g2">
     <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Branch Monthly Trend', 'Compares monthly sales trajectory across stores from April to June. Highlights upward growth (Aundh, Salunkhe Vihar) vs softening stores (Wadgaon Sheri -15.3%).')">i</button>
       <button class="expand-btn" onclick="openModal('Branch Monthly Trend','c-br-trend')">&#10178;</button>
       <h3>Branch Revenue &mdash; Monthly Trend</h3>
       <div class="sub" id="br-trend-sub">AUNDH growing &middot; Wadgaon Sheri declining</div>
       <div class="cw" style="height:230px"><canvas id="c-br-trend"></canvas></div>
     </div>
     <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Revenue & Orders by Session', 'Compares revenue (bars) against order count (line) across meal sessions. Dinner drives highest volume, while Lunch generates highest average spend per ticket (AOV ₹552).')">i</button>
       <button class="expand-btn" onclick="openModal('Revenue by Session','c-sess-bar')">&#10178;</button>
       <h3>Revenue &amp; Orders by Session</h3>
       <div class="sub">Dinner leads volume &middot; Lunch leads AOV (&#8377;552)</div>
@@ -274,12 +286,14 @@
   <div class="sec">Product Rankings</div>
   <div class="grid g2">
     <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Top 10 Items — Revenue', 'Ranks top dishes by total revenue. Rice Bowls & Mains dominate the top 5 revenue spots.')">i</button>
       <button class="expand-btn" onclick="openModal('Top 10 Items — Revenue','c-top10r2')">&#10178;</button>
       <h3>Top 10 Items &mdash; Revenue</h3>
       <div class="sub">Rice Bowls dominate &mdash; 4 of top 5</div>
       <div class="cw" style="height:270px"><canvas id="c-top10r2"></canvas></div>
     </div>
     <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Top 10 Items — Quantity', 'Ranks top dishes by units sold. Egg White Omelettes and Cold Coffee lead quantity volume, acting as key basket drivers.')">i</button>
       <button class="expand-btn" onclick="openModal('Top 10 Items — Quantity','c-top10q')">&#10178;</button>
       <h3>Top 10 Items &mdash; Quantity</h3>
       <div class="sub">Chicken Stroganoff leads both qty &amp; revenue</div>
@@ -288,6 +302,7 @@
   </div>
   <div class="sec">Menu Engineering Matrix</div>
   <div class="chart-card">
+    <button class="info-btn" onclick="showInfoModal('Menu Engineering Matrix', 'Plots menu items by Popularity (Qty Sold) vs Profitability (Revenue). Stars (high sales, high profit) should be promoted; Plow Horses (high sales, low profit) should be repriced; Puzzles (low sales, high profit) need marketing; Dogs (low sales, low profit) should be delisted.')">i</button>
     <button class="expand-btn" onclick="openModal('Menu Engineering Matrix','c-me-scatter')">&#10178;</button>
     <h3>Popularity vs Revenue &mdash; Menu Engineering Quadrant</h3>
     <div class="sub">Stars: promote &middot; Plow Horses: reprice &middot; Puzzles: reposition &middot; Dogs: remove</div>
@@ -301,12 +316,14 @@
   </div>
   <div class="grid g2">
     <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Fastest Growing Items', 'Items with highest % order growth from April to June. Gourmet coffee drinks expanded over 700% as breakfast attachments.')">i</button>
       <button class="expand-btn" onclick="openModal('Fastest Growing Items','c-grow')">&#10178;</button>
       <h3>Fastest Growing (Apr &rarr; Jun)</h3>
       <div class="sub">Coffee category exploding &mdash; +700% avg</div>
       <div class="cw" style="height:200px"><canvas id="c-grow"></canvas></div>
     </div>
     <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Fastest Declining Items', 'Items experiencing severe sales drop-offs. Discontinued or low-demand seasonal beverages that should be removed to clean up kitchen prep.')">i</button>
       <button class="expand-btn" onclick="openModal('Fastest Declining Items','c-decl')">&#10178;</button>
       <h3>Fastest Declining (Apr &rarr; Jun)</h3>
       <div class="sub">Several beverages dropped to zero units</div>
