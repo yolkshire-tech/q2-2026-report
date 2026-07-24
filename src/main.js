@@ -588,7 +588,7 @@ function initCharts() {
   ], { scales: { x: xBase, y: { ticks: { color: '#a3979d', callback: v => v + '%' }, grid: { color: 'rgba(252,240,208,.06)' } } } });
 
   mkChart('c-q1q2-monthly', 'bar', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [
-    { label: 'Monthly Net Revenue', data: [5542180, 5612400, 6083578, 6762859, 7069957, 6895763], backgroundColor: ['#907aa9', '#907aa9', '#907aa9', '#E7BA44', '#56754d', '#9c5f59'], borderRadius: 5 }
+    { label: 'Monthly Net Revenue', data: [6240460, 5186052, 5811646, 6762859, 7069957, 6895763], backgroundColor: ['#907aa9', '#907aa9', '#907aa9', '#E7BA44', '#56754d', '#9c5f59'], borderRadius: 5 }
   ], { scales: { x: xBase, y: yRev }, plugins: { legend: { display: false } } });
 
   mkChart('c-q1q2-branch', 'bar', RAW.branches.filter(b => b !== 'Bavdhan'), [

@@ -67,12 +67,12 @@ export const RAW = {
   },
   q1: {
     totalRev: 17238158,
-    totalOrd: 34120,
-    aov: 505.22,
+    totalOrd: 34197,
+    aov: 504.08,
     monthly: {
-      jan: { rev: 5542180, ord: 11040, aov: 502 },
-      feb: { rev: 5612400, ord: 11120, aov: 504 },
-      mar: { rev: 6083578, ord: 11960, aov: 508 }
+      jan: { rev: 6240460, ord: 12201, aov: 511.47 },
+      feb: { rev: 5186052, ord: 10358, aov: 500.68 },
+      mar: { rev: 5811646, ord: 11638, aov: 499.37 }
     },
     branch: {
       Kothrud: { rev: 5118196, ord: 10057, aov: 508.9 },
