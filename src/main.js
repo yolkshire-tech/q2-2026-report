@@ -559,17 +559,41 @@ export function buildExecutiveReport() {
   const el = document.getElementById('report-content');
   if (!el) return;
   el.innerHTML = `
-    <h2 style="font-size:18px;margin-bottom:12px;color:var(--primary)">Q2 2026 Executive Summary & Analysis Report</h2>
-    <p style="margin-bottom:14px;line-height:1.6">During Q2 2026 (April 1 – June 30, 2026), Yolkshire generated a total net revenue of <strong>₹2.07 Crore</strong> across <strong>40,193 orders</strong> with an overall Average Order Value (AOV) of <strong>₹516</strong>.</p>
-    <h3 style="font-size:14px;margin:16px 0 8px;color:var(--text)">Key Highlights & Branch Performance</h3>
-    <ul style="margin-left:20px;margin-bottom:14px;line-height:1.6">
-      <li><strong>Kothrud Flagship:</strong> Anchors chain revenue at ₹62.3L (30.1% share) with consistent performance and high Dine-In contribution.</li>
-      <li><strong>Aundh & Salunkhe Vihar:</strong> Strong trajectory with growing AOVs (₹515 & ₹556 respectively).</li>
-      <li><strong>Wadgaon Sheri Alert:</strong> Decline of -15.3% Apr→Jun due to high online reliance (74.6%) and potential delivery visibility drops.</li>
-      <li><strong>Bavdhan Debut:</strong> Launched in June generating ₹3.64L with top-tier AOV of ₹593.</li>
+    <div style="border-bottom:2px solid var(--primary);padding-bottom:14px;margin-bottom:20px">
+      <h1 style="font-size:22px;color:var(--primary);margin-bottom:6px">YOLKSHIRE — Q1 vs Q2 2026 Comprehensive Business & Performance Audit</h1>
+      <p style="font-size:12px;color:var(--muted)">Prepared for Executive Leadership & Operations Team · Period: Jan 1 – Jun 30, 2026</p>
+    </div>
+
+    <h2 style="font-size:16px;color:var(--primary);margin-top:20px;margin-bottom:10px">1. Executive Summary & Revenue Overview</h2>
+    <p style="line-height:1.6;margin-bottom:12px">During Q2 2026, Yolkshire achieved <strong>₹2.07 Crore</strong> in net sales across <strong>40,193 orders</strong> with an Average Order Value (AOV) of <strong>₹516</strong>. Quarter-over-quarter, chain revenue expanded by <strong>+20.2%</strong> (vs ₹1.72 Crore in Q1 2026), driven by robust volume growth (+17.8% orders) and sustained pricing power across key flagship categories.</p>
+
+    <h2 style="font-size:16px;color:var(--primary);margin-top:20px;margin-bottom:10px">2. Branch Performance & Kothrud Benchmark Analysis</h2>
+    <table class="tbl" style="margin-bottom:14px">
+      <tr><th>Branch</th><th>Q1 Revenue</th><th>Q2 Revenue</th><th>QoQ Growth</th><th>Q2 Share</th><th>Primary Driver / Audit Diagnosis</th></tr>
+      <tr><td><strong>Kothrud</strong></td><td>₹51.18L</td><td>₹62.29L</td><td class="trend-up">+21.7%</td><td>30.1%</td><td>High Dine-In attach (50.3%) & beverage upselling</td></tr>
+      <tr><td><strong>Aundh</strong></td><td>₹37.02L</td><td>₹39.66L</td><td class="trend-up">+7.1%</td><td>19.1%</td><td>Stable corporate lunch traffic; high weekday demand</td></tr>
+      <tr><td><strong>Salunkhe Vihar</strong></td><td>₹23.66L</td><td>₹26.91L</td><td class="trend-up">+13.7%</td><td>13.0%</td><td>Highest chain AOV (₹556); high premium item mix</td></tr>
+      <tr><td><strong>Saudagar</strong></td><td>₹21.35L</td><td>₹26.87L</td><td class="trend-up">+25.8%</td><td>13.0%</td><td>Strong recovery following weekend breakfast push</td></tr>
+      <tr><td><strong>Wadgaon Sheri</strong></td><td>₹22.55L</td><td>₹26.25L</td><td class="trend-up">+16.4%</td><td>12.7%</td><td>74.6% delivery reliance; steep Apr→Jun decline (-15.3%)</td></tr>
+      <tr><td><strong>Yolkshire Wakad</strong></td><td>₹16.62L</td><td>₹21.66L</td><td class="trend-up">+30.3%</td><td>10.5%</td><td>Lowest AOV (₹497); high order volatility (-27.0% Jun)</td></tr>
+      <tr><td><strong>Bavdhan</strong></td><td>—</td><td>₹3.64L</td><td>New</td><td>1.8%</td><td>Launched Jun 2026; top-tier launch AOV (₹593)</td></tr>
+    </table>
+
+    <h2 style="font-size:16px;color:var(--primary);margin-top:20px;margin-bottom:10px">3. Menu Performance & Product Engineering Matrix</h2>
+    <p style="line-height:1.6;margin-bottom:10px">Analysis of 160+ menu items reveals extreme concentration risk. <strong>Chicken Stroganoff</strong> alone accounts for <strong>9.1%</strong> of total chain revenue (₹8.92L). Cold Coffee (+700% Q1→Q2) and Espresso variants represent the fastest-growing category, while 66 'Dog' items generate minimal volume while adding operational friction.</p>
+
+    <h2 style="font-size:16px;color:var(--primary);margin-top:20px;margin-bottom:10px">4. Operational Capacity & Hourly Bottlenecks</h2>
+    <p style="line-height:1.6;margin-bottom:10px">Peak kitchen utilization occurs between 9:00 AM – 11:00 AM (100% capacity) and 8:00 PM – 9:30 PM (86% capacity). Conversely, <strong>3:00 PM – 5:00 PM</strong> represents a 21 branch-hour daily deadzone where kitchen utilization drops below 35% across all locations.</p>
+
+    <h2 style="font-size:16px;color:var(--primary);margin-top:20px;margin-bottom:10px">5. Channel Profitability & Platform Commission Drain</h2>
+    <p style="line-height:1.6;margin-bottom:10px">Dine-In generates ₹96.88L (46.7% share) at zero commission and highest net margin. Delivery platforms (Zomato & Swiggy) account for ₹1.09 Crore in gross sales, incurring <strong>~₹27.2L in quarterly platform commissions</strong> (25% effective rate).</p>
+
+    <h2 style="font-size:16px;color:var(--primary);margin-top:20px;margin-bottom:10px">6. Strategic Recommendations & Strategic Action Plan</h2>
+    <ul style="margin-left:20px;line-height:1.8">
+      <li><strong>Replicate Kothrud Playbook:</strong> Standardize high Dine-In customer experience and beverage pairing scripts in Wakad and Wadgaon Sheri.</li>
+      <li><strong>Menu Rationalization:</strong> Delist bottom 30 'Dog' items to reduce food waste and kitchen prep complexity.</li>
+      <li><strong>Afternoon Workspace Menu:</strong> Launch 'Work from Yolkshire' coffee + snack combos between 3–5 PM to monetize idle capacity.</li>
     </ul>
-    <h3 style="font-size:14px;margin:16px 0 8px;color:var(--text)">Channel & Operations Analysis</h3>
-    <p style="line-height:1.6">Offline Dine In remains the most profitable channel (₹96.9L revenue, ₹590 AOV, 0% platform commission). Delivery platforms (Zomato & Swiggy) account for ₹1.09Cr gross revenue, incurring approximately ₹27.2L in combined quarterly platform fees.</p>
   `;
 }
 
