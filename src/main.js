@@ -652,11 +652,40 @@ export function closeTargetModal() {
 
 // Category & Item Filter Functions
 const MENU_CATEGORIES = {
-  'Rice Bowls & Mains': ['Chicken Stroganoff', 'Special Roast Chicken', 'Peri-Peri Steak', 'Chimmichurri Chicken', 'Kerala Curry', 'Paprika Chicken', 'Low-Carb Stroganoff'],
-  'Eggs & Breakfast': ['Egg White Omelette', 'Butter Toast', 'Masala Chai', 'Boiled Eggs (2)', 'Classic Fluffy Pancakes'],
-  'Beverages & Coffee': ['Classic Cold Coffee', 'Vietnamese Iced Coffee', 'Cappuccino', 'Cold Brew', 'Espresso', 'Americano'],
-  'Sandwiches & Sides': ['Chicken Mayo Sandwich', 'French Fries', 'Garlic Bread Sticks'],
-  'Non-Menu / Misc': ['Packaged Water Bottle', 'Carry Bag / Packaging Fee']
+  'Signature Breakfasts & Omelettes': [
+    'Chicken Stroganoff', 'Special Roast Chicken', 'Yolkshire Special Breakfast', 'Traditional English Breakfast', 
+    'Egg White Omelette', 'Masala Omelette', 'Spanish Omelette', 'Cheese Omelette', 'Mushroom & Cheese Omelette',
+    'Peri Peri Paneer Scramble', 'Peri Peri Chicken Scramble', 'Paneer Potpourri Scramble', 'Chicken Potpourri Scramble',
+    'Italian Reve Scramble', 'Mexican Salsa Verde Scramble', 'Mezze Lebanese Scramble', 'Honey Bee Chicken'
+  ],
+  'Rice Bowls & Regional Mains': [
+    'Kerala Curry', 'Paprika Chicken', 'Low-Carb Stroganoff', 'Chimmichurri Chicken', 'Peri-Peri Steak',
+    'Herb Chicken Rice Bowl', 'BBQ Chicken Bowl', 'Paneer Butter Masala Bowl', 'Dal Makhani Rice Bowl',
+    'Veg Thai Green Curry', 'Chicken Thai Red Curry', 'Grilled Fish Rice Bowl', 'Teriyaki Chicken Bowl'
+  ],
+  'Sandwiches, Rolls & Burgers': [
+    'Chicken Mayo Sandwich', 'Masala Omelette Eggwich', 'White Eggwich', 'Bombay Masala Sandwich',
+    'Bacon Eggwich', 'Classic Double Egg Roll', 'Hakuna Matata Roll', 'Potpourri Paneer Roll',
+    'Chicken Alfredo Roll', 'Classic Veg Burger', 'Egg On Cheese Burger', 'Chicken Burger',
+    'Club Sandwich', 'Grilled Cheese Sandwich', 'Paneer Tikka Roll', 'BBQ Chicken Roll'
+  ],
+  'Pancakes, Waffles & Desserts': [
+    'Salted Caramel and Cream', 'Banana Nutella Pancake', 'Classic Fluffy Pancakes', 'Belgian Chocolate Waffle',
+    'Blueberry Pancakes', 'Maple Butter Waffle', 'Nutella Waffle', 'Chocolate Brownie with Ice Cream'
+  ],
+  'Beverages & Gourmet Coffee': [
+    'Classic Cold Coffee', 'Vietnamese Iced Coffee', 'Cappuccino', 'Cold Brew', 'Espresso', 'Americano',
+    'Iced Americano', 'Filter Coffee', 'Iced Mocha Latte', 'Spanish Latte', 'Masala Chai', 'Peach Iced Tea',
+    'Lemon Iced Tea', 'Mint Lemonade', 'Green Smoothie', 'Fresh Watermelon Juice', 'Hot Chocolate'
+  ],
+  'Salads, Sides & Extras': [
+    'Russian Salad', 'Chicken Caesar Salad', 'Orange and Chicken Salad', 'Greek Salad', 'French Fries',
+    'Peri Peri Fries', 'Garlic Bread Sticks', 'Cheese Garlic Bread', 'Butter Toast', '2 Boiled Eggs',
+    'Cook in Butter', 'Cook in Olive Oil', 'Chicken Sausage', 'Crispy Bacon Strips', 'Pesto Glaze'
+  ],
+  'Non-Menu / Misc': [
+    'Packaged Water Bottle', 'Carry Bag / Packaging Fee', 'Restaurant Packaging Charges', 'Cutlery Set'
+  ]
 };
 
 let activeCategorySelection = {};
