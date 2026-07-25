@@ -25,6 +25,8 @@
   </div>
 </div>
 
+<!-- STICKY HEADER, FILTER BAR & TABS WRAPPER -->
+<div class="sticky-top-wrap">
 <!-- HEADER -->
 <div class="header">
   <div class="logo">
@@ -62,7 +64,12 @@
   <div class="filter-group">
     <span class="filter-label">Month</span>
     <select class="filter-select" id="f-month" onchange="applyFilters()">
-      <option value="all">All Months (Q2)</option>
+      <option value="all">All Months (Q1 + Q2)</option>
+      <option value="q2">All Q2 2026 (Apr&ndash;Jun)</option>
+      <option value="q1">All Q1 2026 (Jan&ndash;Mar)</option>
+      <option value="jan">January 2026</option>
+      <option value="feb">February 2026</option>
+      <option value="mar">March 2026</option>
       <option value="apr">April 2026</option>
       <option value="may">May 2026</option>
       <option value="jun">June 2026</option>
@@ -97,6 +104,24 @@
   <button class="filter-reset" onclick="openCategoryModal()" style="margin-left:0;background:var(--bg3);color:var(--primary);border-color:var(--primary);font-weight:600">🍕 Category & Item Filter</button>
   <button class="filter-reset" onclick="resetFilters()">&#10005; Reset</button>
   <div class="filter-context" id="filter-ctx">Showing: All Q2 2026 Data &middot; 40,193 orders</div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="showPage(0)">&#128202; Executive Overview</div>
+  <div class="tab" onclick="showPage(1)">&#128200; Sales Performance</div>
+  <div class="tab" onclick="showPage(2)">&#127869;&#65039; Menu Performance</div>
+  <div class="tab" onclick="showPage(3)">&#129534; Customer &amp; Transactions</div>
+  <div class="tab" onclick="showPage(4)">&#9881;&#65039; Operations</div>
+  <div class="tab" onclick="showPage(5)">&#128225; Channel Intelligence</div>
+  <div class="tab" onclick="showPage(6)">&#127978; Branch Profiles</div>
+  <div class="tab" onclick="showPage(7)">&#127942; Kothrud Playbook</div>
+  <div class="tab" onclick="showPage(8)">&#9878;&#65039; Q1 vs Q2 Comparison</div>
+  <div class="tab" onclick="showPage(9)">&#128302; Forecasting</div>
+  <div class="tab" onclick="showPage(10)">&#128161; Recommendations</div>
+  <div class="tab" onclick="showPage(11)">&#128196; Executive Report</div>
+  <div class="tab" onclick="showPage(12)">&#128176; Profit &amp; Loss (PnL)</div>
+</div>
 </div>
 
 <!-- CATEGORY & ITEM SELECTION MODAL -->
@@ -137,22 +162,6 @@
       <button style="padding:10px 14px;border-radius:6px;background:transparent;color:var(--muted);border:1px solid var(--border);cursor:pointer" onclick="closeTargetModal()">Cancel</button>
     </div>
   </div>
-</div>
-
-<!-- TABS -->
-<div class="tabs">
-  <div class="tab active" onclick="showPage(0)">&#128202; Executive Overview</div>
-  <div class="tab" onclick="showPage(1)">&#128200; Sales Performance</div>
-  <div class="tab" onclick="showPage(2)">&#127869;&#65039; Menu Performance</div>
-  <div class="tab" onclick="showPage(3)">&#129534; Customer &amp; Transactions</div>
-  <div class="tab" onclick="showPage(4)">&#9881;&#65039; Operations</div>
-  <div class="tab" onclick="showPage(5)">&#128225; Channel Intelligence</div>
-  <div class="tab" onclick="showPage(6)">&#127978; Branch Profiles</div>
-  <div class="tab" onclick="showPage(7)">&#127942; Kothrud Playbook</div>
-  <div class="tab" onclick="showPage(8)">&#9878;&#65039; Q1 vs Q2 Comparison</div>
-  <div class="tab" onclick="showPage(9)">&#128302; Forecasting</div>
-  <div class="tab" onclick="showPage(10)">&#128161; Recommendations</div>
-  <div class="tab" onclick="showPage(11)">&#128196; Executive Report</div>
 </div>
 
 <!-- PAGE 0: EXECUTIVE OVERVIEW -->
@@ -411,7 +420,7 @@
     <div class="chart-card">
       <h3>Staffing Guide by Hour</h3>
       <div class="sub">Recommended minimum staff per branch</div>
-      <table class="tbl">
+      <table class="tbl" id="tbl-staffing">
         <tr><th>Hour</th><th>Daily Orders</th><th>Load</th><th>Min Staff</th></tr>
         <tr><td>7 AM</td><td>12</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:29%;background:var(--green)"></div></div>29%</div></td><td style="font-weight:700">3</td></tr>
         <tr><td>8 AM</td><td>26</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:64%;background:var(--amber)"></div></div>64%</div></td><td style="font-weight:700">5-6</td></tr>
@@ -424,7 +433,7 @@
     <div class="chart-card">
       <h3>Branch Scorecard</h3>
       <div class="sub">Revenue, trend, and status</div>
-      <table class="tbl">
+      <table class="tbl" id="tbl-scorecard">
         <tr><th>Branch</th><th>Revenue</th><th>AOV</th><th>Trend</th><th>Status</th></tr>
         <tr><td>Kothrud</td><td>&#8377;62.3L</td><td>&#8377;515</td><td class="trend-up">Stable</td><td><span class="tag star">Leader</span></td></tr>
         <tr><td>AUNDH</td><td>&#8377;39.7L</td><td>&#8377;515</td><td class="trend-up">&uarr; Growing</td><td><span class="tag star">Strong</span></td></tr>
@@ -502,7 +511,7 @@
     <div class="sub">True net revenue after estimated platform fees</div>
     <div class="grid g2" style="margin-top:14px;margin-bottom:0">
       <div>
-        <table class="tbl">
+        <table class="tbl" id="tbl-commission-impact">
           <tr><th>Metric</th><th>Value</th></tr>
           <tr><td>Zomato commission drain</td><td style="color:#e68c85;font-weight:700">~&#8377;16.4L/quarter</td></tr>
           <tr><td>Swiggy commission drain</td><td style="color:#e68c85;font-weight:700">~&#8377;10.8L/quarter</td></tr>
@@ -542,38 +551,52 @@
 
 <!-- PAGE 7: KOTHRUD PLAYBOOK & BENCHMARK -->
 <div class="page" id="pg7">
-  <div class="sec">Kothrud Flagship Benchmark Analysis</div>
+  <div class="sec">Kothrud Flagship Benchmark Analysis &amp; Playbook</div>
   <div class="kpi-grid">
-    <div class="kpi-card c-green"><div class="kpi-label">Quarterly Revenue</div><div class="kpi-val c-green">&#8377;62.3L</div><div class="kpi-sub">30.1% of entire chain</div></div>
-    <div class="kpi-card c-blue"><div class="kpi-label">Dine-In Preference</div><div class="kpi-val c-blue">50.3%</div><div class="kpi-sub">&#8377;31.3L non-commissioned</div></div>
-    <div class="kpi-card c-amber"><div class="kpi-label">Beverage Attach</div><div class="kpi-val c-amber">54%</div><div class="kpi-sub">Chain benchmark leader</div></div>
-    <div class="kpi-card c-purple"><div class="kpi-label">Dine-In AOV</div><div class="kpi-val c-purple">&#8377;597</div><div class="kpi-sub">Top in major branches</div></div>
+    <div class="kpi-card c-green"><div class="kpi-label">Quarterly Revenue</div><div class="kpi-val c-green" id="k-kothrud-rev">&#8377;62.3L</div><div class="kpi-sub">30.1% of entire chain</div></div>
+    <div class="kpi-card c-blue"><div class="kpi-label">Dine-In Preference</div><div class="kpi-val c-blue" id="k-kothrud-dinein">50.3%</div><div class="kpi-sub">&#8377;31.3L non-commissioned</div></div>
+    <div class="kpi-card c-amber"><div class="kpi-label">Beverage Attach</div><div class="kpi-val c-amber" id="k-kothrud-bev">54%</div><div class="kpi-sub">Chain benchmark leader</div></div>
+    <div class="kpi-card c-purple"><div class="kpi-label">Dine-In AOV</div><div class="kpi-val c-purple" id="k-kothrud-aov">&#8377;597</div><div class="kpi-sub">Top in major branches</div></div>
   </div>
   <div class="grid g2">
     <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Revenue Contribution: Kothrud vs Rest of Chain','c-kothrud-share')">&#10178;</button>
       <h3>Revenue Contribution: Kothrud vs Rest of Chain</h3>
       <div class="sub">Kothrud alone matches top 3 franchises combined</div>
       <div class="cw" style="height:230px"><canvas id="c-kothrud-share"></canvas></div>
     </div>
     <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Dine-In vs Delivery Share Comparison','c-kothrud-channel-comp')">&#10178;</button>
       <h3>Dine-In vs Delivery Share Comparison</h3>
       <div class="sub">Kothrud maintains healthier 50%+ in-store revenue</div>
       <div class="cw" style="height:230px"><canvas id="c-kothrud-channel-comp"></canvas></div>
     </div>
   </div>
+  <div class="grid g3">
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Kothrud Hourly Revenue vs Chain Average','c-kothrud-hourly')">&#10178;</button>
+      <h3>Kothrud Hourly Curve vs Chain Avg</h3>
+      <div class="sub">Breakfast surge peak at 9–11 AM</div>
+      <div class="cw" style="height:210px"><canvas id="c-kothrud-hourly"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Beverage Category Upsell Mix','c-kothrud-bev-breakdown')">&#10178;</button>
+      <h3>Kothrud Beverage Category Mix</h3>
+      <div class="sub">54% attach rate driven by Gourmet Coffee</div>
+      <div class="cw" style="height:210px"><canvas id="c-kothrud-bev-breakdown"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Kothrud Top 5 Anchor Items','c-kothrud-menu-mix')">&#10178;</button>
+      <h3>Kothrud Top 5 Anchor Dishes</h3>
+      <div class="sub">Revenue concentration breakdown</div>
+      <div class="cw" style="height:210px"><canvas id="c-kothrud-menu-mix"></canvas></div>
+    </div>
+  </div>
   <div class="chart-card" style="margin-bottom:20px">
-    <h3>Kothrud Success Playbook & Key Takeaways</h3>
-    <div class="sub">Strategies required to replicate in Wadgaon Sheri & Wakad</div>
-    <div class="grid g3" style="margin-top:12px;margin-bottom:0">
-      <div class="note" style="margin-top:0">
-        <strong>1. Dine-In First Mindset:</strong> Kothrud generates ₹31.3L from Dine-In with 0% platform commission fee drain.
-      </div>
-      <div class="note" style="margin-top:0">
-        <strong>2. High Beverage Upsell:</strong> 54% attach rate on hot/cold coffees during breakfast hours boosting overall AOV to ₹516.
-      </div>
-      <div class="note" style="margin-top:0">
-        <strong>3. Operational Consistency:</strong> Low cancellation rate (0.05%) and peak kitchen throughput execution.
-      </div>
+    <h3>Kothrud vs Chain Operational Benchmark Matrix</h3>
+    <div class="sub" style="margin-bottom:12px">Key performance indicators compared across all branches for system standardization</div>
+    <div style="overflow-x:auto">
+      <table class="tbl" id="tbl-kothrud-playbook-matrix"></table>
     </div>
   </div>
 </div>
@@ -602,7 +625,7 @@
   <div class="chart-card" style="margin-bottom:20px">
     <h3>Q1 vs Q2 Detailed Performance Scorecard</h3>
     <div class="sub">Metrics comparison across branches</div>
-    <table class="tbl">
+    <table class="tbl" id="tbl-q1q2-scorecard">
       <tr><th>Metric / Branch</th><th>Q1 Revenue</th><th>Q2 Revenue</th><th>QoQ Change</th><th>Q1 AOV</th><th>Q2 AOV</th><th>Status</th></tr>
       <tr><td>Kothrud</td><td>&#8377;51.18L</td><td>&#8377;62.29L</td><td class="trend-up">+21.7%</td><td>&#8377;509</td><td>&#8377;516</td><td><span class="tag star">Flagship Peak</span></td></tr>
       <tr><td>AUNDH</td><td>&#8377;37.02L</td><td>&#8377;39.66L</td><td class="trend-up">+7.1%</td><td>&#8377;520</td><td>&#8377;515</td><td><span class="tag star">Solid Growth</span></td></tr>
@@ -635,7 +658,7 @@
   <div class="chart-card">
     <h3>Forecast Summary</h3>
     <div class="sub" style="margin-bottom:12px">Monthly actuals and Q3 projections</div>
-    <table class="tbl">
+    <table class="tbl" id="tbl-forecast-summary">
       <tr><th>Month</th><th>Revenue</th><th>Orders</th><th>AOV</th><th>MoM</th><th>Type</th></tr>
       <tr><td>April 2026</td><td>&#8377;67,62,859</td><td>13,952</td><td>&#8377;485</td><td>&mdash;</td><td><span class="tag star">Actual</span></td></tr>
       <tr><td>May 2026</td><td>&#8377;70,69,957</td><td>13,631</td><td>&#8377;519</td><td class="trend-up">+4.5%</td><td><span class="tag star">Actual</span></td></tr>
@@ -651,7 +674,7 @@
 <!-- PAGE 10: RECOMMENDATIONS -->
 <div class="page" id="pg10">
   <div class="sec">Action Plan &amp; Financial Priorities</div>
-  <div class="rec-grid">
+  <div class="rec-grid" id="rec-grid-container">
     <div class="rec-card" style="border-color:rgba(124,76,71,.4)">
       <h3>Quick Wins &amp; Marketing</h3><div class="rec-period">Low Effort / Immediate</div>
       <div class="rec-item"><div class="rec-num" style="background:var(--accent);color:var(--text)">1</div><div class="rec-text">Google Reviews Drive: Focus on collecting customer reviews to convert local search intent</div></div>
@@ -678,7 +701,7 @@
     </div>
   </div>
   <div class="sec">SWOT Analysis</div>
-  <div class="swot">
+  <div class="swot" id="swot-container">
     <div class="swot-q s"><h3>Strengths</h3>
       <div class="swot-item">&bull; Kothrud flagship at &#8377;62.3L (30%)</div>
       <div class="swot-item">&bull; Cancel rate 0.08% &mdash; operational excellence</div>
@@ -719,6 +742,54 @@
   <button class="print-btn" onclick="window.print()">Print Report</button>
   <div class="report-content" id="report-content"></div>
 <p style="color:var(--muted);font-size:11px;margin-top:20px">Report prepared by: Business Intelligence &middot; Yolkshire Chain Analytics &middot; July 2026. Data source: POS system exports, delivery platform reports.</p>
+</div>
+
+<!-- PAGE 12: PROFIT & LOSS (PNL) -->
+<div class="page" id="pg12">
+  <div class="sec">Profit &amp; Loss Financial Performance &amp; Sales Target Matrix</div>
+  <div class="kpi-grid-5">
+    <div class="kpi-card c-blue"><div class="kpi-label">Sales Target</div><div class="kpi-val c-blue" id="k-pnl-target">&#8377;2.10Cr</div><div class="kpi-sub" id="k-pnl-target-sub">Set Target Matrix</div><div class="kpi-icon">&#127919;</div></div>
+    <div class="kpi-card c-green"><div class="kpi-label">Net Actual Revenue</div><div class="kpi-val c-green" id="k-pnl-actual">&#8377;2.07Cr</div><div class="kpi-sub" id="k-pnl-actual-sub">POS Verified</div><div class="kpi-icon">&#128176;</div></div>
+    <div class="kpi-card c-amber"><div class="kpi-label">Target Variance</div><div class="kpi-val c-amber" id="k-pnl-var">98.7%</div><div class="kpi-sub" id="k-pnl-var-sub">-&#8377;2.71L vs target</div><div class="kpi-icon">&#128200;</div></div>
+    <div class="kpi-card c-purple"><div class="kpi-label">Total OpEx &amp; Costs</div><div class="kpi-val c-purple" id="k-pnl-opex">&#8377;1.68Cr</div><div class="kpi-sub" id="k-pnl-opex-sub">81.1% of revenue</div><div class="kpi-icon">&#128181;</div></div>
+    <div class="kpi-card c-green"><div class="kpi-label">Net EBITDA Profit</div><div class="kpi-val c-green" id="k-pnl-profit">&#8377;39.1L</div><div class="kpi-sub" id="k-pnl-margin">18.9% EBITDA Margin</div><div class="kpi-icon">&#128081;</div></div>
+  </div>
+
+  <div class="sec">Financial Breakdown &amp; Cost Waterfall</div>
+  <div class="grid g2">
+    <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('PnL Financial Waterfall', 'Compares Net Revenue against Expenses (COGS 30%, Labor 18%, Rent 15%, Platform Commissions ~25% on delivery, and Operations 5%) to derive Net EBITDA Profit.')">i</button>
+      <button class="expand-btn" onclick="openModal('PnL Financial Waterfall','c-pnl-waterfall')">&#10178;</button>
+      <h3>Revenue &amp; Cost Waterfall</h3>
+      <div class="sub">Revenue &rarr; Direct Costs &rarr; Operating Margin</div>
+      <div class="cw" style="height:250px"><canvas id="c-pnl-waterfall"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Expense Structure', 'Displays proportional share of operating expenses across categories: COGS, Labor, Rent, Platform Commissions, and General Ops.')">i</button>
+      <button class="expand-btn" onclick="openModal('Expense Structure','c-pnl-breakdown')">&#10178;</button>
+      <h3>Operating Expense Structure</h3>
+      <div class="sub">Expense breakdown by operational category</div>
+      <div class="cw" style="height:250px"><canvas id="c-pnl-breakdown"></canvas></div>
+    </div>
+  </div>
+
+  <div class="sec">Branch-Wise Profit &amp; Loss Statement</div>
+  <div class="chart-card" style="margin-bottom:20px">
+    <h3>Store-Level PnL Statement &amp; Sales Target Variance</h3>
+    <div class="sub">Calculated live based on Sales Target Matrix and active filters</div>
+    <div style="overflow-x:auto">
+      <table class="tbl" id="tbl-pnl-statement"></table>
+    </div>
+  </div>
+
+  <div class="sec">Channel Profitability &amp; Net Commission Matrix</div>
+  <div class="chart-card" style="margin-bottom:20px">
+    <h3>Channel Profitability Matrix (Post Commission &amp; COGS)</h3>
+    <div class="sub">Net margin contribution per operational sales channel</div>
+    <div style="overflow-x:auto">
+      <table class="tbl" id="tbl-pnl-channel"></table>
+    </div>
+  </div>
 </div>
 </body>
 </html>

@@ -46,6 +46,11 @@ export const RAW = {
     {x:95,y:28000,cat:'Dog',item:'Peach Iced Tea'}
   ],
   month: {
+    jan: {rev: 6240460, ord: 12201, aov: 511.47, br: {Kothrud:1852100, AUNDH:1310200, 'Salunkhe Vihar':810200, Saudagar:780100, 'Wadgaon Sheri':820400, 'Yolkshire Wakad':667460, Bavdhan:0}, sess:{breakfast:1700000,lunch:1890000,snack:580000,dinner:2070460}, ch:{'Dine In':{rev:2980000,ord:5050},Zomato:{rev:1950000,ord:4100},Swiggy:{rev:1250000,ord:2800},Takeaway:{rev:60460,ord:251}}},
+    feb: {rev: 5186052, ord: 10358, aov: 500.68, br: {Kothrud:1540100, AUNDH:1120100, 'Salunkhe Vihar':710200, Saudagar:650100, 'Wadgaon Sheri':680400, 'Yolkshire Wakad':485152, Bavdhan:0}, sess:{breakfast:1410000,lunch:1570000,snack:480000,dinner:1726052}, ch:{'Dine In':{rev:2480000,ord:4200},Zomato:{rev:1640000,ord:3500},Swiggy:{rev:1020000,ord:2450},Takeaway:{rev:46052,ord:208}}},
+    mar: {rev: 5811646, ord: 11638, aov: 499.37, br: {Kothrud:1725996, AUNDH:1271894, 'Salunkhe Vihar':845290, Saudagar:705274, 'Wadgaon Sheri':754203, 'Yolkshire Wakad':508989, Bavdhan:0}, sess:{breakfast:1580000,lunch:1760000,snack:540000,dinner:1931646}, ch:{'Dine In':{rev:2759679,ord:4968},Zomato:{rev:1872595,ord:4222},Swiggy:{rev:1121966,ord:2244},Takeaway:{rev:57406,ord:204}}},
+    q1: {rev: 17238158, ord: 34197, aov: 504.08, br: {Kothrud:5118196, AUNDH:3702194, 'Salunkhe Vihar':2365690, Saudagar:2135474, 'Wadgaon Sheri':2255003, 'Yolkshire Wakad':1661599, Bavdhan:0}, sess:{breakfast:4690000,lunch:5220000,snack:1600000,dinner:5728158}, ch:{'Dine In':{rev:8419679,ord:14218},Zomato:{rev:5462595,ord:11822},Swiggy:{rev:3231966,ord:7094},Takeaway:{rev:112157,ord:280}}},
+    q2: {rev: 20728578, ord: 40193, aov: 515.73, br: {Kothrud:6228775, AUNDH:3965940, 'Salunkhe Vihar':2690751, Saudagar:2687223, 'Wadgaon Sheri':2625305, 'Yolkshire Wakad':2166397, Bavdhan:364186}, sess:{breakfast:5663273,lunch:6275153,snack:1918526,dinner:6856676}, ch:{'Dine In':{rev:9688061,ord:16442},Zomato:{rev:6554375,ord:13526},Swiggy:{rev:4333733,ord:9828},Takeaway:{rev:152410,ord:396}}},
     apr: {rev: 6762859, ord: 13952, aov: 484.72, br: {Kothrud:2032150, AUNDH:1289100, 'Salunkhe Vihar':854200, Saudagar:912300, 'Wadgaon Sheri':942150, 'Yolkshire Wakad':732959, Bavdhan:0}, sess:{breakfast:1845120,lunch:2048900,snack:625400,dinner:2243439}, ch:{'Dine In':{rev:3163618,ord:5350},Zomato:{rev:2139234,ord:4410},Swiggy:{rev:1415008,ord:3210},Takeaway:{rev:45000,ord:982}}},
     may: {rev: 7069957, ord: 13631, aov: 518.67, br: {Kothrud:2124500, AUNDH:1354200, 'Salunkhe Vihar':912400, Saudagar:895100, 'Wadgaon Sheri':885400, 'Yolkshire Wakad':898357, Bavdhan:0}, sess:{breakfast:1931200,lunch:2142500,snack:654100,dinner:2342157}, ch:{'Dine In':{rev:3307261,ord:5600},Zomato:{rev:2233700,ord:4600},Swiggy:{rev:1476996,ord:3350},Takeaway:{rev:52000,ord:81}}},
     jun: {rev: 6895763, ord: 12610, aov: 546.85, br: {Kothrud:2072125, AUNDH:1322640, 'Salunkhe Vihar':923951, Saudagar:879823, 'Wadgaon Sheri':797755, 'Yolkshire Wakad':535081, Bavdhan:364186}, sess:{breakfast:1886953,lunch:2086153,snack:639026,dinner:2281071}, ch:{'Dine In':{rev:3222182,ord:5492},Zomato:{rev:2180841,ord:4516},Swiggy:{rev:1440728,ord:3268},Takeaway:{rev:52012,ord:334}}}
@@ -64,6 +69,22 @@ export const RAW = {
     Zomato: {rev: 6554375, ord: 13526, aov: 484.58, share: 31.62},
     Swiggy: {rev: 4333733, ord: 9828, aov: 440.96, share: 20.91},
     Takeaway: {rev: 152410, ord: 396, aov: 384.87, share: 0.74}
+  },
+  branchTargets: {
+    Kothrud: { apr: 2000000, may: 2100000, jun: 2100000 },
+    AUNDH: { apr: 1300000, may: 1350000, jun: 1350000 },
+    'Salunkhe Vihar': { apr: 850000, may: 900000, jun: 950000 },
+    Saudagar: { apr: 900000, may: 900000, jun: 900000 },
+    'Wadgaon Sheri': { apr: 950000, may: 900000, jun: 850000 },
+    'Yolkshire Wakad': { apr: 750000, may: 850000, jun: 750000 },
+    Bavdhan: { apr: 0, may: 0, jun: 350000 }
+  },
+  pnlBenchmarks: {
+    cogsPct: 30.0,
+    laborPct: 18.0,
+    rentPct: 15.0,
+    commissionPctDelivery: 25.0,
+    opsPct: 5.0
   },
   q1: {
     totalRev: 17238158,
