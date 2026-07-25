@@ -647,9 +647,10 @@ function renderTables(fd) {
           <td>${offPct}%</td>
           <td>${fmt(zomatoRev)}</td>
           <td>${fmt(swiggyRev)}</td>
-          <td>₹${bd.ch['Zomato'] ? Math.round(bd.ch['Zomato'].aov || 485) : 485}</td>
-          <td>₹${bd.ch['Swiggy'] ? Math.round(bd.ch['Swiggy'].aov || 441) : 441}</td>
-          <td>₹${bd.ch['Dine In'] ? Math.round(bd.ch['Dine In'].aov || 589) : 589}</td>
+          <td>${bd.ch['Zomato'] && bd.ch['Zomato'].aov ? '₹' + Math.round(bd.ch['Zomato'].aov) : 'N/A'}</td>
+          <td>${bd.ch['Swiggy'] && bd.ch['Swiggy'].aov ? '₹' + Math.round(bd.ch['Swiggy'].aov) : 'N/A'}</td>
+          <td>${bd.ch['Dine In'] && bd.ch['Dine In'].aov ? '₹' + Math.round(bd.ch['Dine In'].aov) : 'N/A'}</td>
+
           <td><span class="tag ${winTag}">${winner}</span></td>
         </tr>
       `;
