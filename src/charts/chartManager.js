@@ -42,7 +42,13 @@ export function mkChart(id, type, labels, datasets, options = {}) {
           padding: 10,
           cornerRadius: 8,
           callbacks: {
-            label: (ctx) => `${ctx.dataset.label || 'Value'}: ${typeof ctx.raw === 'number' && ctx.raw > 999 ? fmt(ctx.raw) : ctx.raw}`
+            label: (ctx) => {
+              if (ctx.raw && typeof ctx.raw === 'object' && ctx.raw.item) {
+                return `${ctx.raw.item} (${ctx.dataset.label}): ${ctx.raw.x.toLocaleString()} units · ${fmt(ctx.raw.y)}`;
+              }
+              const val = typeof ctx.raw === 'object' && ctx.raw !== null ? (ctx.raw.y || ctx.raw.x || 0) : ctx.raw;
+              return `${ctx.dataset.label || 'Value'}: ${typeof val === 'number' && val > 999 ? fmt(val) : val}`;
+            }
           }
         }
       },
@@ -64,3 +70,13 @@ export function updateChart(id, labels, datasets) {
   c.data.datasets = datasets;
   c.update('active');
 }
+
+export function updateChartTheme(isLight) {
+  const legendColor = isLight ? '#2B2428' : '#FCF0D0';
+  Object.values(CHARTS).forEach(c => {
+    if (c.options.plugins?.legend?.labels) {
+      c.options.plugins.legend.labels.color = legendColor;
+    }
+  });
+}
+
