@@ -71,20 +71,146 @@ export const RAW = {
     Takeaway: {rev: 152410, ord: 396, aov: 384.87, share: 0.74}
   },
   branchTargets: {
-    Kothrud: { apr: 2000000, may: 2100000, jun: 2100000 },
-    AUNDH: { apr: 1300000, may: 1350000, jun: 1350000 },
-    'Salunkhe Vihar': { apr: 850000, may: 900000, jun: 950000 },
-    Saudagar: { apr: 900000, may: 900000, jun: 900000 },
-    'Wadgaon Sheri': { apr: 950000, may: 900000, jun: 850000 },
-    'Yolkshire Wakad': { apr: 750000, may: 850000, jun: 750000 },
-    Bavdhan: { apr: 0, may: 0, jun: 350000 }
+    Kothrud: { jan: 2200000, feb: 2200000, mar: 2200000, apr: 2200000, may: 2200000, jun: 2200000 },
+    AUNDH: { jan: 1600000, feb: 1600000, mar: 1600000, apr: 1600000, may: 1600000, jun: 1600000 },
+    'Salunkhe Vihar': { jan: 1300000, feb: 1300000, mar: 1300000, apr: 1300000, may: 1300000, jun: 1300000 },
+    Saudagar: { jan: 1200000, feb: 1200000, mar: 1200000, apr: 1200000, may: 1200000, jun: 1200000 },
+    'Wadgaon Sheri': { jan: 1200000, feb: 1200000, mar: 1200000, apr: 1200000, may: 1200000, jun: 1200000 },
+    'Yolkshire Wakad': { jan: 1000000, feb: 1000000, mar: 1000000, apr: 1000000, may: 1000000, jun: 1000000 },
+    Bavdhan: { jan: 0, feb: 0, mar: 0, apr: 0, may: 0, jun: 500000 }
   },
   pnlBenchmarks: {
-    cogsPct: 30.0,
+    cogsPct: 25.0,
     laborPct: 18.0,
     rentPct: 15.0,
     commissionPctDelivery: 25.0,
-    opsPct: 5.0
+    opsPct: 5.0,
+    kptTarget: 10.0,
+    profitPct: 20.0
+  },
+  marketBasket: {
+    overview: {
+      totalBaskets: 74445,
+      multiItemPct: 64.1,
+      totalRules: 6424,
+      topLiftPair: 'Matcha & Iced Latte (116.5x)'
+    },
+    combos: [
+      {
+        id: 'c1',
+        title: 'The Executive English Brunch',
+        type: 'Breakfast & Brunch',
+        typeTag: 'breakfast',
+        items: ['Traditional / Special English Breakfast', 'Vietnamese Iced Coffee / Iced Latte / ABC Juice'],
+        standalonePrice: 420,
+        comboPrice: 379,
+        discountPct: 10.0,
+        cost: 94.50,
+        profit: 284.50,
+        marginPct: 75.1,
+        aovUplift: '+45.8%',
+        desc: 'Pairs high-volume breakfast mains with underselling specialty beverages.'
+      },
+      {
+        id: 'c2',
+        title: 'Gourmet Bowl & Brew Meal Deal',
+        type: 'Lunch & Dinner',
+        typeTag: 'main',
+        items: ['Chicken Stroganoff or Roast Chicken', 'Peach Iced Tea / Mint Mojito / Fresh Watermelon Juice'],
+        standalonePrice: 440,
+        comboPrice: 389,
+        discountPct: 11.5,
+        cost: 82.00,
+        profit: 307.00,
+        marginPct: 78.9,
+        aovUplift: '+25.5%',
+        desc: 'Pairs #1 & #2 Star mains with 91.9% gross margin cold refreshers.'
+      },
+      {
+        id: 'c3',
+        title: 'Fit & Fresh Power Pair',
+        type: 'Wellness & High Protein',
+        typeTag: 'fit',
+        items: ['Honey Glazed Chicken Salad (83.8% Margin)', 'Fresh ABC Juice / Green Smoothie'],
+        standalonePrice: 460,
+        comboPrice: 399,
+        discountPct: 13.3,
+        cost: 80.84,
+        profit: 318.16,
+        marginPct: 79.7,
+        aovUplift: '+62.8%',
+        desc: 'Drives volume for 2 underperforming high-margin items simultaneously.'
+      },
+      {
+        id: 'c4',
+        title: 'Sweet Escape Pancake & Coffee',
+        type: 'Afternoon & Evening Snack',
+        typeTag: 'sweet',
+        items: ['Banana Nutella / Chocoburst Pancakes', 'Iced Mocha Latte / Hazelnut Frappe / Hot Chocolate'],
+        standalonePrice: 380,
+        comboPrice: 329,
+        discountPct: 13.4,
+        cost: 119.07,
+        profit: 209.93,
+        marginPct: 63.8,
+        aovUplift: '+34.2%',
+        desc: 'Leverages pancake popularity (Lift: 26.9x) to boost afternoon session AOV.'
+      },
+      {
+        id: 'c5',
+        title: 'Quick Bites & Sip Express',
+        type: 'Delivery & Takeaway',
+        typeTag: 'delivery',
+        items: ['Classic Double Egg Roll / Bhuna Roll', 'Mint Lemonade / Lemon Iced Tea'],
+        standalonePrice: 300,
+        comboPrice: 249,
+        discountPct: 17.0,
+        cost: 56.51,
+        profit: 192.49,
+        marginPct: 77.3,
+        aovUplift: '+24.5%',
+        desc: 'High-velocity delivery bundle targeted under the ₹250 price barrier.'
+      }
+    ],
+    puzzles: [
+      { name: 'Mint Lemonade', cat: 'Beverages', price: 100, cost: 8.13, marginInr: 91.87, marginPct: 91.9, qty: 845, partner: 'Stroganoff / Roast Chicken' },
+      { name: 'Honey Glazed Chicken Salad', cat: 'Salads & Sandwiches', price: 300, cost: 48.64, marginInr: 251.36, marginPct: 83.8, qty: 152, partner: 'ABC Juice / Iced Tea' },
+      { name: 'Filter Coffee', cat: 'Beverages', price: 80, cost: 13.58, marginInr: 66.42, marginPct: 83.0, qty: 988, partner: 'Kerala Curry / Omelette' },
+      { name: 'Ginger Lemon Honey Tea', cat: 'Beverages', price: 60, cost: 10.11, marginInr: 49.89, marginPct: 83.2, qty: 528, partner: 'Swadeshi Breakfast' },
+      { name: 'Cappuccino / Latte', cat: 'Beverages', price: 150, cost: 26.02, marginInr: 123.98, marginPct: 82.7, qty: 497, partner: 'Creamy Mushroom Croissant' },
+      { name: 'Thecha Eggs', cat: 'Salads & Sandwiches', price: 160, cost: 29.01, marginInr: 130.99, marginPct: 81.9, qty: 205, partner: 'Masala Chai / Filter Coffee' },
+      { name: 'Iced Americano / Cold Brew', cat: 'Beverages', price: 130, cost: 23.65, marginInr: 106.35, marginPct: 81.8, qty: 445, partner: 'English Breakfast' },
+      { name: 'Mocha Latte', cat: 'Beverages', price: 160, cost: 29.63, marginInr: 130.37, marginPct: 81.5, qty: 104, partner: 'Banana Nutella Pancake' },
+      { name: 'Yolkshire Eggwich', cat: 'Salads & Sandwiches', price: 240, cost: 47.39, marginInr: 192.61, marginPct: 80.3, qty: 188, partner: 'Cold Coffee' },
+      { name: 'Fresh ABC Juice', cat: 'Beverages', price: 160, cost: 32.20, marginInr: 127.80, marginPct: 79.9, qty: 221, partner: 'High Protein Millet Salad' },
+      { name: 'Thai Basil Chicken with Rice', cat: 'Rice Bowls & Mains', price: 320, cost: 84.33, marginInr: 235.67, marginPct: 73.6, qty: 180, partner: 'Mint Mojito' },
+      { name: 'High Protein Millet Salad', cat: 'Salads & Sandwiches', price: 280, cost: 75.05, marginInr: 204.95, marginPct: 73.2, qty: 218, partner: 'Fresh ABC Juice' }
+    ],
+    topRules: [
+      { itemA: 'Chilli Garlic Glaze', itemB: 'Yolkshire Special Breakfast', coOcc: 2630, confA: 0.4175, confB: 0.7093, lift: 8.38 },
+      { itemA: 'Chilli Garlic Glaze', itemB: 'Omelette', coOcc: 2288, confA: 0.3632, confB: 0.7343, lift: 8.68 },
+      { itemA: 'Omelette', itemB: 'Yolkshire Special Breakfast', coOcc: 1870, confA: 0.6001, confB: 0.5043, lift: 12.05 },
+      { itemA: 'Banana Nutella', itemB: 'Pancake', coOcc: 985, confA: 0.8930, confB: 0.3993, lift: 26.95 },
+      { itemA: 'Chocoburst', itemB: 'Pancake', coOcc: 555, confA: 0.9158, confB: 0.2250, lift: 27.64 },
+      { itemA: 'Cold Brew', itemB: 'Fresh Orange Juice', coOcc: 12, confA: 0.4286, confB: 1.0000, lift: 2658.75 },
+      { itemA: 'Iced Latte', itemB: 'Matcha', coOcc: 16, confA: 0.0250, confB: 1.0000, lift: 116.50 },
+      { itemA: 'Masala Omelette', itemB: 'Swadeshi Breakfast', coOcc: 281, confA: 1.0000, confB: 0.3461, lift: 91.68 },
+      { itemA: 'Jane Say Cheese Omelette', itemB: 'Mushrooms', coOcc: 226, confA: 0.2640, confB: 1.0000, lift: 86.97 },
+      { itemA: 'Chicken Stroganoff', itemB: 'Lemon Iced Tea', coOcc: 80, confA: 0.0790, confB: 0.1495, lift: 1.04 },
+      { itemA: 'Chicken Mayo Sandwich', itemB: 'Cold Coffee', coOcc: 30, confA: 0.0320, confB: 0.0637, lift: 1.86 },
+      { itemA: 'Special Roast Chicken', itemB: 'Mint Lemonade', coOcc: 37, confA: 0.0330, confB: 0.0438, lift: 1.83 },
+      { itemA: 'Chimmichurri Chicken', itemB: 'Mint Lemonade', coOcc: 42, confA: 0.0500, confB: 0.0497, lift: 2.79 },
+      { itemA: 'Crispy Fried Chicken', itemB: 'Toasted Garlic Bread', coOcc: 164, confA: 0.6979, confB: 0.1857, lift: 58.84 },
+      { itemA: 'Ghee Roast Paratha', itemB: 'Extra Paratha', coOcc: 15, confA: 0.1500, confB: 0.0761, lift: 56.68 }
+    ],
+    catMatrix: [
+      { catA: 'Rice Bowls & Mains', catB: 'Beverages', coOcc: 14250, lift: 2.8 },
+      { catA: 'Breakfast & Eggs', catB: 'Beverages', coOcc: 12890, lift: 3.4 },
+      { catA: 'Salads & Sandwiches', catB: 'Beverages', coOcc: 9450, lift: 2.1 },
+      { catA: 'Pancakes & French Toast', catB: 'Beverages', coOcc: 5120, lift: 4.2 },
+      { catA: 'Wholesome Rolls', catB: 'Beverages', coOcc: 4890, lift: 2.5 },
+      { catA: 'Rice Bowls & Mains', catB: 'Salads & Sides', coOcc: 3820, lift: 1.9 }
+    ]
   },
   q1: {
     totalRev: 17238158,
@@ -109,6 +235,74 @@ export const RAW = {
       Zomato: { rev: 5462595, ord: 11822, aov: 462.0 },
       Swiggy: { rev: 3231966, ord: 7094, aov: 455.5 },
       Takeaway: { rev: 112157, ord: 280, aov: 400.5 }
+    }
+  },
+  franchiseeEconomics: {
+    capex: 4000000,
+    targetEbitda5Yr: 8000000,
+    targetPat5Yr: 6000000,
+    targetMonthlyProfit: 200000,
+    defaultCosts: {
+      cogsPct: 25.0,
+      laborPct: 18.0,
+      rentPct: 12.0,
+      deliveryCommissionPct: 25.0,
+      royaltyPct: 5.0,
+      opsPct: 5.0,
+      dineInPct: 50.0,
+      deliveryPct: 50.0,
+      aov: 516
+    },
+    kothrudModel: {
+      phase1: { name: 'Phase 1: Compact Micro Store', area: '450 sq ft', capex: 2500000, monthlySales: 2032000, ebitdaMargin: 23.5, monthlyProfit: 477520, staff: 6, rent: 120000, dineInPct: 58, deliveryPct: 42 },
+      phase2: { name: 'Phase 2: Expanded Flagship Store', area: '1,100 sq ft', capex: 4000000, monthlySales: 2850000, ebitdaMargin: 25.2, monthlyProfit: 718200, staff: 11, rent: 220000, dineInPct: 65, deliveryPct: 35 },
+      chainAvg: { name: 'Current Chain Average Store', area: '850 sq ft', capex: 3800000, monthlySales: 1480000, ebitdaMargin: 16.8, monthlyProfit: 248640, staff: 8, rent: 180000, dineInPct: 47, deliveryPct: 53 }
+    }
+  },
+  dailySnapshot: {
+    walkinsToday: 343,
+    walkinsYesterday: 318,
+    walkinConversionRate: 88.5,
+    tableTurnoverRate: 4.3,
+    ordersToday: 442,
+    ordersYesterday: 426,
+    channelBreakdown: {
+      'Dine In': { orders: 181, rev: 106517, aov: 590 },
+      Zomato: { orders: 149, rev: 72020, aov: 485 },
+      Swiggy: { orders: 108, rev: 47623, aov: 441 },
+      Takeaway: { orders: 4, rev: 1626, aov: 374 }
+    },
+    loyaltyToday: {
+      newSignups: 32,
+      signupsTrend: '+18%',
+      loyaltyOrders: 146,
+      loyaltySalesPct: 33.0,
+      pointsRedeemed: 4250,
+      repeatCustomerRate: 68.4
+    },
+    monthlyTarget: {
+      targetRev: 7500000,
+      achievedRev: 5240000,
+      daysElapsed: 22,
+      daysTotal: 30,
+      remainingRev: 2260000,
+      requiredDailyRunRate: 282500,
+      currentDailyAvg: 238181,
+      status: 'On Pace (93.1%)'
+    },
+    reviews: {
+      avgRating: 4.68,
+      totalReviewsToday: 24,
+      positivePct: 92.4,
+      breakdown: { 5: 18, 4: 4, 3: 2, 2: 0, 1: 0 },
+      feed: [
+        { id: 1, branch: 'Kothrud', channel: 'Dine In', customer: 'Kothrud Store Audit', rating: 5, time: 'Q2 Verified POS Data', comment: 'Highest performing store: ₹62.3L Q2 Net Sales. Dine-In AOV ₹597.', sentiment: 'positive' },
+        { id: 2, branch: 'AUNDH', channel: 'Zomato', customer: 'Aundh Store Audit', rating: 5, time: 'Q2 Verified POS Data', comment: 'Strong growing store: ₹39.7L Q2 Net Sales. Zomato AOV ₹516.', sentiment: 'positive' },
+        { id: 3, branch: 'Salunkhe Vihar', channel: 'Dine In', customer: 'Salunkhe Vihar Audit', rating: 5, time: 'Q2 Verified POS Data', comment: 'Highest chain AOV branch at ₹556. Premium customer basket size.', sentiment: 'positive' },
+        { id: 4, branch: 'Bavdhan', channel: 'Dine In', customer: 'Bavdhan Store Audit', rating: 5, time: 'June Debut POS Data', comment: 'Debut month revenue ₹3.6L with highest launch AOV of ₹593.', sentiment: 'positive' },
+        { id: 5, branch: 'Saudagar', channel: 'Swiggy', customer: 'Saudagar Audit', rating: 4, time: 'Q2 Verified POS Data', comment: 'Consistent ₹26.9L revenue. Delivery order wait time monitoring recommended.', sentiment: 'positive' },
+        { id: 6, branch: 'Wadgaon Sheri', channel: 'Delivery', customer: 'Wadgaon Sheri Audit', rating: 3, time: 'Q2 Verified POS Data', comment: 'Revenue dip -15.3%. Operational audit active on kitchen order accuracy.', sentiment: 'neutral' }
+      ]
     }
   }
 };

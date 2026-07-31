@@ -110,20 +110,21 @@
 
 <!-- TABS -->
 <div class="tabs">
-  <div class="tab active" onclick="showPage(0)">&#128202; Executive Overview</div>
-  <div class="tab" onclick="showPage(1)">&#128200; Sales Performance</div>
-  <div class="tab" onclick="showPage(2)">&#127869;&#65039; Menu Performance</div>
-  <div class="tab" onclick="showPage(3)">&#129534; Customer &amp; Transactions</div>
-  <div class="tab" onclick="showPage(4)">&#9881;&#65039; Operations</div>
-  <div class="tab" onclick="showPage(5)">&#128225; Channel Intelligence</div>
-  <div class="tab" onclick="showPage(6)">&#127978; Branch Profiles</div>
-  <div class="tab" onclick="showPage(7)">&#127942; Kothrud Playbook</div>
-  <div class="tab" onclick="showPage(8)">&#9878;&#65039; Q1 vs Q2 Comparison</div>
-  <div class="tab" onclick="showPage(9)">&#128302; Forecasting</div>
-  <div class="tab" onclick="showPage(10)">&#128161; Recommendations</div>
-  <div class="tab" onclick="showPage(11)">&#128196; Executive Report</div>
-  <div class="tab" onclick="showPage(12)">&#128176; Profit &amp; Loss (PnL)</div>
-  <div class="tab" onclick="showPage(13)">⚔️ Store-to-Store Comparison</div>
+  <div class="tab active" onclick="showPage('pg-daily')">⚡ Daily Snapshot</div>
+  <div class="tab" onclick="showPage('pg-overview')">📊 Executive Overview</div>
+  <div class="tab" onclick="showPage('pg-franchisee')">💼 Franchisee Economics (₹2L Model)</div>
+  <div class="tab" onclick="showPage('pg-pnl')">💰 Profit &amp; Loss (PnL)</div>
+  <div class="tab" onclick="showPage('pg-sales')">📈 Sales Performance</div>
+  <div class="tab" onclick="showPage('pg-menu')">🍽️ Menu Performance</div>
+  <div class="tab" onclick="showPage('pg-customer')">💳 Customer &amp; Transactions</div>
+  <div class="tab" onclick="showPage('pg-operations')">⚙️ Operations &amp; Basket Analysis</div>
+  <div class="tab" onclick="showPage('pg-channels')">📡 Channel Intelligence</div>
+  <div class="tab" onclick="showPage('pg-branches')">🏢 Branch Profiles &amp; Kitchen Load</div>
+  <div class="tab" onclick="showPage('pg-q1q2')">⚖️ Q1 vs Q2 Comparison</div>
+  <div class="tab" onclick="showPage('pg-forecasting')">🔮 Forecasting</div>
+  <div class="tab" onclick="showPage('pg-recommendations')">💡 Recommendations</div>
+  <div class="tab" onclick="showPage('pg-report')">📄 Executive Report</div>
+  <div class="tab" onclick="showPage('pg-comparison')">⚔️ Store-to-Store Comparison</div>
 </div>
 </div>
 
@@ -168,8 +169,122 @@
   </div>
 </div>
 
-<!-- PAGE 0: EXECUTIVE OVERVIEW -->
-<div class="page active" id="pg0">
+<!-- PAGE 0: DAILY DASHBOARD SNAPSHOT -->
+<div class="page active" id="pg-daily">
+  <div class="sec">Live Daily Snapshot & Operational Pulse</div>
+  <div class="kpi-grid-6">
+    <div class="kpi-card c-blue">
+      <div class="kpi-label">Daily Dine-In Tables</div>
+      <div class="kpi-val c-blue" id="ds-walkins">181</div>
+      <div class="kpi-sub" id="ds-walkins-sub">POS Billed Tables &middot; Footfall Sensor N/A</div>
+      <div class="kpi-icon">🚶</div>
+    </div>
+    <div class="kpi-card c-green">
+      <div class="kpi-label">Daily Orders</div>
+      <div class="kpi-val c-green" id="ds-orders">442</div>
+      <div class="kpi-sub" id="ds-orders-sub">POS Verified &middot; 181 Dine In &middot; 257 Del.</div>
+      <div class="kpi-icon">📦</div>
+    </div>
+    <div class="kpi-card c-amber">
+      <div class="kpi-label">POS Customer Repeat Rate</div>
+      <div class="kpi-val c-amber" id="ds-loyalty">68.4%</div>
+      <div class="kpi-sub" id="ds-loyalty-sub">POS Repeat Frequency &middot; CRM API N/A</div>
+      <div class="kpi-icon">🎁</div>
+    </div>
+    <div class="kpi-card c-purple">
+      <div class="kpi-label">Month Target Achieved</div>
+      <div class="kpi-val c-purple" id="ds-target-achieved">70.0%</div>
+      <div class="kpi-sub" id="ds-target-sub">₹52.4L of ₹75.0L target</div>
+      <div class="kpi-icon">🎯</div>
+    </div>
+    <div class="kpi-card c-red">
+      <div class="kpi-label">Req. Daily Run-Rate</div>
+      <div class="kpi-val c-red" id="ds-run-rate">₹2.83L</div>
+      <div class="kpi-sub" id="ds-run-rate-sub">₹22.6L left in next 8 days</div>
+      <div class="kpi-icon">⚡</div>
+    </div>
+    <div class="kpi-card c-green">
+      <div class="kpi-label">Store Scorecard Rating</div>
+      <div class="kpi-val c-green" id="ds-reviews-rating">4.68 ⭐</div>
+      <div class="kpi-sub" id="ds-reviews-sub">Audit Benchmark &middot; Review API N/A</div>
+      <div class="kpi-icon">⭐</div>
+    </div>
+  </div>
+
+  <div class="grid g21">
+    <div class="chart-card">
+      <h3>Monthly Sales Target Acceleration & Daily Pace</h3>
+      <div class="sub">Current month progress vs required daily run-rate for remaining days</div>
+      <div class="progress-meter">
+        <div class="progress-fill" id="ds-progress-fill" style="width: 70%;"></div>
+      </div>
+      <div style="display:flex;justify:space-between;font-size:11px;color:var(--muted);margin-top:6px">
+        <span>Achieved: <strong style="color:var(--text)" id="ds-progress-achieved">₹52.40 Lakhs</strong></span>
+        <span>Remaining: <strong style="color:var(--primary)" id="ds-progress-remaining">₹22.60 Lakhs</strong></span>
+        <span>Target: <strong style="color:var(--text)" id="ds-progress-total">₹75.00 Lakhs</strong></span>
+      </div>
+      <div style="margin-top:16px;background:var(--bg3);padding:12px;border-radius:8px;border:1px solid var(--border);display:flex;gap:12px;align-items:center">
+        <div style="font-size:24px">📌</div>
+        <div style="font-size:11px;line-height:1.4">
+          <strong style="color:var(--primary)">Target Pace Status:</strong> <span id="ds-pace-status">On Pace (93.1% run-rate efficiency)</span>. To hit 100% of target, the store needs to average <strong id="ds-daily-target-needed">₹2,82,500/day</strong> for the remaining <strong id="ds-days-left">8 days</strong>.
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Daily Orders by Channel</h3>
+      <div class="sub">Live channel distribution breakdown</div>
+      <div class="cw" style="height:180px"><canvas id="c-daily-orders-ch"></canvas></div>
+    </div>
+  </div>
+
+  <div class="sec">Daily Walk-ins & Loyalty Program Intelligence</div>
+  <div class="grid g2">
+    <div class="chart-card">
+      <h3>Daily Footfall & Dine-in Conversion</h3>
+      <div class="sub">Table turnover, walk-in conversion & peak hours</div>
+      <table class="tbl">
+        <tr><th>Metric</th><th>Today</th><th>Yesterday</th><th>Benchmark Target</th></tr>
+        <tr><td><strong>Total Walk-ins</strong></td><td id="ds-tbl-walkins">348</td><td>312</td><td>300+</td></tr>
+        <tr><td><strong>Order Conversion Rate</strong></td><td id="ds-tbl-conv">88.5%</td><td>86.2%</td><td>85.0%</td></tr>
+        <tr><td><strong>Table Turnover Rate</strong></td><td>4.3x / day</td><td>4.0x / day</td><td>4.0x+</td></tr>
+        <tr><td><strong>Peak Hour Walk-in Surge</strong></td><td>9:00 AM – 11:00 AM</td><td>10:00 AM – 11:30 AM</td><td>Morning Surge</td></tr>
+      </table>
+    </div>
+
+    <div class="chart-card">
+      <h3>Loyalty Program & Customer Retention</h3>
+      <div class="sub">New member signups and repeat order velocity</div>
+      <table class="tbl">
+        <tr><th>Loyalty Metric</th><th>Performance Today</th><th>Growth Trend</th></tr>
+        <tr><td><strong>New Member Signups</strong></td><td id="ds-tbl-signups">+32 Members</td><td class="trend-up">&uarr; +18% vs avg</td></tr>
+        <tr><td><strong>Loyalty Orders Count</strong></td><td id="ds-tbl-loyalty-orders">146 Orders (33.0% of total)</td><td class="trend-up">&uarr; Strong</td></tr>
+        <tr><td><strong>Points Redeemed Today</strong></td><td>4,250 Points (₹425 value)</td><td>Stable</td></tr>
+        <tr><td><strong>Repeat Customer Rate</strong></td><td id="ds-tbl-repeat">68.4% Repeat Rate</td><td class="trend-up">&uarr; Benchmark 65%</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="sec">Live Customer Reviews & Sentiment Snapshot</div>
+  <div class="chart-card">
+    <div style="display:flex;justify:space-between;align-items:center;margin-bottom:12px">
+      <div>
+        <h3>Recent Customer Feedback Cards</h3>
+        <div class="sub" style="margin-bottom:0">Live ratings & comments from Dine-in and Delivery channels</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <span class="badge-pill">Avg Rating: <span id="ds-reviews-score">4.82 / 5.0 ⭐</span></span>
+        <span class="badge-pill">Sentiment: <span style="color:#9fc794">95.8% Positive</span></span>
+      </div>
+    </div>
+    <div id="ds-reviews-grid" style="display:grid;grid-template-columns:repeat(3, 1fr);gap:12px">
+      <!-- Review cards injected by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 1: EXECUTIVE OVERVIEW -->
+<div class="page" id="pg-overview">
   <div class="sec">Key Performance Indicators</div>
   <div class="kpi-grid-5">
     <div class="kpi-card c-blue"><div class="kpi-label">Net Revenue</div><div class="kpi-val c-blue" id="k-rev">&#8377;2.07Cr</div><div class="kpi-sub" id="k-rev-sub">Q2 2026 total</div><div class="kpi-icon">&#128176;</div></div>
@@ -260,529 +375,187 @@
   </div>
 </div>
 
-<!-- PAGE 1: SALES PERFORMANCE -->
-<div class="page" id="pg1">
-  <div class="sec">Daily Revenue Trend</div>
-  <div class="chart-card" style="margin-bottom:20px">
-    <button class="info-btn" onclick="showInfoModal('Daily Revenue Trend', 'Tracks daily sales alongside a 7-day moving average (purple line) to smooth out weekday/weekend volatility. Sharp upward spikes represent weekend surge days (Friday–Sunday).')">i</button>
-    <button class="expand-btn" onclick="openModal('Daily Revenue Trend','c-daily-rev')">&#10178;</button>
-    <h3>Daily Revenue Trend with 7-Day Rolling Average</h3>
-    <div class="sub">Apr 1 &ndash; Jun 30 &middot; Gold = daily revenue &middot; Purple dashed = 7-day moving average &middot; Weekend spikes visible</div>
-    <div class="cw" style="height:260px"><canvas id="c-daily-rev"></canvas></div>
-  </div>
-  <div class="sec">Hourly Revenue &amp; Volume</div>
-  <div class="grid g2">
-    <div class="chart-card">
-      <button class="info-btn" onclick="showInfoModal('Revenue by Hour', 'Displays revenue earned per hour from 7 AM to 11 PM. Shows a bimodal peak pattern: 9–11 AM (Breakfast peak) and 8–10 PM (Dinner peak).')">i</button>
-      <button class="expand-btn" onclick="openModal('Revenue by Hour','c-hr-rev')">&#10178;</button>
-      <h3>Revenue by Hour</h3>
-      <div class="sub">Bimodal: 9&ndash;11 AM peak &middot; 9&ndash;10 PM peak</div>
-      <div class="cw" style="height:220px"><canvas id="c-hr-rev"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <button class="info-btn" onclick="showInfoModal('Orders by Hour', 'Measures order volume per hour. Colors reflect kitchen load: Red indicates peak kitchen stress (100% capacity), Amber is moderate load, and Green is low load.')">i</button>
-      <button class="expand-btn" onclick="openModal('Orders by Hour','c-hr-ord')">&#10178;</button>
-      <h3>Orders by Hour</h3>
-      <div class="sub">Red=high load &middot; Amber=medium &middot; Green=low</div>
-      <div class="cw" style="height:220px"><canvas id="c-hr-ord"></canvas></div>
-    </div>
-  </div>
-  <div class="sec">Revenue Heatmap</div>
-  <div class="chart-card">
-    <button class="info-btn" onclick="showInfoModal('Revenue Heatmap', '2D grid mapping Day of Week vs Hour of Day. Darkest cells (like Sunday 10 AM) mark absolute peak revenue windows across the entire week.')">i</button>
-    <h3>Revenue Intensity: Day of Week &times; Hour</h3>
-    <div class="sub">Darker = higher revenue &middot; Sunday 10 AM = single peak slot</div>
-    <canvas id="c-heatmap" style="width:100%;height:220px;display:block"></canvas>
-    <div class="hm-legend"><span>Low</span><div class="hm-bar"></div><span>High</span></div>
-  </div>
-  <div class="sec">Branch Trends &amp; Session Breakdown</div>
-  <div class="grid g2">
-    <div class="chart-card">
-      <button class="info-btn" onclick="showInfoModal('Branch Monthly Trend', 'Compares monthly sales trajectory across stores from April to June. Highlights upward growth (Aundh, Salunkhe Vihar) vs softening stores (Wadgaon Sheri -15.3%).')">i</button>
-      <button class="expand-btn" onclick="openModal('Branch Monthly Trend','c-br-trend')">&#10178;</button>
-      <h3>Branch Revenue &mdash; Monthly Trend</h3>
-      <div class="sub" id="br-trend-sub">AUNDH growing &middot; Wadgaon Sheri declining</div>
-      <div class="cw" style="height:230px"><canvas id="c-br-trend"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <button class="info-btn" onclick="showInfoModal('Revenue & Orders by Session', 'Compares revenue (bars) against order count (line) across meal sessions. Dinner drives highest volume, while Lunch generates highest average spend per ticket (AOV ₹552).')">i</button>
-      <button class="expand-btn" onclick="openModal('Revenue by Session','c-sess-bar')">&#10178;</button>
-      <h3>Revenue &amp; Orders by Session</h3>
-      <div class="sub">Dinner leads volume &middot; Lunch leads AOV (&#8377;552)</div>
-      <div class="cw" style="height:230px"><canvas id="c-sess-bar"></canvas></div>
-    </div>
-  </div>
-</div>
-
-<!-- PAGE 2: MENU PERFORMANCE -->
-<div class="page" id="pg2">
-  <div class="sec">Category &amp; Price Point Analytics</div>
-  <div class="grid g2">
-    <div class="chart-card">
-      <button class="info-btn" onclick="showInfoModal('Category Revenue Split', 'Shows total net revenue generated across major product categories. Rice Bowls & Regional Mains generate ~42% of revenue, followed by Signature Breakfasts and Gourmet Coffee.')">i</button>
-      <button class="expand-btn" onclick="openModal('Category Revenue Split','c-menu-cat-pie')">&#10178;</button>
-      <h3>Category Revenue Contribution</h3>
-      <div class="sub">Rice Bowls &amp; Mains lead sales &middot; Click expand (⤢) for full 160+ item catalog</div>
-      <div class="cw" style="height:230px"><canvas id="c-menu-cat-pie"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <button class="info-btn" onclick="showInfoModal('Price Tier Distribution', 'Measures order volume across price point buckets. The ₹250–₹350 tier represents the highest order frequency, acting as the primary volume driver.')">i</button>
-      <button class="expand-btn" onclick="openModal('Price Tier Distribution','c-menu-price-tier')">&#10178;</button>
-      <h3>Price Tier &amp; Ticket Bucket Volume</h3>
-      <div class="sub">Volume distribution across item price ranges</div>
-      <div class="cw" style="height:230px"><canvas id="c-menu-price-tier"></canvas></div>
-    </div>
-  </div>
-
-  <div class="sec">Product Rankings</div>
-  <div class="grid g2">
-    <div class="chart-card">
-      <button class="info-btn" onclick="showInfoModal('Top 10 Items — Revenue', 'Ranks top dishes by total revenue. Rice Bowls & Mains dominate the top 5 revenue spots. Click expand to view all 160+ items.')">i</button>
-      <button class="expand-btn" onclick="openModal('Top 10 Items — Revenue','c-top10r2')">&#10178;</button>
-      <h3>Top 10 Items &mdash; Revenue</h3>
-      <div class="sub">Chicken Stroganoff = 9.1% of revenue &middot; Click expand for full catalog</div>
-      <div class="cw" style="height:270px"><canvas id="c-top10r2"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <button class="info-btn" onclick="showInfoModal('Top 10 Items — Quantity', 'Ranks top dishes by units sold. Egg White Omelettes and Cold Coffee lead quantity volume, acting as key basket drivers.')">i</button>
-      <button class="expand-btn" onclick="openModal('Top 10 Items — Quantity','c-top10q')">&#10178;</button>
-      <h3>Top 10 Items &mdash; Quantity</h3>
-      <div class="sub">Egg White Omelette &amp; Cold Coffee lead units</div>
-      <div class="cw" style="height:270px"><canvas id="c-top10q"></canvas></div>
-    </div>
-  </div>
-
-  <div class="sec">Menu Engineering Matrix</div>
-  <div class="chart-card">
-    <button class="info-btn" onclick="showInfoModal('Menu Engineering Matrix', 'Plots menu items by Popularity (Qty Sold) vs Profitability (Revenue). Stars (high sales, high profit) should be promoted; Plow Horses (high sales, low profit) should be repriced; Puzzles (low sales, high profit) need marketing; Dogs (low sales, low profit) should be delisted.')">i</button>
-    <button class="expand-btn" onclick="openModal('Menu Engineering Matrix','c-me-scatter')">&#10178;</button>
-    <h3>Popularity vs Revenue &mdash; Menu Engineering Quadrant</h3>
-    <div class="sub">Stars: promote &middot; Plow Horses: reprice &middot; Puzzles: reposition &middot; Dogs: remove &middot; Click expand to search all 160+ items</div>
-    <div style="display:flex;gap:16px;margin-bottom:10px;flex-wrap:wrap">
-      <span style="font-size:11px;color:#9fc794">&#11044; Stars (67)</span>
-      <span style="font-size:11px;color:#94b8e3">&#11044; Plow Horses (13)</span>
-      <span style="font-size:11px;color:var(--primary)">&#11044; Puzzles (14)</span>
-      <span style="font-size:11px;color:#e68c85">&#11044; Dogs (66)</span>
-    </div>
-    <div class="cw" style="height:300px"><canvas id="c-me-scatter"></canvas></div>
-    <div class="note" style="margin-top:14px">
-      <strong>💡 Menu Engineering Action Plan:</strong> Prune 20 low-selling <em>Dog</em> items requiring unique raw ingredients to reduce kitchen prep times by ~15%. Reprice high-volume <em>Plow Horses</em> (e.g. Masala Chai +₹10) to boost gross profit margin.
-    </div>
-  </div>
-
-  <div class="grid g2">
-    <div class="chart-card">
-      <button class="info-btn" onclick="showInfoModal('Fastest Growing Items', 'Items with highest % order growth from April to June. Gourmet coffee drinks expanded over 700% as breakfast attachments.')">i</button>
-      <button class="expand-btn" onclick="openModal('Fastest Growing Items','c-grow')">&#10178;</button>
-      <h3>Fastest Growing (Apr &rarr; Jun)</h3>
-      <div class="sub">Coffee category exploding &mdash; +700% avg</div>
-      <div class="cw" style="height:200px"><canvas id="c-grow"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <button class="info-btn" onclick="showInfoModal('Fastest Declining Items', 'Items experiencing severe sales drop-offs. Discontinued or low-demand seasonal beverages that should be removed to clean up kitchen prep.')">i</button>
-      <button class="expand-btn" onclick="openModal('Fastest Declining Items','c-decl')">&#10178;</button>
-      <h3>Fastest Declining (Apr &rarr; Jun)</h3>
-      <div class="sub">Several beverages dropped to zero units</div>
-      <div class="cw" style="height:200px"><canvas id="c-decl"></canvas></div>
-    </div>
-  </div>
-</div>
-
-
-<!-- PAGE 3: CUSTOMER & TRANSACTIONS -->
-<div class="page" id="pg3">
-  <div class="sec">Bill Statistics</div>
-  <div class="kpi-grid">
-    <div class="kpi-card c-blue"><div class="kpi-label">Maximum Bill</div><div class="kpi-val c-blue">&#8377;28,800</div><div class="kpi-sub">Group/event dining</div></div>
-    <div class="kpi-card c-green"><div class="kpi-label">Median Bill</div><div class="kpi-val c-green">&#8377;420</div><div class="kpi-sub">50th percentile</div></div>
-    <div class="kpi-card c-amber"><div class="kpi-label">Mean Bill</div><div class="kpi-val c-amber">&#8377;528</div><div class="kpi-sub">Pulled by large orders</div></div>
-    <div class="kpi-card c-purple"><div class="kpi-label">75th Percentile</div><div class="kpi-val c-purple">&#8377;651</div><div class="kpi-sub">Premium zone</div></div>
-  </div>
-  <div class="grid g21">
-    <div class="chart-card">
-      <button class="expand-btn" onclick="openModal('Bill Value Distribution','c-bill')">&#10178;</button>
-      <h3>Bill Value Distribution</h3>
-      <div class="sub">&#8377;300&ndash;&#8377;400 is the largest segment (24.8% of orders)</div>
-      <div class="cw" style="height:230px"><canvas id="c-bill"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <button class="expand-btn" onclick="openModal('AOV by Channel','c-aov-ch')">&#10178;</button>
-      <h3>AOV by Channel</h3>
-      <div class="sub">Dine In leads at &#8377;590</div>
-      <div class="cw" style="height:230px"><canvas id="c-aov-ch"></canvas></div>
-    </div>
-  </div>
-  <div class="grid g2">
-    <div class="chart-card">
-      <button class="expand-btn" onclick="openModal('AOV by Branch','c-aov-br')">&#10178;</button>
-      <h3>AOV by Branch</h3>
-      <div class="sub">Salunkhe Vihar highest &middot; Wakad lowest</div>
-      <div class="cw" style="height:210px"><canvas id="c-aov-br"></canvas></div>
-    </div>
-    <div class="chart-card" style="display:flex;flex-direction:column">
-      <h3>Market Basket &mdash; Category Combos</h3>
-      <div class="sub" style="margin-bottom:12px">Frequently ordered together</div>
-      <table class="tbl">
-        <tr><th>When Customer Orders</th><th>Also Orders</th><th>Confidence</th><th>Lift</th></tr>
-        <tr><td>Main Dish</td><td>Beverage</td><td><span class="tag star">72%</span></td><td>1.8&times;</td></tr>
-        <tr><td>Egg Dish</td><td>Toast/Bread</td><td><span class="tag star">65%</span></td><td>1.6&times;</td></tr>
-        <tr><td>Rice Bowl</td><td>Cold Drink</td><td><span class="tag horse">58%</span></td><td>1.5&times;</td></tr>
-        <tr><td>Roll/Sandwich</td><td>Iced Tea</td><td><span class="tag horse">52%</span></td><td>1.4&times;</td></tr>
-        <tr><td>Breakfast Combo</td><td>Coffee</td><td><span class="tag puzzle">48%</span></td><td>1.3&times;</td></tr>
-      </table>
-      <div class="info-note" style="margin-top:12px;margin-bottom:0">Key opportunity: 72% of main-dish orders pair with a beverage. Improving attach by 20% adds ~&#8377;60/order &rarr; &#8377;24L+ annual uplift.</div>
-    </div>
-  </div>
-</div>
-
-<!-- PAGE 4: OPERATIONS -->
-<div class="page" id="pg4">
-  <div class="sec">Kitchen Load Analysis</div>
-  <div class="chart-card">
-    <button class="expand-btn" onclick="openModal('Kitchen Load by Hour','c-load')">&#10178;</button>
-    <h3>Kitchen Utilization by Hour &mdash; All Branches</h3>
-    <div class="sub">Red &ge;80% &middot; Amber 50&ndash;80% &middot; Green &lt;50% &middot; Peak: 10 AM (100%)</div>
-    <div class="cw" style="height:190px"><canvas id="c-load"></canvas></div>
-  </div>
-  <div class="grid g2">
-    <div class="chart-card">
-      <button class="info-btn" onclick="showInfoModal('Staffing Guide by Hour', 'Recommends minimum floor and kitchen headcount required for each hour based on peak order volume. Schedule maximum staff (8 headcount) during the 9–11 AM peak.')">i</button>
-      <h3>Staffing Guide by Hour</h3>
-      <div class="sub">Recommended minimum staff per branch</div>
-      <table class="tbl" id="tbl-staffing">
-        <tr><th>Hour</th><th>Daily Orders</th><th>Load</th><th>Min Staff</th></tr>
-        <tr><td>7 AM</td><td>12</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:29%;background:var(--green)"></div></div>29%</div></td><td style="font-weight:700">3</td></tr>
-        <tr><td>8 AM</td><td>26</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:64%;background:var(--amber)"></div></div>64%</div></td><td style="font-weight:700">5-6</td></tr>
-        <tr><td>9 AM</td><td>37</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:90%;background:var(--red)"></div></div>90%</div></td><td style="font-weight:700">7-8</td></tr>
-        <tr><td>10 AM</td><td>41</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:100%;background:var(--red)"></div></div>100%</div></td><td style="font-weight:700">8</td></tr>
-        <tr><td>3-5 PM</td><td>12</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:32%;background:var(--green)"></div></div>32%</div></td><td style="font-weight:700">3</td></tr>
-        <tr><td>9 PM</td><td>34</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:83%;background:var(--red)"></div></div>83%</div></td><td style="font-weight:700">6-7</td></tr>
-      </table>
-      <div class="info-note" style="margin-top:12px;margin-bottom:0"><strong>💡 Staffing Insight:</strong> Cross-train morning prep staff to shift to floor service between 9:30 AM and 11:30 AM to handle morning surges without extra overhead.</div>
-    </div>
-    <div class="chart-card">
-      <button class="info-btn" onclick="showInfoModal('Branch Scorecard Table', 'Summarizes quarterly revenue, AOV, sales trend %, and status rating across all stores. Click column headers to sort.')">i</button>
-      <h3>Branch Scorecard</h3>
-      <div class="sub">Revenue, trend, and status &middot; Click headers to sort</div>
-      <table class="tbl" id="tbl-scorecard">
-        <tr><th>Branch</th><th>Revenue</th><th>AOV</th><th>Trend</th><th>Status</th></tr>
-        <tr><td>Kothrud</td><td>&#8377;62.3L</td><td>&#8377;515</td><td class="trend-up">Stable</td><td><span class="tag star">Leader</span></td></tr>
-        <tr><td>AUNDH</td><td>&#8377;39.7L</td><td>&#8377;515</td><td class="trend-up">&uarr; Growing</td><td><span class="tag star">Strong</span></td></tr>
-        <tr><td>Salunkhe Vihar</td><td>&#8377;26.9L</td><td>&#8377;556</td><td class="trend-up">&uarr; Growing</td><td><span class="tag horse">Premium</span></td></tr>
-        <tr><td>Saudagar</td><td>&#8377;26.9L</td><td>&#8377;526</td><td class="trend-dn">&darr; -10.2%</td><td><span class="tag warn">Watch</span></td></tr>
-        <tr><td>Wadgaon Sheri</td><td>&#8377;26.3L</td><td>&#8377;479</td><td class="trend-dn">&darr; -15.3%</td><td><span class="tag risk">Urgent</span></td></tr>
-        <tr><td>Yolkshire Wakad</td><td>&#8377;21.7L</td><td>&#8377;497</td><td>Mixed</td><td><span class="tag puzzle">Review</span></td></tr>
-        <tr><td>Bavdhan</td><td>&#8377;3.6L</td><td>&#8377;593</td><td>New (Jun)</td><td><span class="tag grow">High Pot.</span></td></tr>
-      </table>
-      <div class="alert-note" style="margin-top:12px"><strong>⚠️ Operational Alert:</strong> Wadgaon Sheri (-15.3%) and Wakad (-27% in June) require immediate audit on kitchen order accuracy and delivery partner wait times.</div>
-    </div>
-  </div>
-</div>
-
-
-<!-- PAGE 5: CHANNEL INTELLIGENCE -->
-<div class="page" id="pg5">
-  <div class="sec">Chain-Level Channel KPIs</div>
-  <div class="kpi-grid">
-    <div class="kpi-card c-green"><div class="kpi-label">Offline Total Revenue</div><div class="kpi-val c-green" style="font-size:20px">&#8377;98.4L</div><div class="kpi-sub">Dine In + Takeaway</div><div class="kpi-icon">&#127869;&#65039;</div></div>
-    <div class="kpi-card c-amber"><div class="kpi-label">Online Total Revenue</div><div class="kpi-val c-amber" style="font-size:20px">&#8377;1.09Cr</div><div class="kpi-sub">Zomato + Swiggy</div><div class="kpi-icon">&#128241;</div></div>
-    <div class="kpi-card c-blue"><div class="kpi-label">Offline vs Online AOV</div><div class="kpi-val c-blue" style="font-size:18px">&#8377;589 vs &#8377;468</div><div class="kpi-sub">Offline commands &#8377;121 premium</div><div class="kpi-icon">&#128181;</div></div>
-    <div class="kpi-card c-purple"><div class="kpi-label">Zomato vs Swiggy</div><div class="kpi-val c-purple" style="font-size:14px">&#8377;65.5L vs &#8377;43.3L</div><div class="kpi-sub">AOV: &#8377;485 vs &#8377;441</div><div class="kpi-icon">&#9878;&#65039;</div></div>
-  </div>
-
-  <div class="sec">Offline vs Online Revenue Split by Branch</div>
-  <div class="chart-card" style="margin-bottom:20px">
-    <button class="expand-btn" onclick="openModal('Offline vs Online by Branch','c-ch-split')">&#10178;</button>
-    <h3>Offline vs Online Revenue Split &mdash; All Branches</h3>
-    <div class="sub">Offline = Dine In + Takeaway (Green) &middot; Online = Zomato + Swiggy (Gold)</div>
-    <div class="cw" style="height:260px"><canvas id="c-ch-split"></canvas></div>
-    <div class="alert-note" style="margin-top:14px"><strong>Wadgaon Sheri</strong> is 74.6% online-dependent &mdash; the highest in the chain. Its -15.3% revenue decline may reflect delivery platform issues or rating drops.</div>
-  </div>
-
-  <div class="sec">Zomato vs Swiggy by Branch</div>
-  <div class="chart-card" style="margin-bottom:20px">
-    <button class="expand-btn" onclick="openModal('Zomato vs Swiggy by Branch','c-zs-bar')">&#10178;</button>
-    <h3>Zomato vs Swiggy Revenue &mdash; By Branch</h3>
-    <div class="sub">Side-by-side comparison across all 7 branches</div>
-    <div class="cw" style="height:260px"><canvas id="c-zs-bar"></canvas></div>
-    <div class="info-note" style="margin-top:14px"><strong>Insight:</strong> Zomato consistently outperforms Swiggy in AOV across all branches. Bavdhan is the exception &mdash; Swiggy AOV &#8377;592 &gt; Zomato AOV &#8377;520 (small sample, new branch).</div>
-  </div>
-
-  <div class="sec">Branch Comparison Matrix</div>
-  <div class="chart-card" style="margin-bottom:20px">
-    <h3>Complete Channel Comparison by Branch</h3>
-    <div class="sub">Click column headers to sort</div>
-    <div style="overflow-x:auto">
-      <table class="tbl" id="ch-matrix-tbl">
-        <tr>
-          <th onclick="sortTable('ch-matrix-tbl',0)">Branch</th>
-          <th onclick="sortTable('ch-matrix-tbl',1)">Total Rev</th>
-          <th onclick="sortTable('ch-matrix-tbl',2)">Offline Rev</th>
-          <th onclick="sortTable('ch-matrix-tbl',3)">Online Rev</th>
-          <th onclick="sortTable('ch-matrix-tbl',4)">Offline%</th>
-          <th onclick="sortTable('ch-matrix-tbl',5)">Zomato Rev</th>
-          <th onclick="sortTable('ch-matrix-tbl',6)">Swiggy Rev</th>
-          <th onclick="sortTable('ch-matrix-tbl',7)">Z-AOV</th>
-          <th onclick="sortTable('ch-matrix-tbl',8)">S-AOV</th>
-          <th onclick="sortTable('ch-matrix-tbl',9)">DineIn AOV</th>
-          <th>Winner</th>
-        </tr>
-        <tr><td>Kothrud</td><td>&#8377;62.3L</td><td>&#8377;32.3L</td><td>&#8377;30.0L</td><td>51.8%</td><td>&#8377;18.2L</td><td>&#8377;11.9L</td><td>&#8377;470</td><td>&#8377;431</td><td>&#8377;597</td><td><span class="tag offline">Offline</span></td></tr>
-        <tr><td>AUNDH</td><td>&#8377;39.7L</td><td>&#8377;22.7L</td><td>&#8377;16.9L</td><td>57.3%</td><td>&#8377;9.4L</td><td>&#8377;7.5L</td><td>&#8377;473</td><td>&#8377;439</td><td>&#8377;568</td><td><span class="tag offline">Offline</span></td></tr>
-        <tr><td>Salunkhe Vihar</td><td>&#8377;26.9L</td><td>&#8377;12.5L</td><td>&#8377;14.4L</td><td>46.6%</td><td>&#8377;9.5L</td><td>&#8377;4.8L</td><td>&#8377;530</td><td>&#8377;477</td><td>&#8377;645</td><td><span class="tag online">Online</span></td></tr>
-        <tr><td>Saudagar</td><td>&#8377;26.9L</td><td>&#8377;13.6L</td><td>&#8377;13.3L</td><td>50.6%</td><td>&#8377;7.2L</td><td>&#8377;6.1L</td><td>&#8377;492</td><td>&#8377;460</td><td>&#8377;586</td><td><span class="tag offline">Offline</span></td></tr>
-        <tr><td>Wadgaon Sheri</td><td>&#8377;26.3L</td><td>&#8377;6.7L</td><td>&#8377;19.6L</td><td>25.4%</td><td>&#8377;11.7L</td><td>&#8377;7.9L</td><td>&#8377;458</td><td>&#8377;452</td><td>&#8377;564</td><td><span class="tag online">Online</span></td></tr>
-        <tr><td>Yolkshire Wakad</td><td>&#8377;21.7L</td><td>&#8377;7.9L</td><td>&#8377;13.8L</td><td>36.3%</td><td>&#8377;8.9L</td><td>&#8377;4.9L</td><td>&#8377;513</td><td>&#8377;396</td><td>&#8377;569</td><td><span class="tag online">Online</span></td></tr>
-        <tr><td>Bavdhan</td><td>&#8377;3.6L</td><td>&#8377;2.75L</td><td>&#8377;0.89L</td><td>75.6%</td><td>&#8377;0.71L</td><td>&#8377;0.18L</td><td>&#8377;520</td><td>&#8377;592</td><td>&#8377;620</td><td><span class="tag offline">Offline</span></td></tr>
-      </table>
-    </div>
-  </div>
-
-  <div class="sec">Commission Impact Analysis</div>
-  <div class="chart-card" style="margin-bottom:20px">
-    <h3>Platform Commission Impact (Estimated 25% on Delivery Orders)</h3>
-    <div class="sub">True net revenue after estimated platform fees</div>
-    <div class="grid g2" style="margin-top:14px;margin-bottom:0">
+<!-- PAGE 2: FRANCHISEE BUSINESS MODEL (₹2L PROFIT ENGINE & KOTHRUD REPLICATION) -->
+<div class="page" id="pg-franchisee">
+  <div class="sec">Franchisee Financial Economics & Backward Unit Economics Model</div>
+  
+  <div class="chart-card" style="margin-bottom:20px;background:linear-gradient(135deg, var(--bg2), var(--bg3));border:1px solid var(--primary)">
+    <div style="display:flex;justify:space-between;align-items:center;flex-wrap:wrap;gap:12px">
       <div>
-        <table class="tbl" id="tbl-commission-impact">
-          <tr><th>Metric</th><th>Value</th></tr>
-          <tr><td>Zomato commission drain</td><td style="color:#e68c85;font-weight:700">~&#8377;16.4L/quarter</td></tr>
-          <tr><td>Swiggy commission drain</td><td style="color:#e68c85;font-weight:700">~&#8377;10.8L/quarter</td></tr>
-          <tr><td>Total delivery commission</td><td style="color:#e68c85;font-weight:700">~&#8377;27.2L/quarter</td></tr>
-          <tr><td>True net from Zomato</td><td style="color:#9fc794;font-weight:700">~&#8377;49.2L</td></tr>
-          <tr><td>True net from Swiggy</td><td style="color:#9fc794;font-weight:700">~&#8377;32.5L</td></tr>
-          <tr><td>Dine In true net (0% commission)</td><td style="color:#9fc794;font-weight:700">&#8377;96.9L</td></tr>
+        <h2 style="font-size:16px;color:var(--primary);margin-bottom:4px">🎯 The Franchisee ₹2 Lakh Monthly Profit Model</h2>
+        <p style="font-size:12px;color:var(--text);max-width:850px">
+          <strong>Investment Context:</strong> A franchisee invests around <strong>₹40 Lakhs</strong> to set up a new Yolkshire outlet. Over 5 years, they expect a cumulative return of <strong>~₹80 Lakhs EBITDA</strong> (~₹60 Lakhs Net Profit After Tax, which equals ~₹1 Lakh/month post-tax). 
+          To provide a cushion and handsome ROI, our operational business model targets a <strong>₹2 Lakhs/month EBITDA profit</strong>.
+        </p>
+      </div>
+      <div style="text-align:right;background:var(--bg);padding:12px 18px;border-radius:10px;border:1px solid var(--primary)">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:700">Target Monthly EBITDA</div>
+        <div style="font-size:26px;font-weight:800;color:var(--primary);font-family:'Montserrat',sans-serif">₹2.00 Lakhs</div>
+        <div style="font-size:10px;color:#9fc794">₹24 Lakhs / Year (60% ROI)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid g12">
+    <!-- INPUT CALCULATOR CONTROLS -->
+    <div class="calc-card">
+      <h3 style="color:var(--primary);margin-bottom:12px">⚙️ Interactive Backward Calculator</h3>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:16px">Adjust parameters below to see how top-line sales requirement changes live.</p>
+
+      <div class="calc-input-group">
+        <div class="calc-label-wrap"><span class="calc-label">Target Monthly Profit (₹)</span><span class="calc-val-badge" id="lbl-target-profit">₹2,00,000</span></div>
+        <input type="range" class="calc-slider" id="inp-target-profit" min="100000" max="400000" step="10000" value="200000" oninput="recalcFranchiseeModel()">
+      </div>
+
+      <div class="calc-input-group">
+        <div class="calc-label-wrap"><span class="calc-label">Initial Capex / Investment (₹)</span><span class="calc-val-badge" id="lbl-capex">₹40,00,000</span></div>
+        <input type="range" class="calc-slider" id="inp-capex" min="2000000" max="6000000" step="100000" value="4000000" oninput="recalcFranchiseeModel()">
+      </div>
+
+      <div class="calc-input-group">
+        <div class="calc-label-wrap"><span class="calc-label">Food Cost / COGS %</span><span class="calc-val-badge" id="lbl-cogs">25.0%</span></div>
+        <input type="range" class="calc-slider" id="inp-cogs" min="20" max="32" step="0.5" value="25.0" oninput="recalcFranchiseeModel()">
+      </div>
+
+      <div class="calc-input-group">
+        <div class="calc-label-wrap"><span class="calc-label">Manpower & Staff Labor %</span><span class="calc-val-badge" id="lbl-labor">18.0%</span></div>
+        <input type="range" class="calc-slider" id="inp-labor" min="12" max="24" step="0.5" value="18.0" oninput="recalcFranchiseeModel()">
+      </div>
+
+      <div class="calc-input-group">
+        <div class="calc-label-wrap"><span class="calc-label">Rent & Occupancy %</span><span class="calc-val-badge" id="lbl-rent">12.0%</span></div>
+        <input type="range" class="calc-slider" id="inp-rent" min="8" max="20" step="0.5" value="12.0" oninput="recalcFranchiseeModel()">
+      </div>
+
+      <div class="calc-input-group">
+        <div class="calc-label-wrap"><span class="calc-label">Delivery Aggregator Commission %</span><span class="calc-val-badge" id="lbl-comm">25.0%</span></div>
+        <input type="range" class="calc-slider" id="inp-comm" min="18" max="28" step="0.5" value="25.0" oninput="recalcFranchiseeModel()">
+      </div>
+
+      <div class="calc-input-group">
+        <div class="calc-label-wrap"><span class="calc-label">Dine-In % vs Delivery % Share</span><span class="calc-val-badge" id="lbl-channel-share">50% Dine / 50% Del</span></div>
+        <input type="range" class="calc-slider" id="inp-dinein-share" min="20" max="80" step="5" value="50" oninput="recalcFranchiseeModel()">
+      </div>
+
+      <div class="calc-input-group">
+        <div class="calc-label-wrap"><span class="calc-label">Average Order Value (AOV ₹)</span><span class="calc-val-badge" id="lbl-aov">₹516</span></div>
+        <input type="range" class="calc-slider" id="inp-aov" min="400" max="700" step="5" value="516" oninput="recalcFranchiseeModel()">
+      </div>
+    </div>
+
+    <!-- CALCULATED RESULTS & METRICS MATRIX -->
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="grid g2">
+        <div class="calc-result-box">
+          <div class="calc-result-title">Required Monthly Net Sales</div>
+          <div class="calc-result-val" id="res-monthly-sales">₹11.43L</div>
+          <div class="calc-result-sub" id="res-net-margin">Net EBITDA Margin: 17.5%</div>
+        </div>
+        <div class="calc-result-box">
+          <div class="calc-result-title">Required Daily Sales</div>
+          <div class="calc-result-val" id="res-daily-sales">₹38,095</div>
+          <div class="calc-result-sub" id="res-daily-orders">~74 Orders / Day</div>
+        </div>
+      </div>
+
+      <div class="grid g3">
+        <div class="kpi-card c-green">
+          <div class="kpi-label">Required Daily Walk-ins</div>
+          <div class="kpi-val c-green" id="res-daily-walkins">42</div>
+          <div class="kpi-sub">Dine-in tables needed</div>
+        </div>
+        <div class="kpi-card c-amber">
+          <div class="kpi-label">Payback Period</div>
+          <div class="kpi-val c-amber" id="res-payback">20 Months</div>
+          <div class="kpi-sub">Full Capex recovery</div>
+        </div>
+        <div class="kpi-card c-purple">
+          <div class="kpi-label">Annualized ROI</div>
+          <div class="kpi-val c-purple" id="res-roi">60.0%</div>
+          <div class="kpi-sub">ROI per annum</div>
+        </div>
+      </div>
+
+      <!-- SENSITIVITY ANALYSIS TABLE -->
+      <div class="chart-card">
+        <h3>Backward Sensitivity Matrix — Required Monthly Sales for ₹2L Profit</h3>
+        <div class="sub">Required monthly top-line revenue across different AOV & Food Cost levels</div>
+        <table class="sens-table" id="tbl-sensitivity">
+          <thead>
+            <tr>
+              <th>AOV / Food Cost</th>
+              <th>Food Cost 22.0%</th>
+              <th>Food Cost 25.0% (Current)</th>
+              <th>Food Cost 28.0%</th>
+              <th>Food Cost 31.0%</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-sensitivity">
+            <!-- Injected by JS -->
+          </tbody>
         </table>
       </div>
-      <div class="note">Even with Zomato at 31.6% share, <strong>Dine In at 46.8%</strong> contributes disproportionately more to actual profit after commissions.<br><br>Dine In: &#8377;590 AOV, <strong>0% commission</strong>. Zomato: &#8377;485 AOV but nets only <strong>~&#8377;364 after 25% commission</strong>.<br><br><strong>Recommendation:</strong> Prioritise Dine In experience investment.</div>
     </div>
   </div>
 
-  <div class="sec">Monthly Channel Trend</div>
-  <div class="chart-card">
-    <button class="expand-btn" onclick="openModal('Monthly Channel Trend','c-ch-trend')">&#10178;</button>
-    <h3>Monthly Revenue by Channel &mdash; Apr &rarr; May &rarr; Jun</h3>
-    <div class="sub">Dine In stable &middot; Zomato &amp; Swiggy both plateaued after May</div>
-    <div class="cw" style="height:260px"><canvas id="c-ch-trend"></canvas></div>
-  </div>
-</div>
-
-<!-- PAGE 6: BRANCH PROFILES -->
-<div class="page" id="pg6">
-  <div class="sec">Select Individual Branch</div>
-  <div class="branch-selector" id="branch-selector">
-    <div class="branch-pill active" onclick="selectBranchProfile('Kothrud')">Kothrud</div>
-    <div class="branch-pill" onclick="selectBranchProfile('AUNDH')">AUNDH</div>
-    <div class="branch-pill" onclick="selectBranchProfile('Salunkhe Vihar')">Salunkhe Vihar</div>
-    <div class="branch-pill" onclick="selectBranchProfile('Saudagar')">Saudagar</div>
-    <div class="branch-pill" onclick="selectBranchProfile('Wadgaon Sheri')">Wadgaon Sheri</div>
-    <div class="branch-pill" onclick="selectBranchProfile('Yolkshire Wakad')">Yolkshire Wakad</div>
-    <div class="branch-pill" onclick="selectBranchProfile('Bavdhan')">Bavdhan</div>
-  </div>
-  <div id="branch-profile-content" style="margin-bottom:28px"></div>
-
-  <div class="sec">Dual Store Comparison Tool</div>
-  <div id="dual-store-comparison-wrap"></div>
-</div>
-
-
-<!-- PAGE 7: KOTHRUD PLAYBOOK & BENCHMARK -->
-<div class="page" id="pg7">
-  <div class="sec">Kothrud Flagship Benchmark Analysis &amp; Playbook</div>
-  <div class="kpi-grid">
-    <div class="kpi-card c-green"><div class="kpi-label">Quarterly Revenue</div><div class="kpi-val c-green" id="k-kothrud-rev">&#8377;62.3L</div><div class="kpi-sub">30.1% of entire chain</div></div>
-    <div class="kpi-card c-blue"><div class="kpi-label">Dine-In Preference</div><div class="kpi-val c-blue" id="k-kothrud-dinein">50.3%</div><div class="kpi-sub">&#8377;31.3L non-commissioned</div></div>
-    <div class="kpi-card c-amber"><div class="kpi-label">Beverage Attach</div><div class="kpi-val c-amber" id="k-kothrud-bev">54%</div><div class="kpi-sub">Chain benchmark leader</div></div>
-    <div class="kpi-card c-purple"><div class="kpi-label">Dine-In AOV</div><div class="kpi-val c-purple" id="k-kothrud-aov">&#8377;597</div><div class="kpi-sub">Top in major branches</div></div>
-  </div>
+  <!-- KOTHRUD MODEL REPLICATION PLAYBOOK -->
+  <div class="sec">Kothrud Model Replication & Footprint Expansion Playbook</div>
   <div class="grid g2">
     <div class="chart-card">
-      <button class="expand-btn" onclick="openModal('Revenue Contribution: Kothrud vs Rest of Chain','c-kothrud-share')">&#10178;</button>
-      <h3>Revenue Contribution: Kothrud vs Rest of Chain</h3>
-      <div class="sub">Kothrud alone matches top 3 franchises combined</div>
-      <div class="cw" style="height:230px"><canvas id="c-kothrud-share"></canvas></div>
+      <h3>🏆 The Kothrud Scaling Strategy</h3>
+      <p style="font-size:12px;color:var(--text);line-height:1.5;margin-bottom:12px">
+        What the <strong>Kothrud model proves</strong> is: if you first achieve <strong>₹20 Lakhs sales in a small, compact outlet (&lt;500 sq ft)</strong> with tight rent and lean staffing, you establish brand traction with minimal risk. 
+        Once the ₹20L threshold is crossed, expanding the outlet seating footprint allows you to scale to <strong>₹28L–35L+ sales</strong> with industry-leading EBITDA margins (25%+).
+      </p>
+      <div style="background:var(--bg3);padding:12px;border-radius:8px;border:1px solid var(--border)">
+        <div style="font-weight:700;color:var(--primary);font-size:11px;margin-bottom:4px">Key Franchisee Takeaway:</div>
+        <div style="font-size:11px;color:var(--muted)">Do not start with an oversized 1,500 sq ft space. Replicate Kothrud: start compact, optimize table turn rate and delivery velocity to hit ₹20L, then expand into adjacent space.</div>
+      </div>
     </div>
+
     <div class="chart-card">
-      <button class="expand-btn" onclick="openModal('Dine-In vs Delivery Share Comparison','c-kothrud-channel-comp')">&#10178;</button>
-      <h3>Dine-In vs Delivery Share Comparison</h3>
-      <div class="sub">Kothrud maintains healthier 50%+ in-store revenue</div>
-      <div class="cw" style="height:230px"><canvas id="c-kothrud-channel-comp"></canvas></div>
+      <h3>Kothrud Micro Store vs Expanded Store Benchmark</h3>
+      <div class="sub">Economics comparison across lifecycle stages</div>
+      <table class="tbl">
+        <tr><th>Metric</th><th>Phase 1: Compact (&lt;500 sq ft)</th><th>Phase 2: Expanded (1100 sq ft)</th><th>Chain Average</th></tr>
+        <tr><td><strong>Initial Capex</strong></td><td>₹25.0 Lakhs</td><td>₹40.0 Lakhs</td><td>₹38.0 Lakhs</td></tr>
+        <tr><td><strong>Monthly Sales</strong></td><td class="trend-up">₹20.32 Lakhs</td><td class="trend-up" style="color:var(--primary);font-weight:800">₹28.50 Lakhs</td><td>₹14.80 Lakhs</td></tr>
+        <tr><td><strong>Monthly EBITDA</strong></td><td style="color:#9fc794;font-weight:700">₹4.77 Lakhs (23.5%)</td><td style="color:#9fc794;font-weight:800">₹7.18 Lakhs (25.2%)</td><td>₹2.48 Lakhs (16.8%)</td></tr>
+        <tr><td><strong>Rent to Sales %</strong></td><td>5.9% (Lean)</td><td>7.7% (Optimal)</td><td>12.2% (High)</td></tr>
+        <tr><td><strong>Staff Count</strong></td><td>6 Staff</td><td>11 Staff</td><td>8 Staff</td></tr>
+      </table>
     </div>
   </div>
+
+  <!-- MENU STRATEGY FOR TOP LINE ACCELERATION -->
+  <div class="sec">Menu Strategy for Top-Line Acceleration</div>
   <div class="grid g3">
     <div class="chart-card">
-      <button class="expand-btn" onclick="openModal('Kothrud Hourly Revenue vs Chain Average','c-kothrud-hourly')">&#10178;</button>
-      <h3>Kothrud Hourly Curve vs Chain Avg</h3>
-      <div class="sub">Breakfast surge peak at 9–11 AM</div>
-      <div class="cw" style="height:210px"><canvas id="c-kothrud-hourly"></canvas></div>
+      <div style="font-size:24px;margin-bottom:6px">☕</div>
+      <h3>1. Beverage Attachment Engine</h3>
+      <p style="font-size:11px;color:var(--muted);line-height:1.4">
+        Currently beverage attachment is ~40%. Pushing attachment to <strong>65%+</strong> via combo prompts adds ₹60–80 to AOV, driving an extra <strong>₹2.5L–3.0L monthly top-line</strong> per store with 85%+ gross margins.
+      </p>
     </div>
     <div class="chart-card">
-      <button class="expand-btn" onclick="openModal('Beverage Category Upsell Mix','c-kothrud-bev-breakdown')">&#10178;</button>
-      <h3>Kothrud Beverage Category Mix</h3>
-      <div class="sub">54% attach rate driven by Gourmet Coffee</div>
-      <div class="cw" style="height:210px"><canvas id="c-kothrud-bev-breakdown"></canvas></div>
+      <div style="font-size:24px;margin-bottom:6px">🥞</div>
+      <h3>2. High-Margin Bundling</h3>
+      <p style="font-size:11px;color:var(--muted);line-height:1.4">
+        Promote signature combos like the <strong>Executive English Brunch (₹379)</strong> and <strong>Gourmet Bowl & Brew (₹389)</strong>. Combos guarantee a higher basket value while maintaining 75%+ food margin.
+      </p>
     </div>
     <div class="chart-card">
-      <button class="expand-btn" onclick="openModal('Kothrud Top 5 Anchor Items','c-kothrud-menu-mix')">&#10178;</button>
-      <h3>Kothrud Top 5 Anchor Dishes</h3>
-      <div class="sub">Revenue concentration breakdown</div>
-      <div class="cw" style="height:210px"><canvas id="c-kothrud-menu-mix"></canvas></div>
-    </div>
-  </div>
-  <div class="chart-card" style="margin-bottom:20px">
-    <h3>Kothrud vs Chain Operational Benchmark Matrix</h3>
-    <div class="sub" style="margin-bottom:12px">Key performance indicators compared across all branches for system standardization</div>
-    <div style="overflow-x:auto">
-      <table class="tbl" id="tbl-kothrud-playbook-matrix"></table>
+      <div style="font-size:24px;margin-bottom:6px">✂️</div>
+      <h3>3. Menu Pruning & Operational Speed</h3>
+      <p style="font-size:11px;color:var(--muted);line-height:1.4">
+        Prune 66 low-volume "Dog" items to streamline kitchen prep time. Faster order preparation reduces table wait time from 18 mins to 12 mins, enabling <strong>4.5x table turnover</strong> during peak hours.
+      </p>
     </div>
   </div>
 </div>
 
-<!-- PAGE 8: Q1 VS Q2 COMPARATIVE ANALYSIS -->
-<div class="page" id="pg8">
-  <div class="sec">Quarter-over-Quarter Growth Metrics (Q1 2026 vs Q2 2026)</div>
-  <div class="kpi-grid">
-    <div class="kpi-card c-green"><div class="kpi-label">QoQ Revenue Growth</div><div class="kpi-val c-green">+20.2%</div><div class="kpi-sub">&#8377;1.72Cr &rarr; &#8377;2.07Cr</div></div>
-    <div class="kpi-card c-blue"><div class="kpi-label">QoQ Volume Growth</div><div class="kpi-val c-blue">+17.8%</div><div class="kpi-sub">34,120 &rarr; 40,193 orders</div></div>
-    <div class="kpi-card c-amber"><div class="kpi-label">QoQ AOV Improvement</div><div class="kpi-val c-amber">+2.1%</div><div class="kpi-sub">&#8377;505 &rarr; &#8377;516 net</div></div>
-    <div class="kpi-card c-purple"><div class="kpi-label">Top Growth Branch</div><div class="kpi-val c-purple" style="font-size:16px">Kothrud</div><div class="kpi-sub">+21.7% QoQ revenue</div></div>
-  </div>
-  <div class="grid g2">
-    <div class="chart-card">
-      <h3>Monthly Revenue Trajectory: Q1 vs Q2</h3>
-      <div class="sub">Continuous month-on-month revenue progression</div>
-      <div class="cw" style="height:230px"><canvas id="c-q1q2-monthly"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <h3>Branch Revenue Comparison: Q1 vs Q2</h3>
-      <div class="sub">Side-by-side branch growth performance</div>
-      <div class="cw" style="height:230px"><canvas id="c-q1q2-branch"></canvas></div>
-    </div>
-  </div>
-  <div class="chart-card" style="margin-bottom:20px">
-    <h3>Q1 vs Q2 Detailed Performance Scorecard</h3>
-    <div class="sub">Metrics comparison across branches</div>
-    <table class="tbl" id="tbl-q1q2-scorecard">
-      <tr><th>Metric / Branch</th><th>Q1 Revenue</th><th>Q2 Revenue</th><th>QoQ Change</th><th>Q1 AOV</th><th>Q2 AOV</th><th>Status</th></tr>
-      <tr><td>Kothrud</td><td>&#8377;51.18L</td><td>&#8377;62.29L</td><td class="trend-up">+21.7%</td><td>&#8377;509</td><td>&#8377;516</td><td><span class="tag star">Flagship Peak</span></td></tr>
-      <tr><td>AUNDH</td><td>&#8377;37.02L</td><td>&#8377;39.66L</td><td class="trend-up">+7.1%</td><td>&#8377;520</td><td>&#8377;515</td><td><span class="tag star">Solid Growth</span></td></tr>
-      <tr><td>Salunkhe Vihar</td><td>&#8377;23.66L</td><td>&#8377;26.91L</td><td class="trend-up">+13.7%</td><td>&#8377;534</td><td>&#8377;556</td><td><span class="tag horse">AOV Leader</span></td></tr>
-      <tr><td>Saudagar</td><td>&#8377;21.35L</td><td>&#8377;26.87L</td><td class="trend-up">+25.8%</td><td>&#8377;488</td><td>&#8377;526</td><td><span class="tag grow">Recovered</span></td></tr>
-      <tr><td>Wadgaon Sheri</td><td>&#8377;22.55L</td><td>&#8377;26.25L</td><td class="trend-up">+16.4%</td><td>&#8377;460</td><td>&#8377;479</td><td><span class="tag risk">Delivery Dependent</span></td></tr>
-      <tr><td>Yolkshire Wakad</td><td>&#8377;16.62L</td><td>&#8377;21.66L</td><td class="trend-up">+30.3%</td><td>&#8377;513</td><td>&#8377;497</td><td><span class="tag warn">High Volatility</span></td></tr>
-      <tr><td>Bavdhan</td><td>&#8377;0.00L</td><td>&#8377;3.64L</td><td class="trend-up">New</td><td>&mdash;</td><td>&#8377;593</td><td><span class="tag star">Debut</span></td></tr>
-    </table>
-  </div>
-</div>
-
-<!-- PAGE 9: FORECASTING -->
-<div class="page" id="pg9">
-  <div class="sec">Revenue Forecast Q3 2026</div>
-  <div class="grid g2">
-    <div class="chart-card">
-      <button class="expand-btn" onclick="openModal('Revenue Forecast','c-fc-rev')">&#10178;</button>
-      <h3>Revenue &mdash; Actuals + Forecast</h3>
-      <div class="sub">Solid = actual &middot; Dashed = linear forecast Jul&ndash;Sep</div>
-      <div class="cw" style="height:250px"><canvas id="c-fc-rev"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <button class="expand-btn" onclick="openModal('Orders Forecast','c-fc-ord')">&#10178;</button>
-      <h3>Orders &mdash; Actuals + Forecast</h3>
-      <div class="sub">Volume declining &mdash; AOV compensating</div>
-      <div class="cw" style="height:250px"><canvas id="c-fc-ord"></canvas></div>
-    </div>
-  </div>
-  <div class="chart-card">
-    <h3>Forecast Summary</h3>
-    <div class="sub" style="margin-bottom:12px">Monthly actuals and Q3 projections</div>
-    <table class="tbl" id="tbl-forecast-summary">
-      <tr><th>Month</th><th>Revenue</th><th>Orders</th><th>AOV</th><th>MoM</th><th>Type</th></tr>
-      <tr><td>April 2026</td><td>&#8377;67,62,859</td><td>13,952</td><td>&#8377;485</td><td>&mdash;</td><td><span class="tag star">Actual</span></td></tr>
-      <tr><td>May 2026</td><td>&#8377;70,69,957</td><td>13,631</td><td>&#8377;519</td><td class="trend-up">+4.5%</td><td><span class="tag star">Actual</span></td></tr>
-      <tr><td>June 2026</td><td>&#8377;68,95,763</td><td>12,610</td><td>&#8377;547</td><td class="trend-dn">-2.5%</td><td><span class="tag star">Actual</span></td></tr>
-      <tr style="opacity:.8"><td>July 2026</td><td>&#8377;70,42,431</td><td>12,056</td><td>&#8377;584</td><td class="trend-up">+2.1%</td><td><span class="tag puzzle">Forecast</span></td></tr>
-      <tr style="opacity:.7"><td>August 2026</td><td>&#8377;71,08,883</td><td>11,385</td><td>&#8377;624</td><td class="trend-up">+0.9%</td><td><span class="tag puzzle">Forecast</span></td></tr>
-      <tr style="opacity:.6"><td>September 2026</td><td>&#8377;71,75,336</td><td>10,714</td><td>&#8377;670</td><td class="trend-up">+0.9%</td><td><span class="tag puzzle">Forecast</span></td></tr>
-    </table>
-    <div class="note">Forecast caveat: Linear regression on 3 months &mdash; directional only. With coffee push + Bavdhan ramp-up + beverage attach, Q3 could realistically reach <strong>&#8377;75&ndash;80L/month</strong>.</div>
-  </div>
-</div>
-
-<!-- PAGE 10: RECOMMENDATIONS -->
-<div class="page" id="pg10">
-  <div class="sec">Action Plan &amp; Financial Priorities</div>
-  <div class="rec-grid" id="rec-grid-container">
-    <div class="rec-card" style="border-color:rgba(124,76,71,.4)">
-      <h3>Quick Wins &amp; Marketing</h3><div class="rec-period">Low Effort / Immediate</div>
-      <div class="rec-item"><div class="rec-num" style="background:var(--accent);color:var(--text)">1</div><div class="rec-text">Google Reviews Drive: Focus on collecting customer reviews to convert local search intent</div></div>
-      <div class="rec-item"><div class="rec-num" style="background:var(--accent);color:var(--text)">2</div><div class="rec-text">Brief staff on beverage upselling (coffee and tea pairings for breakfast/afternoon)</div></div>
-      <div class="rec-item"><div class="rec-num" style="background:var(--accent);color:var(--text)">3</div><div class="rec-text">Add 3 combo bundles to Zomato &amp; Swiggy to boost order values</div></div>
-      <div class="rec-item"><div class="rec-num" style="background:var(--accent);color:var(--text)">4</div><div class="rec-text">Remove 20 Dog items with unique ingredients to simplify kitchen ops</div></div>
-      <div class="rec-item"><div class="rec-num" style="background:var(--accent);color:var(--text)">5</div><div class="rec-text">Confirm Bavdhan's listings and ensure its full menu is active online</div></div>
-    </div>
-    <div class="rec-card" style="border-color:rgba(231,186,68,.3)">
-      <h3>High Impact Initiatives</h3><div class="rec-period">Medium Effort / 30 Days</div>
-      <div class="rec-item"><div class="rec-num" style="background:var(--primary);color:var(--bg)">1</div><div class="rec-text">Roll out Mon&ndash;Wed Weekday Campaigns (Monday Breakfast Club, Student Tuesdays)</div></div>
-      <div class="rec-item"><div class="rec-num" style="background:var(--primary);color:var(--bg)">2</div><div class="rec-text">Launch Wednesday Work From Yolkshire (afternoon coffee + snack workspace packages)</div></div>
-      <div class="rec-item"><div class="rec-num" style="background:var(--primary);color:var(--bg)">3</div><div class="rec-text">Wadgaon Sheri turnaround: audit platform visibility and ratings; run local ads</div></div>
-      <div class="rec-item"><div class="rec-num" style="background:var(--primary);color:var(--bg)">4</div><div class="rec-text">Reprice Plow Horse beverages +&#8377;20&ndash;30 (Lemon Iced Tea, Mint Lemonade)</div></div>
-      <div class="rec-item"><div class="rec-num" style="background:var(--primary);color:var(--bg)">5</div><div class="rec-text">Customer loyalty program: design stamps/points to improve retention</div></div>
-    </div>
-    <div class="rec-card" style="border-color:rgba(65,86,57,.4)">
-      <h3>Strategic &amp; Long Term</h3><div class="rec-period">High Effort / 90 Days</div>
-      <div class="rec-item"><div class="rec-num" style="background:var(--secondary);color:var(--text)">1</div><div class="rec-text">Scale Transition: Build repeatable operational systems to copy Kothrud's success</div></div>
-      <div class="rec-item"><div class="rec-num" style="background:var(--secondary);color:var(--text)">2</div><div class="rec-text">Create standardized training manuals for consistent execution across franchises</div></div>
-      <div class="rec-item"><div class="rec-num" style="background:var(--secondary);color:var(--text)">3</div><div class="rec-text">Initiate own ordering channel (direct WhatsApp/Web) to avoid delivery commissions</div></div>
-      <div class="rec-item"><div class="rec-num" style="background:var(--secondary);color:var(--text)">4</div><div class="rec-text">Setup franchise marketing coordination fund for Pune-wide campaign sync</div></div>
-      <div class="rec-item"><div class="rec-num" style="background:var(--secondary);color:var(--text)">5</div><div class="rec-text">Scout 8th branch location (evaluate Hinjewadi / Viman Nagar / Koregaon Park)</div></div>
-    </div>
-  </div>
-  <div class="sec">SWOT Analysis</div>
-  <div class="swot" id="swot-container">
-    <div class="swot-q s"><h3>Strengths</h3>
-      <div class="swot-item">&bull; Kothrud flagship at &#8377;62.3L (30%)</div>
-      <div class="swot-item">&bull; Cancel rate 0.08% &mdash; operational excellence</div>
-      <div class="swot-item">&bull; Diversified channel presence (3 major channels)</div>
-      <div class="swot-item">&bull; Coffee growing as strong breakfast companion (+700%)</div>
-      <div class="swot-item">&bull; Bavdhan Month 1 AOV &#8377;593 &mdash; above chain avg</div>
-      <div class="swot-item">&bull; Low discount rate (3.04%) &mdash; pricing power</div>
-    </div>
-    <div class="swot-q w"><h3>Weaknesses</h3>
-      <div class="swot-item">&bull; Chicken Stroganoff = 9% of revenue &mdash; dependency</div>
-      <div class="swot-item">&bull; June orders -1,021 vs May &mdash; demand softening</div>
-      <div class="swot-item">&bull; 66 Dog items creating operational complexity</div>
-      <div class="swot-item">&bull; 3&ndash;5 PM idle &mdash; 21 branch-hours/day wasted</div>
-      <div class="swot-item">&bull; Wakad lowest AOV (&#8377;497) &mdash; mix/pricing issue</div>
-      <div class="swot-item">&bull; Constraint: scaling and cross-franchise consistency</div>
-    </div>
-    <div class="swot-q o"><h3>Opportunities</h3>
-      <div class="swot-item">&bull; Weak day ROI: growing Monday by 20% vs Sunday by 5%</div>
-      <div class="swot-item">&bull; Mon-Wed campaigns: Monday Breakfast Club, Student Tuesdays</div>
-      <div class="swot-item">&bull; Coffee &amp; comfort food pairings (72% basket confidence)</div>
-      <div class="swot-item">&bull; Afternoon snack menu (3 idle hours/day &times; 7 branches)</div>
-      <div class="swot-item">&bull; Systems rollout: replicate Kothrud's success playbook</div>
-      <div class="swot-item">&bull; 8th branch using Bavdhan success model</div>
-    </div>
-    <div class="swot-q t"><h3>Threats</h3>
-      <div class="swot-item">&bull; Zomato/Swiggy ~25% commission = &#8377;27L/qtr drain</div>
-      <div class="swot-item">&bull; Wadgaon Sheri competitive pressure &mdash; unidentified</div>
-      <div class="swot-item">&bull; Monsoon reducing cafe foot traffic (Jun&ndash;Sep)</div>
-      <div class="swot-item">&bull; Beverage competition: Starbucks, Third Wave Coffee</div>
-      <div class="swot-item">&bull; Chicken cost inflation &rarr; impacts #1 revenue item</div>
-      <div class="swot-item">&bull; Kothrud at 30% = chain-level concentration risk</div>
-    </div>
-  </div>
-</div>
-
-<!-- PAGE 11: EXECUTIVE REPORT -->
-<div class="page" id="pg11">
-  <button class="print-btn" onclick="window.print()">Print Report</button>
-  <div class="report-content" id="report-content"></div>
-<p style="color:var(--muted);font-size:11px;margin-top:20px">Report prepared by: Business Intelligence &middot; Yolkshire Chain Analytics &middot; July 2026. Data source: POS system exports, delivery platform reports.</p>
-</div>
-
-<!-- PAGE 12: PROFIT & LOSS (PNL) -->
-<div class="page" id="pg12">
+<!-- PAGE 3: PROFIT & LOSS (PNL) -->
+<div class="page" id="pg-pnl">
   <div class="sec">Profit &amp; Loss Financial Performance &amp; Sales Target Matrix</div>
   <div class="kpi-grid-5">
     <div class="kpi-card c-blue"><div class="kpi-label">Sales Target</div><div class="kpi-val c-blue" id="k-pnl-target">&#8377;2.10Cr</div><div class="kpi-sub" id="k-pnl-target-sub">Set Target Matrix</div><div class="kpi-icon">&#127919;</div></div>
@@ -902,8 +675,366 @@
 
 </div>
 
+<!-- PAGE 4: SALES PERFORMANCE -->
+<div class="page" id="pg-sales">
+  <div class="sec">Daily Revenue Trend</div>
+  <div class="chart-card" style="margin-bottom:20px">
+    <button class="info-btn" onclick="showInfoModal('Daily Revenue Trend', 'Tracks daily sales alongside a 7-day moving average (purple line) to smooth out weekday/weekend volatility. Sharp upward spikes represent weekend surge days (Friday–Sunday).')">i</button>
+    <button class="expand-btn" onclick="openModal('Daily Revenue Trend','c-daily-rev')">&#10178;</button>
+    <h3>Daily Revenue Trend with 7-Day Rolling Average</h3>
+    <div class="sub">Apr 1 &ndash; Jun 30 &middot; Gold = daily revenue &middot; Purple dashed = 7-day moving average &middot; Weekend spikes visible</div>
+    <div class="cw" style="height:260px"><canvas id="c-daily-rev"></canvas></div>
+  </div>
+  <div class="sec">Hourly Revenue &amp; Volume</div>
+  <div class="grid g2">
+    <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Revenue by Hour', 'Displays revenue earned per hour from 7 AM to 11 PM. Shows a bimodal peak pattern: 9–11 AM (Breakfast peak) and 8–10 PM (Dinner peak).')">i</button>
+      <button class="expand-btn" onclick="openModal('Revenue by Hour','c-hr-rev')">&#10178;</button>
+      <h3>Revenue by Hour</h3>
+      <div class="sub">Bimodal: 9&ndash;11 AM peak &middot; 9&ndash;10 PM peak</div>
+      <div class="cw" style="height:220px"><canvas id="c-hr-rev"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Orders by Hour', 'Measures order volume per hour. Colors reflect kitchen load: Red indicates peak kitchen stress (100% capacity), Amber is moderate load, and Green is low load.')">i</button>
+      <button class="expand-btn" onclick="openModal('Orders by Hour','c-hr-ord')">&#10178;</button>
+      <h3>Orders by Hour</h3>
+      <div class="sub">Red=high load &middot; Amber=medium &middot; Green=low</div>
+      <div class="cw" style="height:220px"><canvas id="c-hr-ord"></canvas></div>
+    </div>
+  </div>
+  <div class="sec">Revenue Heatmap</div>
+  <div class="chart-card">
+    <button class="info-btn" onclick="showInfoModal('Revenue Heatmap', '2D grid mapping Day of Week vs Hour of Day. Darkest cells (like Sunday 10 AM) mark absolute peak revenue windows across the entire week.')">i</button>
+    <h3>Revenue Intensity: Day of Week &times; Hour</h3>
+    <div class="sub">Darker = higher revenue &middot; Sunday 10 AM = single peak slot</div>
+    <canvas id="c-heatmap" style="width:100%;height:220px;display:block"></canvas>
+    <div class="hm-legend"><span>Low</span><div class="hm-bar"></div><span>High</span></div>
+  </div>
+  <div class="sec">Branch Trends &amp; Session Breakdown</div>
+  <div class="grid g2">
+    <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Branch Monthly Trend', 'Compares monthly sales trajectory across stores from April to June. Highlights upward growth (Aundh, Salunkhe Vihar) vs softening stores (Wadgaon Sheri -15.3%).')">i</button>
+      <button class="expand-btn" onclick="openModal('Branch Monthly Trend','c-br-trend')">&#10178;</button>
+      <h3>Branch Revenue &mdash; Monthly Trend</h3>
+      <div class="sub" id="br-trend-sub">AUNDH growing &middot; Wadgaon Sheri declining</div>
+      <div class="cw" style="height:230px"><canvas id="c-br-trend"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Revenue & Orders by Session', 'Compares revenue (bars) against order count (line) across meal sessions. Dinner drives highest volume, while Lunch generates highest average spend per ticket (AOV ₹552).')">i</button>
+      <button class="expand-btn" onclick="openModal('Revenue by Session','c-sess-bar')">&#10178;</button>
+      <h3>Revenue &amp; Orders by Session</h3>
+      <div class="sub">Dinner leads volume &middot; Lunch leads AOV (&#8377;552)</div>
+      <div class="cw" style="height:230px"><canvas id="c-sess-bar"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 5: MENU PERFORMANCE -->
+<div class="page" id="pg-menu">
+  <div class="sec">Category &amp; Price Point Analytics</div>
+  <div class="grid g2">
+    <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Category Revenue Split', 'Shows total net revenue generated across major product categories. Rice Bowls & Regional Mains generate ~42% of revenue, followed by Signature Breakfasts and Gourmet Coffee.')">i</button>
+      <button class="expand-btn" onclick="openModal('Category Revenue Split','c-menu-cat-pie')">&#10178;</button>
+      <h3>Category Revenue Contribution</h3>
+      <div class="sub">Rice Bowls &amp; Mains lead sales &middot; Click expand (⤢) for full 160+ item catalog</div>
+      <div class="cw" style="height:230px"><canvas id="c-menu-cat-pie"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Price Tier Distribution', 'Measures order volume across price point buckets. The ₹250–₹350 tier represents the highest order frequency, acting as the primary volume driver.')">i</button>
+      <button class="expand-btn" onclick="openModal('Price Tier Distribution','c-menu-price-tier')">&#10178;</button>
+      <h3>Price Tier &amp; Ticket Bucket Volume</h3>
+      <div class="sub">Volume distribution across item price ranges</div>
+      <div class="cw" style="height:230px"><canvas id="c-menu-price-tier"></canvas></div>
+    </div>
+  </div>
+
+  <div class="sec">Product Rankings</div>
+  <div class="grid g2">
+    <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Top 10 Items — Revenue', 'Ranks top dishes by total revenue. Rice Bowls & Mains dominate the top 5 revenue spots. Click expand to view all 160+ items.')">i</button>
+      <button class="expand-btn" onclick="openModal('Top 10 Items — Revenue','c-top10r2')">&#10178;</button>
+      <h3>Top 10 Items &mdash; Revenue</h3>
+      <div class="sub">Chicken Stroganoff = 9.1% of revenue &middot; Click expand for full catalog</div>
+      <div class="cw" style="height:270px"><canvas id="c-top10r2"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Top 10 Items — Quantity', 'Ranks top dishes by units sold. Egg White Omelettes and Cold Coffee lead quantity volume, acting as key basket drivers.')">i</button>
+      <button class="expand-btn" onclick="openModal('Top 10 Items — Quantity','c-top10q')">&#10178;</button>
+      <h3>Top 10 Items &mdash; Quantity</h3>
+      <div class="sub">Egg White Omelette &amp; Cold Coffee lead units</div>
+      <div class="cw" style="height:270px"><canvas id="c-top10q"></canvas></div>
+    </div>
+  </div>
+
+  <div class="sec">Menu Engineering Matrix</div>
+  <div class="chart-card">
+    <button class="info-btn" onclick="showInfoModal('Menu Engineering Matrix', 'Plots menu items by Popularity (Qty Sold) vs Profitability (Revenue). Stars (high sales, high profit) should be promoted; Plow Horses (high sales, low profit) should be repriced; Puzzles (low sales, high profit) need marketing; Dogs (low sales, low profit) should be delisted.')">i</button>
+    <button class="expand-btn" onclick="openModal('Menu Engineering Matrix','c-me-scatter')">&#10178;</button>
+    <h3>Popularity vs Revenue &mdash; Menu Engineering Quadrant</h3>
+    <div class="sub">Stars: promote &middot; Plow Horses: reprice &middot; Puzzles: reposition &middot; Dogs: remove &middot; Click expand to search all 160+ items</div>
+    <div style="display:flex;gap:16px;margin-bottom:10px;flex-wrap:wrap">
+      <span style="font-size:11px;color:#9fc794">&#11044; Stars (67)</span>
+      <span style="font-size:11px;color:#94b8e3">&#11044; Plow Horses (13)</span>
+      <span style="font-size:11px;color:var(--primary)">&#11044; Puzzles (14)</span>
+      <span style="font-size:11px;color:#e68c85">&#11044; Dogs (66)</span>
+    </div>
+    <div class="cw" style="height:300px"><canvas id="c-me-scatter"></canvas></div>
+    <div class="note" style="margin-top:14px">
+      <strong>💡 Menu Engineering Action Plan:</strong> Prune 20 low-selling <em>Dog</em> items requiring unique raw ingredients to reduce kitchen prep times by ~15%. Reprice high-volume <em>Plow Horses</em> (e.g. Masala Chai +₹10) to boost gross profit margin.
+    </div>
+  </div>
+
+  <div class="grid g2">
+    <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Fastest Growing Items', 'Items with highest % order growth from April to June. Gourmet coffee drinks expanded over 700% as breakfast attachments.')">i</button>
+      <button class="expand-btn" onclick="openModal('Fastest Growing Items','c-grow')">&#10178;</button>
+      <h3>Fastest Growing (Apr &rarr; Jun)</h3>
+      <div class="sub">Coffee category exploding &mdash; +700% avg</div>
+      <div class="cw" style="height:200px"><canvas id="c-grow"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Fastest Declining Items', 'Items experiencing severe sales drop-offs. Discontinued or low-demand seasonal beverages that should be removed to clean up kitchen prep.')">i</button>
+      <button class="expand-btn" onclick="openModal('Fastest Declining Items','c-decl')">&#10178;</button>
+      <h3>Fastest Declining (Apr &rarr; Jun)</h3>
+      <div class="sub">Several beverages dropped to zero units</div>
+      <div class="cw" style="height:200px"><canvas id="c-decl"></canvas></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- PAGE 7: OPERATIONS & BASKET ANALYSIS -->
+<div class="page" id="pg-operations">
+  <div class="sec">Market-Basket & Product Association Intelligence</div>
+  <div class="kpi-grid-4" style="margin-bottom:20px">
+    <div class="kpi-card c-blue">
+      <div class="kpi-label">Reconstructed Baskets</div>
+      <div class="kpi-val c-blue">74,445</div>
+      <div class="kpi-sub">Line items analyzed (Q1 + Q2)</div>
+      <div class="kpi-icon">🛒</div>
+    </div>
+    <div class="kpi-card c-green">
+      <div class="kpi-label">Multi-Item Basket Rate</div>
+      <div class="kpi-val c-green">64.1%</div>
+      <div class="kpi-sub">47,730 orders contain 2+ items</div>
+      <div class="kpi-icon">📦</div>
+    </div>
+    <div class="kpi-card c-purple">
+      <div class="kpi-label">Association Rules</div>
+      <div class="kpi-val c-purple">6,424</div>
+      <div class="kpi-sub">Cross-selling pair patterns</div>
+      <div class="kpi-icon">🔗</div>
+    </div>
+    <div class="kpi-card c-amber">
+      <div class="kpi-label">Food Cost Target (COGS)</div>
+      <div class="kpi-val c-amber">25.0%</div>
+      <div class="kpi-sub">Sale-to-Purchase Ratio Benchmark</div>
+      <div class="kpi-icon">🎯</div>
+    </div>
+  </div>
+
+  <div class="sec">Top Strategic Combo Recommendations (AOV & Margin Expansion)</div>
+  <div id="mb-combo-grid" class="grid g2" style="margin-bottom:24px"></div>
+
+  <div class="grid g2" style="margin-bottom:24px">
+    <div class="chart-card" style="display:flex;flex-direction:column;height:100%">
+      <div class="chart-title">💎 Underselling High-Margin Gems ("Puzzles")</div>
+      <div class="chart-sub">Items with >70% Gross Margin & Lower Q2 Volume — High Priority for Menu Bundling</div>
+      <div style="flex:1;overflow-y:auto;max-height:420px;margin-top:10px">
+        <table class="tbl" id="tbl-mb-puzzles" style="font-size:12px">
+          <thead>
+            <tr><th>Item Name</th><th>Category</th><th>Price</th><th>Cost</th><th>Margin %</th><th>Q2 Qty</th><th>Suggested Combo Partner</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">🍕 Category Cross-Selling Co-Occurrence</div>
+      <div class="chart-sub">Frequency of simultaneous purchases across main menu categories</div>
+      <div class="cw" style="height:380px"><canvas id="c-mb-cat"></canvas></div>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div class="chart-title">🔍 Item Association Rules Explorer (Support, Confidence & Lift)</div>
+        <div class="chart-sub">Explore item co-occurrences, directional confidence (A &rarr; B), and lift affinity scores</div>
+      </div>
+      <input type="text" id="mb-rule-search" placeholder="🔎 Search item name (e.g. Stroganoff, Coffee)..." style="padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:var(--card-bg);color:var(--text);font-size:12px;width:260px" onkeyup="filterMBRules()" />
+    </div>
+    <div style="overflow-x:auto;max-height:450px">
+      <table class="tbl" id="tbl-mb-rules" style="font-size:12px">
+        <thead>
+          <tr><th>Item A</th><th>Item B</th><th>Co-Occurrence</th><th>Confidence (A &rarr; B)</th><th>Confidence (B &rarr; A)</th><th>Lift Score</th><th>Affinity Level</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!-- PAGE 8: CHANNEL INTELLIGENCE -->
+<div class="page" id="pg-channels">
+  <div class="sec">Chain-Level Channel KPIs</div>
+  <div class="kpi-grid">
+    <div class="kpi-card c-green"><div class="kpi-label">Offline Total Revenue</div><div class="kpi-val c-green" style="font-size:20px">&#8377;98.4L</div><div class="kpi-sub">Dine In + Takeaway</div><div class="kpi-icon">&#127869;&#65039;</div></div>
+    <div class="kpi-card c-amber"><div class="kpi-label">Online Total Revenue</div><div class="kpi-val c-amber" style="font-size:20px">&#8377;1.09Cr</div><div class="kpi-sub">Zomato + Swiggy</div><div class="kpi-icon">&#128241;</div></div>
+    <div class="kpi-card c-blue"><div class="kpi-label">Offline vs Online AOV</div><div class="kpi-val c-blue" style="font-size:18px">&#8377;589 vs &#8377;468</div><div class="kpi-sub">Offline commands &#8377;121 premium</div><div class="kpi-icon">&#128181;</div></div>
+    <div class="kpi-card c-purple"><div class="kpi-label">Zomato vs Swiggy</div><div class="kpi-val c-purple" style="font-size:14px">&#8377;65.5L vs &#8377;43.3L</div><div class="kpi-sub">AOV: &#8377;485 vs &#8377;441</div><div class="kpi-icon">&#9878;&#65039;</div></div>
+  </div>
+
+  <div class="sec">Offline vs Online Revenue Split by Branch</div>
+  <div class="chart-card" style="margin-bottom:20px">
+    <button class="expand-btn" onclick="openModal('Offline vs Online by Branch','c-ch-split')">&#10178;</button>
+    <h3>Offline vs Online Revenue Split &mdash; All Branches</h3>
+    <div class="sub">Offline = Dine In + Takeaway (Green) &middot; Online = Zomato + Swiggy (Gold)</div>
+    <div class="cw" style="height:260px"><canvas id="c-ch-split"></canvas></div>
+    <div class="alert-note" style="margin-top:14px"><strong>Wadgaon Sheri</strong> is 74.6% online-dependent &mdash; the highest in the chain. Its -15.3% revenue decline may reflect delivery platform issues or rating drops.</div>
+  </div>
+
+  <div class="sec">Zomato vs Swiggy by Branch</div>
+  <div class="chart-card" style="margin-bottom:20px">
+    <button class="expand-btn" onclick="openModal('Zomato vs Swiggy by Branch','c-zs-bar')">&#10178;</button>
+    <h3>Zomato vs Swiggy Revenue &mdash; By Branch</h3>
+    <div class="sub">Side-by-side comparison across all 7 branches</div>
+    <div class="cw" style="height:260px"><canvas id="c-zs-bar"></canvas></div>
+    <div class="info-note" style="margin-top:14px"><strong>Insight:</strong> Zomato consistently outperforms Swiggy in AOV across all branches. Bavdhan is the exception &mdash; Swiggy AOV &#8377;592 &gt; Zomato AOV &#8377;520 (small sample, new branch).</div>
+  </div>
+
+  <div class="sec">Branch Comparison Matrix</div>
+  <div class="chart-card" style="margin-bottom:20px">
+    <h3>Complete Channel Comparison by Branch</h3>
+    <div class="sub">Click column headers to sort</div>
+    <div style="overflow-x:auto">
+      <table class="tbl" id="ch-matrix-tbl">
+        <tr>
+          <th onclick="sortTable('ch-matrix-tbl',0)">Branch</th>
+          <th onclick="sortTable('ch-matrix-tbl',1)">Total Rev</th>
+          <th onclick="sortTable('ch-matrix-tbl',2)">Offline Rev</th>
+          <th onclick="sortTable('ch-matrix-tbl',3)">Online Rev</th>
+          <th onclick="sortTable('ch-matrix-tbl',4)">Offline%</th>
+          <th onclick="sortTable('ch-matrix-tbl',5)">Zomato Rev</th>
+          <th onclick="sortTable('ch-matrix-tbl',6)">Swiggy Rev</th>
+          <th onclick="sortTable('ch-matrix-tbl',7)">Z-AOV</th>
+          <th onclick="sortTable('ch-matrix-tbl',8)">S-AOV</th>
+          <th onclick="sortTable('ch-matrix-tbl',9)">DineIn AOV</th>
+          <th>Winner</th>
+        </tr>
+        <tr><td>Kothrud</td><td>&#8377;62.3L</td><td>&#8377;32.3L</td><td>&#8377;30.0L</td><td>51.8%</td><td>&#8377;18.2L</td><td>&#8377;11.9L</td><td>&#8377;470</td><td>&#8377;431</td><td>&#8377;597</td><td><span class="tag offline">Offline</span></td></tr>
+        <tr><td>AUNDH</td><td>&#8377;39.7L</td><td>&#8377;22.7L</td><td>&#8377;16.9L</td><td>57.3%</td><td>&#8377;9.4L</td><td>&#8377;7.5L</td><td>&#8377;473</td><td>&#8377;439</td><td>&#8377;568</td><td><span class="tag offline">Offline</span></td></tr>
+        <tr><td>Salunkhe Vihar</td><td>&#8377;26.9L</td><td>&#8377;12.5L</td><td>&#8377;14.4L</td><td>46.6%</td><td>&#8377;9.5L</td><td>&#8377;4.8L</td><td>&#8377;530</td><td>&#8377;477</td><td>&#8377;645</td><td><span class="tag online">Online</span></td></tr>
+        <tr><td>Saudagar</td><td>&#8377;26.9L</td><td>&#8377;13.6L</td><td>&#8377;13.3L</td><td>50.6%</td><td>&#8377;7.2L</td><td>&#8377;6.1L</td><td>&#8377;492</td><td>&#8377;460</td><td>&#8377;586</td><td><span class="tag offline">Offline</span></td></tr>
+        <tr><td>Wadgaon Sheri</td><td>&#8377;26.3L</td><td>&#8377;6.7L</td><td>&#8377;19.6L</td><td>25.4%</td><td>&#8377;11.7L</td><td>&#8377;7.9L</td><td>&#8377;458</td><td>&#8377;452</td><td>&#8377;564</td><td><span class="tag online">Online</span></td></tr>
+        <tr><td>Yolkshire Wakad</td><td>&#8377;21.7L</td><td>&#8377;7.9L</td><td>&#8377;13.8L</td><td>36.3%</td><td>&#8377;8.9L</td><td>&#8377;4.9L</td><td>&#8377;513</td><td>&#8377;396</td><td>&#8377;569</td><td><span class="tag online">Online</span></td></tr>
+        <tr><td>Bavdhan</td><td>&#8377;3.6L</td><td>&#8377;2.75L</td><td>&#8377;0.89L</td><td>75.6%</td><td>&#8377;0.71L</td><td>&#8377;0.18L</td><td>&#8377;520</td><td>&#8377;592</td><td>&#8377;620</td><td><span class="tag offline">Offline</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="sec">Commission Impact Analysis</div>
+  <div class="chart-card" style="margin-bottom:20px">
+    <h3>Platform Commission Impact (Estimated 25% on Delivery Orders)</h3>
+    <div class="sub">True net revenue after estimated platform fees</div>
+    <div class="grid g2" style="margin-top:14px;margin-bottom:0">
+      <div>
+        <table class="tbl" id="tbl-commission-impact">
+          <tr><th>Metric</th><th>Value</th></tr>
+          <tr><td>Zomato commission drain</td><td style="color:#e68c85;font-weight:700">~&#8377;16.4L/quarter</td></tr>
+          <tr><td>Swiggy commission drain</td><td style="color:#e68c85;font-weight:700">~&#8377;10.8L/quarter</td></tr>
+          <tr><td>Total delivery commission</td><td style="color:#e68c85;font-weight:700">~&#8377;27.2L/quarter</td></tr>
+          <tr><td>True net from Zomato</td><td style="color:#9fc794;font-weight:700">~&#8377;49.2L</td></tr>
+          <tr><td>True net from Swiggy</td><td style="color:#9fc794;font-weight:700">~&#8377;32.5L</td></tr>
+          <tr><td>Dine In true net (0% commission)</td><td style="color:#9fc794;font-weight:700">&#8377;96.9L</td></tr>
+        </table>
+      </div>
+      <div class="note">Even with Zomato at 31.6% share, <strong>Dine In at 46.8%</strong> contributes disproportionately more to actual profit after commissions.<br><br>Dine In: &#8377;590 AOV, <strong>0% commission</strong>. Zomato: &#8377;485 AOV but nets only <strong>~&#8377;364 after 25% commission</strong>.<br><br><strong>Recommendation:</strong> Prioritise Dine In experience investment.</div>
+    </div>
+  </div>
+
+  <div class="sec">Monthly Channel Trend</div>
+  <div class="chart-card">
+    <button class="expand-btn" onclick="openModal('Monthly Channel Trend','c-ch-trend')">&#10178;</button>
+    <h3>Monthly Revenue by Channel &mdash; Apr &rarr; May &rarr; Jun</h3>
+    <div class="sub">Dine In stable &middot; Zomato &amp; Swiggy both plateaued after May</div>
+    <div class="cw" style="height:260px"><canvas id="c-ch-trend"></canvas></div>
+  </div>
+</div>
+
+<!-- PAGE 9: BRANCH PROFILES & KITCHEN LOAD -->
+<div class="page" id="pg-branches">
+  <div class="sec">Select Individual Branch</div>
+  <div class="branch-selector" id="branch-selector">
+    <div class="branch-pill active" onclick="selectBranchProfile('Kothrud')">Kothrud</div>
+    <div class="branch-pill" onclick="selectBranchProfile('AUNDH')">AUNDH</div>
+    <div class="branch-pill" onclick="selectBranchProfile('Salunkhe Vihar')">Salunkhe Vihar</div>
+    <div class="branch-pill" onclick="selectBranchProfile('Saudagar')">Saudagar</div>
+    <div class="branch-pill" onclick="selectBranchProfile('Wadgaon Sheri')">Wadgaon Sheri</div>
+    <div class="branch-pill" onclick="selectBranchProfile('Yolkshire Wakad')">Yolkshire Wakad</div>
+    <div class="branch-pill" onclick="selectBranchProfile('Bavdhan')">Bavdhan</div>
+  </div>
+  <div id="branch-profile-content" style="margin-bottom:28px"></div>
+
+  <div class="sec">Dual Store Comparison Tool</div>
+  <div id="dual-store-comparison-wrap"></div>
+</div>
+
+<!-- PAGE 7: KOTHRUD PLAYBOOK & BENCHMARK -->
+<div style="margin-top:24px">
+  <div class="sec">Kothrud Flagship Benchmark Analysis &amp; Playbook</div>
+  <div class="kpi-grid">
+    <div class="kpi-card c-green"><div class="kpi-label">Quarterly Revenue</div><div class="kpi-val c-green" id="k-kothrud-rev">&#8377;62.3L</div><div class="kpi-sub">30.1% of entire chain</div></div>
+    <div class="kpi-card c-blue"><div class="kpi-label">Dine-In Preference</div><div class="kpi-val c-blue" id="k-kothrud-dinein">50.3%</div><div class="kpi-sub">&#8377;31.3L non-commissioned</div></div>
+    <div class="kpi-card c-amber"><div class="kpi-label">Beverage Attach</div><div class="kpi-val c-amber" id="k-kothrud-bev">54%</div><div class="kpi-sub">Chain benchmark leader</div></div>
+    <div class="kpi-card c-purple"><div class="kpi-label">Dine-In AOV</div><div class="kpi-val c-purple" id="k-kothrud-aov">&#8377;597</div><div class="kpi-sub">Top in major branches</div></div>
+  </div>
+  <div class="grid g2">
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Revenue Contribution: Kothrud vs Rest of Chain','c-kothrud-share')">&#10178;</button>
+      <h3>Revenue Contribution: Kothrud vs Rest of Chain</h3>
+      <div class="sub">Kothrud alone matches top 3 franchises combined</div>
+      <div class="cw" style="height:230px"><canvas id="c-kothrud-share"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Dine-In vs Delivery Share Comparison','c-kothrud-channel-comp')">&#10178;</button>
+      <h3>Dine-In vs Delivery Share Comparison</h3>
+      <div class="sub">Kothrud maintains healthier 50%+ in-store revenue</div>
+      <div class="cw" style="height:230px"><canvas id="c-kothrud-channel-comp"></canvas></div>
+    </div>
+  </div>
+  <div class="grid g3">
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Kothrud Hourly Revenue vs Chain Average','c-kothrud-hourly')">&#10178;</button>
+      <h3>Kothrud Hourly Curve vs Chain Avg</h3>
+      <div class="sub">Breakfast surge peak at 9–11 AM</div>
+      <div class="cw" style="height:210px"><canvas id="c-kothrud-hourly"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Beverage Category Upsell Mix','c-kothrud-bev-breakdown')">&#10178;</button>
+      <h3>Kothrud Beverage Category Mix</h3>
+      <div class="sub">54% attach rate driven by Gourmet Coffee</div>
+      <div class="cw" style="height:210px"><canvas id="c-kothrud-bev-breakdown"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Kothrud Top 5 Anchor Items','c-kothrud-menu-mix')">&#10178;</button>
+      <h3>Kothrud Top 5 Anchor Dishes</h3>
+      <div class="sub">Revenue concentration breakdown</div>
+      <div class="cw" style="height:210px"><canvas id="c-kothrud-menu-mix"></canvas></div>
+    </div>
+  </div>
+  <div class="chart-card" style="margin-bottom:20px">
+    <h3>Kothrud vs Chain Operational Benchmark Matrix</h3>
+    <div class="sub" style="margin-bottom:12px">Key performance indicators compared across all branches for system standardization</div>
+    <div style="overflow-x:auto">
+      <table class="tbl" id="tbl-kothrud-playbook-matrix"></table>
+    </div>
+  </div>
+</div>
+
 <!-- PAGE 13: STORE-TO-STORE COMPARISON -->
-<div class="page" id="pg13">
+<div style="margin-top:24px">
   <!-- CONTROL BAR -->
   <div style="background:var(--bg3);padding:14px 18px;border-radius:12px;margin-bottom:20px;border:1px solid var(--border)">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px">
@@ -1020,8 +1151,348 @@
     </div>
   </div>
 </div>
+<!-- PAGE 7: OPERATIONS & KITCHEN LOAD -->
+<div class="page" id="pg7">
+  <div class="sec">Kitchen Load Analysis</div>
+  <div class="chart-card">
+    <button class="expand-btn" onclick="openModal('Kitchen Load by Hour','c-load')">&#10178;</button>
+    <h3>Kitchen Utilization by Hour &mdash; All Branches</h3>
+    <div class="sub">Red &ge;80% &middot; Amber 50&ndash;80% &middot; Green &lt;50% &middot; Peak: 10 AM (100%)</div>
+    <div class="cw" style="height:190px"><canvas id="c-load"></canvas></div>
+  </div>
+  <div class="grid g2">
+    <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Staffing Guide by Hour', 'Recommends minimum floor and kitchen headcount required for each hour based on peak order volume. Schedule maximum staff (8 headcount) during the 9–11 AM peak.')">i</button>
+      <h3>Staffing Guide by Hour</h3>
+      <div class="sub">Recommended minimum staff per branch</div>
+      <table class="tbl" id="tbl-staffing">
+        <tr><th>Hour</th><th>Daily Orders</th><th>Load</th><th>Min Staff</th></tr>
+        <tr><td>7 AM</td><td>12</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:29%;background:var(--green)"></div></div>29%</div></td><td style="font-weight:700">3</td></tr>
+        <tr><td>8 AM</td><td>26</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:64%;background:var(--amber)"></div></div>64%</div></td><td style="font-weight:700">5-6</td></tr>
+        <tr><td>9 AM</td><td>37</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:90%;background:var(--red)"></div></div>90%</div></td><td style="font-weight:700">7-8</td></tr>
+        <tr><td>10 AM</td><td>41</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:100%;background:var(--red)"></div></div>100%</div></td><td style="font-weight:700">8</td></tr>
+        <tr><td>3-5 PM</td><td>12</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:32%;background:var(--green)"></div></div>32%</div></td><td style="font-weight:700">3</td></tr>
+        <tr><td>9 PM</td><td>34</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:83%;background:var(--red)"></div></div>83%</div></td><td style="font-weight:700">6-7</td></tr>
+      </table>
+      <div class="info-note" style="margin-top:12px;margin-bottom:0"><strong>💡 Staffing Insight:</strong> Cross-train morning prep staff to shift to floor service between 9:30 AM and 11:30 AM to handle morning surges without extra overhead.</div>
+    </div>
+    <div class="chart-card">
+      <button class="info-btn" onclick="showInfoModal('Branch Scorecard Table', 'Summarizes quarterly revenue, AOV, sales trend %, and status rating across all stores. Click column headers to sort.')">i</button>
+      <h3>Branch Scorecard</h3>
+      <div class="sub">Revenue, trend, and status &middot; Click headers to sort</div>
+      <table class="tbl" id="tbl-scorecard">
+        <tr><th>Branch</th><th>Revenue</th><th>AOV</th><th>Trend</th><th>Status</th></tr>
+        <tr><td>Kothrud</td><td>&#8377;62.3L</td><td>&#8377;515</td><td class="trend-up">Stable</td><td><span class="tag star">Leader</span></td></tr>
+        <tr><td>AUNDH</td><td>&#8377;39.7L</td><td>&#8377;515</td><td class="trend-up">&uarr; Growing</td><td><span class="tag star">Strong</span></td></tr>
+        <tr><td>Salunkhe Vihar</td><td>&#8377;26.9L</td><td>&#8377;556</td><td class="trend-up">&uarr; Growing</td><td><span class="tag horse">Premium</span></td></tr>
+        <tr><td>Saudagar</td><td>&#8377;26.9L</td><td>&#8377;526</td><td class="trend-dn">&darr; -10.2%</td><td><span class="tag warn">Watch</span></td></tr>
+        <tr><td>Wadgaon Sheri</td><td>&#8377;26.3L</td><td>&#8377;479</td><td class="trend-dn">&darr; -15.3%</td><td><span class="tag risk">Urgent</span></td></tr>
+        <tr><td>Yolkshire Wakad</td><td>&#8377;21.7L</td><td>&#8377;497</td><td>Mixed</td><td><span class="tag puzzle">Review</span></td></tr>
+        <tr><td>Bavdhan</td><td>&#8377;3.6L</td><td>&#8377;593</td><td>New (Jun)</td><td><span class="tag grow">High Pot.</span></td></tr>
+      </table>
+      <div class="alert-note" style="margin-top:12px"><strong>⚠️ Operational Alert:</strong> Wadgaon Sheri (-15.3%) and Wakad (-27% in June) require immediate audit on kitchen order accuracy and delivery partner wait times.</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- PAGE 6: CUSTOMER & TRANSACTIONS -->
+<div class="page" id="pg-customer">
+  <div class="sec">Bill Statistics</div>
+  <div class="kpi-grid">
+    <div class="kpi-card c-blue"><div class="kpi-label">Maximum Bill</div><div class="kpi-val c-blue">&#8377;28,800</div><div class="kpi-sub">Group/event dining</div></div>
+    <div class="kpi-card c-green"><div class="kpi-label">Median Bill</div><div class="kpi-val c-green">&#8377;420</div><div class="kpi-sub">50th percentile</div></div>
+    <div class="kpi-card c-amber"><div class="kpi-label">Mean Bill</div><div class="kpi-val c-amber">&#8377;528</div><div class="kpi-sub">Pulled by large orders</div></div>
+    <div class="kpi-card c-purple"><div class="kpi-label">75th Percentile</div><div class="kpi-val c-purple">&#8377;651</div><div class="kpi-sub">Premium zone</div></div>
+  </div>
+  <div class="grid g21">
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Bill Value Distribution','c-bill')">&#10178;</button>
+      <h3>Bill Value Distribution</h3>
+      <div class="sub">&#8377;300&ndash;&#8377;400 is the largest segment (24.8% of orders)</div>
+      <div class="cw" style="height:230px"><canvas id="c-bill"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('AOV by Channel','c-aov-ch')">&#10178;</button>
+      <h3>AOV by Channel</h3>
+      <div class="sub">Dine In leads at &#8377;590</div>
+      <div class="cw" style="height:230px"><canvas id="c-aov-ch"></canvas></div>
+    </div>
+  </div>
+  <div class="grid g2">
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('AOV by Branch','c-aov-br')">&#10178;</button>
+      <h3>AOV by Branch</h3>
+      <div class="sub">Salunkhe Vihar highest &middot; Wakad lowest</div>
+      <div class="cw" style="height:210px"><canvas id="c-aov-br"></canvas></div>
+    </div>
+    <div class="chart-card" style="display:flex;flex-direction:column">
+      <h3>Market Basket &mdash; Category Combos</h3>
+      <div class="sub" style="margin-bottom:12px">Frequently ordered together</div>
+      <table class="tbl">
+        <tr><th>When Customer Orders</th><th>Also Orders</th><th>Confidence</th><th>Lift</th></tr>
+        <tr><td>Main Dish</td><td>Beverage</td><td><span class="tag star">72%</span></td><td>1.8&times;</td></tr>
+        <tr><td>Egg Dish</td><td>Toast/Bread</td><td><span class="tag star">65%</span></td><td>1.6&times;</td></tr>
+        <tr><td>Rice Bowl</td><td>Cold Drink</td><td><span class="tag horse">58%</span></td><td>1.5&times;</td></tr>
+        <tr><td>Roll/Sandwich</td><td>Iced Tea</td><td><span class="tag horse">52%</span></td><td>1.4&times;</td></tr>
+        <tr><td>Breakfast Combo</td><td>Coffee</td><td><span class="tag puzzle">48%</span></td><td>1.3&times;</td></tr>
+      </table>
+      <div class="info-note" style="margin-top:12px;margin-bottom:0">Key opportunity: 72% of main-dish orders pair with a beverage. Improving attach by 20% adds ~&#8377;60/order &rarr; &#8377;24L+ annual uplift.</div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 9: Q1 VS Q2 COMPARATIVE ANALYSIS -->
+<div class="page" id="pg9">
+  <div class="sec">Quarter-over-Quarter Growth Metrics (Q1 2026 vs Q2 2026)</div>
+  <div class="kpi-grid">
+    <div class="kpi-card c-green"><div class="kpi-label">QoQ Revenue Growth</div><div class="kpi-val c-green">+20.2%</div><div class="kpi-sub">&#8377;1.72Cr &rarr; &#8377;2.07Cr</div></div>
+    <div class="kpi-card c-blue"><div class="kpi-label">QoQ Volume Growth</div><div class="kpi-val c-blue">+17.8%</div><div class="kpi-sub">34,120 &rarr; 40,193 orders</div></div>
+    <div class="kpi-card c-amber"><div class="kpi-label">QoQ AOV Improvement</div><div class="kpi-val c-amber">+2.1%</div><div class="kpi-sub">&#8377;505 &rarr; &#8377;516 net</div></div>
+    <div class="kpi-card c-purple"><div class="kpi-label">Top Growth Branch</div><div class="kpi-val c-purple" style="font-size:16px">Kothrud</div><div class="kpi-sub">+21.7% QoQ revenue</div></div>
+  </div>
+  <div class="grid g2">
+    <div class="chart-card">
+      <h3>Monthly Revenue Trajectory: Q1 vs Q2</h3>
+      <div class="sub">Continuous month-on-month revenue progression</div>
+      <div class="cw" style="height:230px"><canvas id="c-q1q2-monthly"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Branch Revenue Comparison: Q1 vs Q2</h3>
+      <div class="sub">Side-by-side branch growth performance</div>
+      <div class="cw" style="height:230px"><canvas id="c-q1q2-branch"></canvas></div>
+    </div>
+  </div>
+  <div class="chart-card" style="margin-bottom:20px">
+    <h3>Q1 vs Q2 Detailed Performance Scorecard</h3>
+    <div class="sub">Metrics comparison across branches</div>
+    <table class="tbl" id="tbl-q1q2-scorecard">
+      <tr><th>Metric / Branch</th><th>Q1 Revenue</th><th>Q2 Revenue</th><th>QoQ Change</th><th>Q1 AOV</th><th>Q2 AOV</th><th>Status</th></tr>
+      <tr><td>Kothrud</td><td>&#8377;51.18L</td><td>&#8377;62.29L</td><td class="trend-up">+21.7%</td><td>&#8377;509</td><td>&#8377;516</td><td><span class="tag star">Flagship Peak</span></td></tr>
+      <tr><td>AUNDH</td><td>&#8377;37.02L</td><td>&#8377;39.66L</td><td class="trend-up">+7.1%</td><td>&#8377;520</td><td>&#8377;515</td><td><span class="tag star">Solid Growth</span></td></tr>
+      <tr><td>Salunkhe Vihar</td><td>&#8377;23.66L</td><td>&#8377;26.91L</td><td class="trend-up">+13.7%</td><td>&#8377;534</td><td>&#8377;556</td><td><span class="tag horse">AOV Leader</span></td></tr>
+      <tr><td>Saudagar</td><td>&#8377;21.35L</td><td>&#8377;26.87L</td><td class="trend-up">+25.8%</td><td>&#8377;488</td><td>&#8377;526</td><td><span class="tag grow">Recovered</span></td></tr>
+      <tr><td>Wadgaon Sheri</td><td>&#8377;22.55L</td><td>&#8377;26.25L</td><td class="trend-up">+16.4%</td><td>&#8377;460</td><td>&#8377;479</td><td><span class="tag risk">Delivery Dependent</span></td></tr>
+      <tr><td>Yolkshire Wakad</td><td>&#8377;16.62L</td><td>&#8377;21.66L</td><td class="trend-up">+30.3%</td><td>&#8377;513</td><td>&#8377;497</td><td><span class="tag warn">High Volatility</span></td></tr>
+      <tr><td>Bavdhan</td><td>&#8377;0.00L</td><td>&#8377;3.64L</td><td class="trend-up">New</td><td>&mdash;</td><td>&#8377;593</td><td><span class="tag star">Debut</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- PAGE 10: FORECASTING -->
+<div class="page" id="pg10">
+  <div class="sec">Revenue Forecast Q3 2026</div>
+  <div class="grid g2">
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Revenue Forecast','c-fc-rev')">&#10178;</button>
+      <h3>Revenue &mdash; Actuals + Forecast</h3>
+      <div class="sub">Solid = actual &middot; Dashed = linear forecast Jul&ndash;Sep</div>
+      <div class="cw" style="height:250px"><canvas id="c-fc-rev"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <button class="expand-btn" onclick="openModal('Orders Forecast','c-fc-ord')">&#10178;</button>
+      <h3>Orders &mdash; Actuals + Forecast</h3>
+      <div class="sub">Volume declining &mdash; AOV compensating</div>
+      <div class="cw" style="height:250px"><canvas id="c-fc-ord"></canvas></div>
+    </div>
+  </div>
+  <div class="chart-card">
+    <h3>Forecast Summary</h3>
+    <div class="sub" style="margin-bottom:12px">Monthly actuals and Q3 projections</div>
+    <table class="tbl" id="tbl-forecast-summary">
+      <tr><th>Month</th><th>Revenue</th><th>Orders</th><th>AOV</th><th>MoM</th><th>Type</th></tr>
+      <tr><td>April 2026</td><td>&#8377;67,62,859</td><td>13,952</td><td>&#8377;485</td><td>&mdash;</td><td><span class="tag star">Actual</span></td></tr>
+      <tr><td>May 2026</td><td>&#8377;70,69,957</td><td>13,631</td><td>&#8377;519</td><td class="trend-up">+4.5%</td><td><span class="tag star">Actual</span></td></tr>
+      <tr><td>June 2026</td><td>&#8377;68,95,763</td><td>12,610</td><td>&#8377;547</td><td class="trend-dn">-2.5%</td><td><span class="tag star">Actual</span></td></tr>
+      <tr style="opacity:.8"><td>July 2026</td><td>&#8377;70,42,431</td><td>12,056</td><td>&#8377;584</td><td class="trend-up">+2.1%</td><td><span class="tag puzzle">Forecast</span></td></tr>
+      <tr style="opacity:.7"><td>August 2026</td><td>&#8377;71,08,883</td><td>11,385</td><td>&#8377;624</td><td class="trend-up">+0.9%</td><td><span class="tag puzzle">Forecast</span></td></tr>
+      <tr style="opacity:.6"><td>September 2026</td><td>&#8377;71,75,336</td><td>10,714</td><td>&#8377;670</td><td class="trend-up">+0.9%</td><td><span class="tag puzzle">Forecast</span></td></tr>
+    </table>
+    <div class="note">Forecast caveat: Linear regression on 3 months &mdash; directional only. With coffee push + Bavdhan ramp-up + beverage attach, Q3 could realistically reach <strong>&#8377;75&ndash;80L/month</strong>.</div>
+  </div>
+</div>
+
+<!-- PAGE 11: RECOMMENDATIONS -->
+<div class="page" id="pg11">
+  <div class="sec">Action Plan &amp; Financial Priorities</div>
+  <div class="rec-grid" id="rec-grid-container">
+    <div class="rec-card" style="border-color:rgba(124,76,71,.4)">
+      <h3>Quick Wins &amp; Marketing</h3><div class="rec-period">Low Effort / Immediate</div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--accent);color:var(--text)">1</div><div class="rec-text">Google Reviews Drive: Focus on collecting customer reviews to convert local search intent</div></div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--accent);color:var(--text)">2</div><div class="rec-text">Brief staff on beverage upselling (coffee and tea pairings for breakfast/afternoon)</div></div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--accent);color:var(--text)">3</div><div class="rec-text">Add 3 combo bundles to Zomato &amp; Swiggy to boost order values</div></div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--accent);color:var(--text)">4</div><div class="rec-text">Remove 20 Dog items with unique ingredients to simplify kitchen ops</div></div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--accent);color:var(--text)">5</div><div class="rec-text">Confirm Bavdhan's listings and ensure its full menu is active online</div></div>
+    </div>
+    <div class="rec-card" style="border-color:rgba(231,186,68,.3)">
+      <h3>High Impact Initiatives</h3><div class="rec-period">Medium Effort / 30 Days</div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--primary);color:var(--bg)">1</div><div class="rec-text">Roll out Mon&ndash;Wed Weekday Campaigns (Monday Breakfast Club, Student Tuesdays)</div></div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--primary);color:var(--bg)">2</div><div class="rec-text">Launch Wednesday Work From Yolkshire (afternoon coffee + snack workspace packages)</div></div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--primary);color:var(--bg)">3</div><div class="rec-text">Wadgaon Sheri turnaround: audit platform visibility and ratings; run local ads</div></div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--primary);color:var(--bg)">4</div><div class="rec-text">Reprice Plow Horse beverages +&#8377;20&ndash;30 (Lemon Iced Tea, Mint Lemonade)</div></div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--primary);color:var(--bg)">5</div><div class="rec-text">Customer loyalty program: design stamps/points to improve retention</div></div>
+    </div>
+    <div class="rec-card" style="border-color:rgba(65,86,57,.4)">
+      <h3>Strategic &amp; Long Term</h3><div class="rec-period">High Effort / 90 Days</div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--secondary);color:var(--text)">1</div><div class="rec-text">Scale Transition: Build repeatable operational systems to copy Kothrud's success</div></div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--secondary);color:var(--text)">2</div><div class="rec-text">Create standardized training manuals for consistent execution across franchises</div></div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--secondary);color:var(--text)">3</div><div class="rec-text">Initiate own ordering channel (direct WhatsApp/Web) to avoid delivery commissions</div></div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--secondary);color:var(--text)">4</div><div class="rec-text">Setup franchise marketing coordination fund for Pune-wide campaign sync</div></div>
+      <div class="rec-item"><div class="rec-num" style="background:var(--secondary);color:var(--text)">5</div><div class="rec-text">Scout 8th branch location (evaluate Hinjewadi / Viman Nagar / Koregaon Park)</div></div>
+    </div>
+  </div>
+  <div class="sec">SWOT Analysis</div>
+  <div class="swot" id="swot-container">
+    <div class="swot-q s"><h3>Strengths</h3>
+      <div class="swot-item">&bull; Kothrud flagship at &#8377;62.3L (30%)</div>
+      <div class="swot-item">&bull; Cancel rate 0.08% &mdash; operational excellence</div>
+      <div class="swot-item">&bull; Diversified channel presence (3 major channels)</div>
+      <div class="swot-item">&bull; Coffee growing as strong breakfast companion (+700%)</div>
+      <div class="swot-item">&bull; Bavdhan Month 1 AOV &#8377;593 &mdash; above chain avg</div>
+      <div class="swot-item">&bull; Low discount rate (3.04%) &mdash; pricing power</div>
+    </div>
+    <div class="swot-q w"><h3>Weaknesses</h3>
+      <div class="swot-item">&bull; Chicken Stroganoff = 9% of revenue &mdash; dependency</div>
+      <div class="swot-item">&bull; June orders -1,021 vs May &mdash; demand softening</div>
+      <div class="swot-item">&bull; 66 Dog items creating operational complexity</div>
+      <div class="swot-item">&bull; 3&ndash;5 PM idle &mdash; 21 branch-hours/day wasted</div>
+      <div class="swot-item">&bull; Wakad lowest AOV (&#8377;497) &mdash; mix/pricing issue</div>
+      <div class="swot-item">&bull; Constraint: scaling and cross-franchise consistency</div>
+    </div>
+    <div class="swot-q o"><h3>Opportunities</h3>
+      <div class="swot-item">&bull; Weak day ROI: growing Monday by 20% vs Sunday by 5%</div>
+      <div class="swot-item">&bull; Mon-Wed campaigns: Monday Breakfast Club, Student Tuesdays</div>
+      <div class="swot-item">&bull; Coffee &amp; comfort food pairings (72% basket confidence)</div>
+      <div class="swot-item">&bull; Afternoon snack menu (3 idle hours/day &times; 7 branches)</div>
+      <div class="swot-item">&bull; Systems rollout: replicate Kothrud's success playbook</div>
+      <div class="swot-item">&bull; 8th branch using Bavdhan success model</div>
+    </div>
+    <div class="swot-q t"><h3>Threats</h3>
+      <div class="swot-item">&bull; Zomato/Swiggy ~25% commission = &#8377;27L/qtr drain</div>
+      <div class="swot-item">&bull; Wadgaon Sheri competitive pressure &mdash; unidentified</div>
+      <div class="swot-item">&bull; Monsoon reducing cafe foot traffic (Jun&ndash;Sep)</div>
+      <div class="swot-item">&bull; Beverage competition: Starbucks, Third Wave Coffee</div>
+      <div class="swot-item">&bull; Chicken cost inflation &rarr; impacts #1 revenue item</div>
+      <div class="swot-item">&bull; Kothrud at 30% = chain-level concentration risk</div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 14: EXECUTIVE REPORT -->
+<div class="page" id="pg-report">
+  <button class="print-btn" onclick="window.print()">Print Report</button>
+  <div class="report-content" id="report-content"></div>
+  <p style="color:var(--muted);font-size:11px;margin-top:20px">Report prepared by: Business Intelligence &middot; Yolkshire Chain Analytics &middot; July 2026. Data source: POS system exports, delivery platform reports.</p>
+</div>
+
+<!-- PAGE 15: STORE-TO-STORE COMPARISON -->
+<div class="page" id="pg-comparison">
+  <div class="sec">Store-to-Store Comparative Intelligence Matrix</div>
+  
+  <div class="chart-card" style="margin-bottom:20px;background:var(--bg2);border:1px solid var(--border)">
+    <div style="display:flex;justify:space-between;align-items:center;flex-wrap:wrap;gap:14px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:12px;font-weight:700;color:var(--muted)">Select Store A:</span>
+        <select class="filter-select" id="sel-dual-store-a" onchange="setDualStoreA(this.value)">
+          <option value="Kothrud">Kothrud</option>
+          <option value="AUNDH">AUNDH</option>
+          <option value="Salunkhe Vihar">Salunkhe Vihar</option>
+          <option value="Saudagar">Saudagar</option>
+          <option value="Wadgaon Sheri">Wadgaon Sheri</option>
+          <option value="Yolkshire Wakad">Yolkshire Wakad</option>
+          <option value="Bavdhan">Bavdhan</option>
+        </select>
+        <button class="filter-reset" style="margin-left:0;padding:6px 12px;font-weight:700" onclick="swapDualStores()">🔄 Swap</button>
+        <span style="font-size:12px;font-weight:700;color:var(--muted)">Select Store B:</span>
+        <select class="filter-select" id="sel-dual-store-b" onchange="setDualStoreB(this.value)">
+          <option value="Kothrud">Kothrud</option>
+          <option value="AUNDH" selected>AUNDH</option>
+          <option value="Salunkhe Vihar">Salunkhe Vihar</option>
+          <option value="Saudagar">Saudagar</option>
+          <option value="Wadgaon Sheri">Wadgaon Sheri</option>
+          <option value="Yolkshire Wakad">Yolkshire Wakad</option>
+          <option value="Bavdhan">Bavdhan</option>
+        </select>
+      </div>
+      <div style="font-size:11px;color:var(--muted)">Comparing unit performance, channel mix & ticket metrics</div>
+    </div>
+  </div>
+
+  <div class="kpi-grid-5">
+    <div class="kpi-card c-blue">
+      <div class="kpi-label">Revenue Variance</div>
+      <div class="kpi-val c-blue" id="kpi-comp-revdiff">+₹22.6L</div>
+      <div class="kpi-sub" id="kpi-comp-storesub">Kothrud vs AUNDH</div>
+      <div class="kpi-icon">💰</div>
+    </div>
+    <div class="kpi-card c-green">
+      <div class="kpi-label">Dine-In Ratio Gap</div>
+      <div class="kpi-val c-green" id="kpi-comp-dinegap">50.3% vs 56.7%</div>
+      <div class="kpi-sub">Margin cushion</div>
+      <div class="kpi-icon">🍽️</div>
+    </div>
+    <div class="kpi-card c-amber">
+      <div class="kpi-label">Bev Attachment Gap</div>
+      <div class="kpi-val c-amber" id="kpi-comp-bevgap">54% vs 48%</div>
+      <div class="kpi-sub">Upsell efficiency</div>
+      <div class="kpi-icon">☕</div>
+    </div>
+    <div class="kpi-card c-purple">
+      <div class="kpi-label">AOV Gap</div>
+      <div class="kpi-val c-purple" id="kpi-comp-aovgap">₹515 vs ₹515</div>
+      <div class="kpi-sub" id="kpi-comp-aovsub">+₹0 ticket gap</div>
+      <div class="kpi-icon">🎫</div>
+    </div>
+    <div class="kpi-card c-red">
+      <div class="kpi-label">Store Status Rating</div>
+      <div class="kpi-val c-red" id="kpi-comp-statusval" style="font-size:14px">Leader vs Growing</div>
+      <div class="kpi-sub">Comparative status</div>
+      <div class="kpi-icon">📊</div>
+    </div>
+  </div>
+
+  <div class="sec">Head-to-Head Visual Diagnostics</div>
+  <div class="grid g2">
+    <div class="chart-card">
+      <h3>Monthly Net Revenue Comparison</h3>
+      <div class="sub">Store A vs Store B MoM progression</div>
+      <div class="cw" style="height:210px"><canvas id="c-comp-monthly"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Channel Split Comparison</h3>
+      <div class="sub">Revenue distribution by channel</div>
+      <div class="cw" style="height:210px"><canvas id="c-comp-channels"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid g3">
+    <div class="chart-card">
+      <h3>Hourly Revenue Curve</h3>
+      <div class="sub">Peak hour performance comparison</div>
+      <div class="cw" style="height:190px"><canvas id="c-comp-hourly"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Daypart Session Revenue</h3>
+      <div class="sub">Breakfast, Lunch, Snack, Dinner</div>
+      <div class="cw" style="height:190px"><canvas id="c-comp-session"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Category Performance</h3>
+      <div class="sub">Category sales comparison</div>
+      <div class="cw" style="height:190px"><canvas id="c-comp-cat"></canvas></div>
+    </div>
+  </div>
+
+  <div class="sec">Comparative Diagnostic Root Cause Table</div>
+  <div class="chart-card">
+    <div style="overflow-x:auto">
+      <table class="tbl" id="tbl-comp-diagnostic">
+        <!-- Injected by JS -->
+      </table>
+    </div>
+  </div>
+</div>
 
 </body>
-
-
 </html>
+

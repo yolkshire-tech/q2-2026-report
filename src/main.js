@@ -1081,11 +1081,14 @@ function refresh() {
 
   drawHeatmap();
   renderBranchProfile(currentBranchProfile);
+  renderMarketBasketTab();
   renderTables(fd);
   renderRecommendations(fd);
   buildExecutiveReport();
   renderWhatIfSimulator();
   renderDualStoreComparison();
+  renderDailySnapshot();
+  recalcFranchiseeModel();
 }
 
 
@@ -1115,16 +1118,46 @@ export function resetFilters() {
   refresh();
 }
 
-export function showPage(n) {
-  document.querySelectorAll('.page').forEach((p, i) => p.classList.toggle('active', i === n));
-  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === n));
-  refresh();
-  requestAnimationFrame(() => {
-    Object.values(CHARTS).forEach(c => {
-      try { c.resize(); } catch(e) {}
+export function showPage(param) {
+  try {
+    const pages = Array.from(document.querySelectorAll('.page'));
+    const tabs = Array.from(document.querySelectorAll('.tab'));
+
+    let targetIndex = -1;
+    if (typeof param === 'number') {
+      targetIndex = param;
+    } else if (typeof param === 'string') {
+      targetIndex = pages.findIndex(p => p.id === param);
+    }
+
+    if (targetIndex < 0 || targetIndex >= pages.length) {
+      targetIndex = 0;
+    }
+
+    pages.forEach((p, i) => p.classList.toggle('active', i === targetIndex));
+    tabs.forEach((t, i) => t.classList.toggle('active', i === targetIndex));
+
+    refresh();
+
+    const activePage = pages[targetIndex];
+    const activeId = activePage ? activePage.id : '';
+
+    requestAnimationFrame(() => {
+      Object.values(CHARTS).forEach(c => {
+        try {
+          if (c && typeof c.resize === 'function') c.resize();
+        } catch (e) {}
+      });
+
+      if (activeId === 'pg-daily') renderDailySnapshot();
+      if (activeId === 'pg-franchisee') recalcFranchiseeModel();
+      if (activeId === 'pg-branches' || activeId === 'pg7') drawHeatmap();
+      if (activeId === 'pg-operations' || activeId === 'pg4') renderMarketBasketTab();
+      if (activeId === 'pg-comparison') renderDualStoreComparison();
     });
-    if (n === 1) drawHeatmap();
-  });
+  } catch (err) {
+    console.error('Error in showPage navigation:', err);
+  }
 }
 
 
@@ -1792,8 +1825,307 @@ export function renderDualStoreComparison() {
 }
 
 
+
+export function renderMarketBasketTab() {
+  const mb = RAW.marketBasket;
+  if (!mb) return;
+
+  // 1. Render Combo Cards
+  const comboGrid = document.getElementById('mb-combo-grid');
+  if (comboGrid && mb.combos) {
+    comboGrid.innerHTML = mb.combos.map(c => `
+      <div class="combo-card">
+        <div>
+          <div class="combo-header">
+            <div class="combo-title">${c.title}</div>
+            <span class="combo-tag ${c.typeTag}">${c.type}</span>
+          </div>
+          <p style="font-size:11px;color:var(--muted);margin-bottom:10px">${c.desc}</p>
+          <ul class="combo-items">
+            ${c.items.map(item => `<li>${item}</li>`).join('')}
+          </ul>
+        </div>
+        <div>
+          <div class="combo-pricing">
+            <span class="combo-price-old">₹${c.standalonePrice}</span>
+            <span class="combo-price-new">₹${c.comboPrice}</span>
+            <span class="combo-discount-badge">${c.discountPct}% OFF</span>
+          </div>
+          <div class="combo-economics">
+            <div class="combo-eco-item"><div class="combo-eco-label">Food Cost</div><div class="combo-eco-val">₹${c.cost.toFixed(1)}</div></div>
+            <div class="combo-eco-item"><div class="combo-eco-label">Net Profit</div><div class="combo-eco-val" style="color:var(--green)">₹${c.profit.toFixed(1)}</div></div>
+            <div class="combo-eco-item"><div class="combo-eco-label">Gross Margin</div><div class="combo-eco-val" style="color:var(--primary)">${c.marginPct}%</div></div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // 2. Render Puzzles Table
+  const puzzlesTbl = document.querySelector('#tbl-mb-puzzles tbody');
+  if (puzzlesTbl && mb.puzzles) {
+    puzzlesTbl.innerHTML = mb.puzzles.map(p => `
+      <tr>
+        <td><strong>${p.name}</strong></td>
+        <td><span class="tag online">${p.cat}</span></td>
+        <td>₹${p.price}</td>
+        <td>₹${p.cost}</td>
+        <td style="font-weight:700;color:var(--green)">${p.marginPct}%</td>
+        <td>${p.qty}</td>
+        <td style="color:var(--primary);font-weight:600">✦ ${p.partner}</td>
+      </tr>
+    `).join('');
+  }
+
+  // 3. Render Rules Table
+  window._mbRulesList = mb.topRules || [];
+  renderMBRulesTable(window._mbRulesList);
+
+  // 4. Render Category Co-occurrence Chart
+  if (mb.catMatrix) {
+    const labels = mb.catMatrix.map(m => `${m.catA} + ${m.catB}`);
+    const coOccs = mb.catMatrix.map(m => m.coOcc);
+    const lifts = mb.catMatrix.map(m => m.lift);
+
+    updateChart('c-mb-cat', labels, [
+      { label: 'Co-Occurrence Orders', data: coOccs, backgroundColor: '#E7BA44', borderRadius: 4, yAxisID: 'y' },
+      { label: 'Lift Score (Affinity)', data: lifts, borderColor: '#9fc794', backgroundColor: 'transparent', borderWidth: 2, type: 'line', yAxisID: 'y2' }
+    ]);
+  }
+}
+
+export function renderMBRulesTable(rules) {
+  const tbody = document.querySelector('#tbl-mb-rules tbody');
+  if (!tbody) return;
+  if (!rules || rules.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted)">No matching rules found</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rules.map(r => {
+    const liftBadgeClass = r.lift >= 10 ? 'lift-high' : 'lift-med';
+    const affinityText = r.lift >= 50 ? '🔥 Ultra High' : r.lift >= 10 ? '⭐ Strong Affinity' : '👍 Positive';
+    return `
+      <tr>
+        <td><strong>${r.itemA}</strong></td>
+        <td><strong>${r.itemB}</strong></td>
+        <td style="font-weight:700">${r.coOcc.toLocaleString()}</td>
+        <td>${(r.confA * 100).toFixed(1)}%</td>
+        <td>${(r.confB * 100).toFixed(1)}%</td>
+        <td style="font-weight:800;color:var(--primary)">${r.lift}x</td>
+        <td><span class="lift-badge ${liftBadgeClass}">${affinityText}</span></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+export function filterMBRules() {
+  const query = (document.getElementById('mb-rule-search')?.value || '').toLowerCase().trim();
+  const allRules = window._mbRulesList || (RAW.marketBasket ? RAW.marketBasket.topRules : []);
+  if (!query) {
+    renderMBRulesTable(allRules);
+    return;
+  }
+  const filtered = allRules.filter(r => r.itemA.toLowerCase().includes(query) || r.itemB.toLowerCase().includes(query));
+  renderMBRulesTable(filtered);
+}
+
+export function renderDailySnapshot() {
+  const branch = document.getElementById('f-branch')?.value || 'all';
+  const channel = document.getElementById('f-channel')?.value || 'all';
+
+  let scale = 1.0;
+  if (branch !== 'all' && RAW.branch[branch]) {
+    scale = (RAW.branch[branch].share || 15) / 100;
+  }
+  if (channel !== 'all') {
+    scale *= 0.5;
+  }
+
+  const ds = RAW.dailySnapshot;
+  if (!ds) return;
+
+  const walkins = Math.round(ds.walkinsToday * scale);
+  const orders = Math.round(ds.ordersToday * scale);
+  const loyalty = Math.round(ds.loyaltyToday.newSignups * scale);
+  const targetRev = Math.round(ds.monthlyTarget.targetRev * scale);
+  const achievedRev = Math.round(ds.monthlyTarget.achievedRev * scale);
+  const remainingRev = Math.max(0, targetRev - achievedRev);
+  const daysLeft = ds.monthlyTarget.daysTotal - ds.monthlyTarget.daysElapsed;
+  const reqRunRate = daysLeft > 0 ? Math.round(remainingRev / daysLeft) : 0;
+  const pctAchieved = Math.min(100, Math.round((achievedRev / Math.max(1, targetRev)) * 1000) / 10);
+
+  const elWalkins = document.getElementById('ds-walkins');
+  if (elWalkins) elWalkins.textContent = walkins.toLocaleString();
+  const elOrders = document.getElementById('ds-orders');
+  if (elOrders) elOrders.textContent = orders.toLocaleString();
+  const elLoyalty = document.getElementById('ds-loyalty');
+  if (elLoyalty) elLoyalty.textContent = '+' + loyalty;
+  const elTargetAchieved = document.getElementById('ds-target-achieved');
+  if (elTargetAchieved) elTargetAchieved.textContent = pctAchieved + '%';
+  const elRunRate = document.getElementById('ds-run-rate');
+  if (elRunRate) elRunRate.textContent = '₹' + (reqRunRate / 100000).toFixed(2) + 'L';
+
+  const elProgressFill = document.getElementById('ds-progress-fill');
+  if (elProgressFill) elProgressFill.style.width = pctAchieved + '%';
+  const elAchieved = document.getElementById('ds-progress-achieved');
+  if (elAchieved) elAchieved.textContent = '₹' + (achievedRev / 100000).toFixed(2) + ' Lakhs';
+  const elRemaining = document.getElementById('ds-progress-remaining');
+  if (elRemaining) elRemaining.textContent = '₹' + (remainingRev / 100000).toFixed(2) + ' Lakhs';
+  const elTotal = document.getElementById('ds-progress-total');
+  if (elTotal) elTotal.textContent = '₹' + (targetRev / 100000).toFixed(2) + ' Lakhs';
+
+  const elPaceStatus = document.getElementById('ds-pace-status');
+  if (elPaceStatus) {
+    elPaceStatus.textContent = pctAchieved >= 65 ? 'On Pace (' + pctAchieved + '% achieved)' : 'Lagging Target (' + pctAchieved + '% achieved)';
+  }
+  const elTargetNeeded = document.getElementById('ds-daily-target-needed');
+  if (elTargetNeeded) elTargetNeeded.textContent = '₹' + reqRunRate.toLocaleString() + '/day';
+  const elDaysLeft = document.getElementById('ds-days-left');
+  if (elDaysLeft) elDaysLeft.textContent = daysLeft + ' days';
+
+  const elTblWalkins = document.getElementById('ds-tbl-walkins');
+  if (elTblWalkins) elTblWalkins.textContent = walkins.toLocaleString();
+  const elTblSignups = document.getElementById('ds-tbl-signups');
+  if (elTblSignups) elTblSignups.textContent = '+' + loyalty + ' Members';
+  const elTblLoyaltyOrders = document.getElementById('ds-tbl-loyalty-orders');
+  if (elTblLoyaltyOrders) elTblLoyaltyOrders.textContent = Math.round(orders * 0.33) + ' Orders (33.0%)';
+
+  const grid = document.getElementById('ds-reviews-grid');
+  if (grid && ds.reviews && ds.reviews.feed) {
+    let reviews = ds.reviews.feed;
+    if (branch !== 'all') {
+      const match = reviews.filter(r => r.branch.toLowerCase().includes(branch.toLowerCase()));
+      if (match.length > 0) reviews = match;
+    }
+    if (channel !== 'all') {
+      const match = reviews.filter(r => r.channel.toLowerCase().includes(channel.toLowerCase()));
+      if (match.length > 0) reviews = match;
+    }
+
+    grid.innerHTML = reviews.map(r => `
+      <div class="review-card">
+        <div class="review-header">
+          <span class="review-user">${r.customer}</span>
+          <div class="review-tags">
+            <span class="review-tag">${r.branch}</span>
+            <span class="review-tag">${r.channel}</span>
+          </div>
+        </div>
+        <div class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
+        <div class="review-text">${r.comment}</div>
+        <div class="review-footer">
+          <span>${r.time}</span>
+          <span style="color:${r.sentiment==='positive'?'#9fc794':'var(--muted)'}">${r.sentiment.toUpperCase()}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  const canvas = document.getElementById('c-daily-orders-ch');
+  if (canvas && typeof Chart !== 'undefined') {
+    if (CHARTS['c-daily-orders-ch']) {
+      CHARTS['c-daily-orders-ch'].destroy();
+    }
+    const ctx = canvas.getContext('2d');
+    CHARTS['c-daily-orders-ch'] = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Dine In', 'Zomato', 'Swiggy', 'Takeaway'],
+        datasets: [{
+          data: [Math.round(181 * scale), Math.round(149 * scale), Math.round(108 * scale), Math.round(4 * scale)],
+          backgroundColor: ['#415639', '#cb202d', '#fc8019', '#a3979d'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'right', labels: { color: getTextColor(), font: { size: 10 } } }
+        }
+      }
+    });
+  }
+}
+
+export function recalcFranchiseeModel() {
+  const targetProfit = parseFloat(document.getElementById('inp-target-profit')?.value || 200000);
+  const capex = parseFloat(document.getElementById('inp-capex')?.value || 4000000);
+  const cogsPct = parseFloat(document.getElementById('inp-cogs')?.value || 25.0);
+  const laborPct = parseFloat(document.getElementById('inp-labor')?.value || 18.0);
+  const rentPct = parseFloat(document.getElementById('inp-rent')?.value || 12.0);
+  const commPct = parseFloat(document.getElementById('inp-comm')?.value || 25.0);
+  const dineInShare = parseFloat(document.getElementById('inp-dinein-share')?.value || 50);
+  const aov = parseFloat(document.getElementById('inp-aov')?.value || 516);
+
+  if (document.getElementById('lbl-target-profit')) document.getElementById('lbl-target-profit').textContent = '₹' + targetProfit.toLocaleString();
+  if (document.getElementById('lbl-capex')) document.getElementById('lbl-capex').textContent = '₹' + capex.toLocaleString();
+  if (document.getElementById('lbl-cogs')) document.getElementById('lbl-cogs').textContent = cogsPct.toFixed(1) + '%';
+  if (document.getElementById('lbl-labor')) document.getElementById('lbl-labor').textContent = laborPct.toFixed(1) + '%';
+  if (document.getElementById('lbl-rent')) document.getElementById('lbl-rent').textContent = rentPct.toFixed(1) + '%';
+  if (document.getElementById('lbl-comm')) document.getElementById('lbl-comm').textContent = commPct.toFixed(1) + '%';
+  if (document.getElementById('lbl-channel-share')) document.getElementById('lbl-channel-share').textContent = dineInShare + '% Dine / ' + (100 - dineInShare) + '% Del';
+  if (document.getElementById('lbl-aov')) document.getElementById('lbl-aov').textContent = '₹' + aov;
+
+  const deliveryShare = (100 - dineInShare) / 100;
+  const weightedCommPct = deliveryShare * commPct;
+  const royaltyPct = 5.0;
+  const opsPct = 5.0;
+  const totalCostPct = cogsPct + laborPct + rentPct + weightedCommPct + royaltyPct + opsPct;
+  const netMarginPct = Math.max(1.0, 100.0 - totalCostPct);
+
+  const reqMonthlySales = Math.round(targetProfit / (netMarginPct / 100));
+  const reqDailySales = Math.round(reqMonthlySales / 30);
+  const reqDailyOrders = Math.round(reqDailySales / aov);
+  const reqDailyWalkins = Math.round((reqDailySales * (dineInShare / 100)) / (aov * 0.85));
+  const paybackMonths = (capex / Math.max(1, targetProfit)).toFixed(1);
+  const roiPct = ((targetProfit * 12 / Math.max(1, capex)) * 100).toFixed(1);
+
+  if (document.getElementById('res-monthly-sales')) document.getElementById('res-monthly-sales').textContent = '₹' + (reqMonthlySales / 100000).toFixed(2) + 'L';
+  if (document.getElementById('res-net-margin')) document.getElementById('res-net-margin').textContent = 'Net EBITDA Margin: ' + netMarginPct.toFixed(1) + '%';
+  if (document.getElementById('res-daily-sales')) document.getElementById('res-daily-sales').textContent = '₹' + reqDailySales.toLocaleString();
+  if (document.getElementById('res-daily-orders')) document.getElementById('res-daily-orders').textContent = '~' + reqDailyOrders + ' Orders / Day';
+  if (document.getElementById('res-daily-walkins')) document.getElementById('res-daily-walkins').textContent = reqDailyWalkins;
+  if (document.getElementById('res-payback')) document.getElementById('res-payback').textContent = paybackMonths + ' Months';
+  if (document.getElementById('res-roi')) document.getElementById('res-roi').textContent = roiPct + '%';
+
+  const tbody = document.getElementById('tbody-sensitivity');
+  if (tbody) {
+    const aovList = [450, 500, 516, 580, 650];
+    const cogsList = [22.0, 25.0, 28.0, 31.0];
+
+    tbody.innerHTML = aovList.map(a => {
+      const isCurrentAov = a === 516;
+      return `
+        <tr>
+          <td><strong>₹${a} AOV ${isCurrentAov ? '(Current)' : ''}</strong></td>
+          ${cogsList.map(c => {
+            const costPct = c + laborPct + rentPct + weightedCommPct + royaltyPct + opsPct;
+            const margin = Math.max(1.0, 100.0 - costPct);
+            const sales = Math.round(targetProfit / (margin / 100));
+            const ords = Math.round(sales / 30 / a);
+            const isTargetCell = isCurrentAov && c === 25.0;
+            const cellClass = isTargetCell ? 'sens-cell-target' : c <= 25.0 ? 'sens-cell-feasible' : 'sens-cell-high';
+
+            return `
+              <td class="${cellClass}">
+                ₹${(sales / 100000).toFixed(2)}L/mo<br>
+                <span style="font-size:10px;opacity:0.85">${ords} ord/day</span>
+              </td>
+            `;
+          }).join('')}
+        </tr>
+      `;
+    }).join('');
+  }
+}
+
 // Window Event Listeners & Global Attachments
 window.toggleTheme = toggleTheme;
+window.renderMarketBasketTab = renderMarketBasketTab;
+window.filterMBRules = filterMBRules;
+window.renderDailySnapshot = renderDailySnapshot;
+window.recalcFranchiseeModel = recalcFranchiseeModel;
 window.applyFilters = applyFilters;
 window.resetFilters = resetFilters;
 window.showPage = showPage;
@@ -1832,6 +2164,8 @@ window.addEventListener('DOMContentLoaded', () => {
   refresh();
   renderBranchProfile('Kothrud');
   renderDualStoreComparison();
+  renderDailySnapshot();
+  recalcFranchiseeModel();
 });
 
 

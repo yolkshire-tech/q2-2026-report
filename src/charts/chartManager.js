@@ -64,11 +64,21 @@ export function mkChart(id, type, labels, datasets, options = {}) {
 }
 
 export function updateChart(id, labels, datasets) {
-  const c = CHARTS[id];
-  if (!c) return;
-  c.data.labels = labels;
-  c.data.datasets = datasets;
-  c.update('active');
+  try {
+    const c = CHARTS[id];
+    if (!c) {
+      const canvas = document.getElementById(id);
+      if (canvas) {
+        return mkChart(id, 'bar', labels, datasets);
+      }
+      return;
+    }
+    c.data.labels = labels;
+    c.data.datasets = datasets;
+    c.update('none');
+  } catch (err) {
+    console.warn(`Chart update notice for ${id}:`, err);
+  }
 }
 
 export function updateChartTheme(isLight) {
