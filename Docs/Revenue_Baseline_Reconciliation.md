@@ -15,9 +15,9 @@ Two conflicting Q2 "revenue" baselines circulate in our own documents, and the s
 
 All figures below were recomputed directly from the raw POS exports on 2026-08-08 (no intermediate reports trusted):
 
-- Invoice-level: `Yolkshire Q2 2026 Report/Data/cleaned_transactions.csv` (40,193 Sale invoices, Apr 1 – Jun 30 2026)
-- Item-level: `Docs/Q2/Multidate - Sales By Items.csv` and `Multidate - Sale Items By Channel.csv`
-- Menu master: `Docs/Q2/Menu with Prices & Food Cost.csv` (178 SKUs)
+- Invoice-level: `archive/q2-2026-legacy-report/Data/cleaned_transactions.csv` (40,193 Sale invoices, Apr 1 – Jun 30 2026)
+- Item-level: `data/pos/Q2/Multidate - Sales By Items.csv` and `Multidate - Sale Items By Channel.csv`
+- Menu master: `data/menu/Menu with Prices & Food Cost.csv` (178 SKUs)
 
 ## Finding 1 — The two raw sources agree with each other to the paisa
 
@@ -41,7 +41,7 @@ The ₹98,71,208 figure is a **partial-join artifact**, not a revenue measuremen
 - Even a generous exact-name rematch today captures only ₹1,24,40,880 (60%) of item revenue; the original analysis's stricter join captured ₹98,71,208 (~48%).
 - **"AOV ₹245.60" = matched-subset revenue ÷ ALL 40,193 invoices** — a subset numerator over a full-population denominator. It is not an average order value of anything.
 - **"74,445" is a count of line-item rows** in that analysis, mislabeled "baskets"/"orders" downstream (the dashboard displays it as "Reconstructed Baskets").
-- A third artifact of the same disease: `full_market_basket_analysis.json → menu_summary` sums to ₹69.1L over 114 items, with cost columns NaN where the join failed.
+- A third artifact of the same disease: `archive … full_market_basket_analysis.json → menu_summary` sums to ₹69.1L over 114 items, with cost columns NaN where the join failed.
 
 ## Consequences to correct downstream
 

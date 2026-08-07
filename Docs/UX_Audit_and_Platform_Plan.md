@@ -22,7 +22,7 @@ The app's information architecture is now right, but its **mental model is still
 | A4 | "June 2026 (last full data month)" typed into Home headings | index.html | Stale next month |
 | A5 | Pipeline emits fixed keys `jan…jun` with no metadata | dashboardData.js | UI can't know what's current vs historical |
 
-**Fix (implemented):** pipeline emits `RAW.meta` (months, labels, quarters, latest month, latest data date, generated-at) and a **period cube** `RAW.cube[month][branch]` with revenue/orders/channel/session actuals. All labels, dropdowns, "latest month" references derive from meta. Adding a quarter = drop CSVs in `Docs/Q3`, add the folder to the pipeline's month list, run it — the UI adapts with zero edits.
+**Fix (implemented):** pipeline emits `RAW.meta` (months, labels, quarters, latest month, latest data date, generated-at) and a **period cube** `RAW.cube[month][branch]` with revenue/orders/channel/session actuals. All labels, dropdowns, "latest month" references derive from meta. Adding a quarter = drop CSVs in `data/pos/Q3`, add the folder to the pipeline's month list, run it — the UI adapts with zero edits.
 
 ## B. Filters (critical)
 
@@ -58,11 +58,11 @@ The app's information architecture is now right, but its **mental model is still
 
 ## E. Perpetual-operation workflow (the ritual)
 
-Monthly close, as of now: **1)** download the month's "Sale Transactions" CSV into `Docs/Q3/` (and quarterly item exports), **2)** run `python pipeline/build_data.py`, **3)** commit + deploy. The app adapts (new month appears in the period selector, Home flips to the new latest month, target board recomputes).
+Monthly close, as of now: **1)** download the month's "Sale Transactions" CSV into `data/pos/Q3/` (and quarterly item exports), **2)** run `python pipeline/build_data.py`, **3)** commit + deploy. The app adapts (new month appears in the period selector, Home flips to the new latest month, target board recomputes).
 
 Roadmap status (P2/P3 implemented 2026-08-08):
 - **P2 — done**: ✅ in-browser upload on the Data page — drop a "Sale Transactions" CSV and a new month (even partial, e.g. month-to-date) merges into the cube instantly on that device, with the same cleaning rules as the pipeline, canonical-months protection, unknown-outlet/channel warnings, and auto-extended Tier-1 targets. ✅ Combo Tracker on the Menu page — drop a post-launch "Sales By Items" CSV and launched-combo units/revenue/share appear (match patterns in `src/data/combos.js`). ✅ per-page render registry (only the active page renders). ✅ chart/table dedupe (Customers → pointer to Combos & Baskets). ✅ restatement addendum on the three combo reports (AOV ₹245.60 → ₹515.73).
-- **P3 — data paths ready**: ✅ cost-actuals ingestion (fill `pipeline/cost_actuals_template.csv` → `Docs/Cost Actuals/` → pipeline; Money page's Real-EBITDA table activates, vs the ₹2L/mo goal). ✅ week-over-week alerts on Home (last 7 data days vs prior 7, chain + per outlet). ✅ loyalty API contract drafted (`Docs/Loyalty_API_Contract.md`) — integration lands when the endpoint exists. ⬜ reviews ingestion (needs source decision).
+- **P3 — data paths ready**: ✅ cost-actuals ingestion (fill `pipeline/cost_actuals_template.csv` → `data/cost-actuals/` → pipeline; Money page's Real-EBITDA table activates, vs the ₹2L/mo goal). ✅ week-over-week alerts on Home (last 7 data days vs prior 7, chain + per outlet). ✅ loyalty API contract drafted (`Docs/Loyalty_API_Contract.md`) — integration lands when the endpoint exists. ⬜ reviews ingestion (needs source decision).
 - **P4**: conversational analytics on the trusted cube; auto weekly brief.
 - Note: the browser upload covers the daily/monthly ritual; a server-side upload (Worker + R2) only becomes necessary when multiple users need shared uploads without a pipeline run.
 

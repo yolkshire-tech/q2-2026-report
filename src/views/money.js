@@ -32,7 +32,7 @@ export function renderMoneyCharts(fd) {
   if (ebTbl) {
     const ca = RAW.costActuals || {};
     if (!Object.keys(ca).length) {
-      ebTbl.innerHTML = `<tr><td style="color:var(--muted);font-size:12px;padding:14px">Awaiting monthly cost actuals from accounts. Fill <strong>pipeline/cost_actuals_template.csv</strong> (one row per outlet per month, POS branch names, months as jan…dec), drop the file in <strong>Docs/Cost Actuals/</strong>, and re-run the pipeline — this table then shows each outlet's real EBITDA vs the ₹2L/month goal.</td></tr>`;
+      ebTbl.innerHTML = `<tr><td style="color:var(--muted);font-size:12px;padding:14px">Awaiting monthly cost actuals from accounts. Fill <strong>pipeline/cost_actuals_template.csv</strong> (one row per outlet per month, POS branch names, months as jan…dec), drop the file in <strong>data/cost-actuals/</strong>, and re-run the pipeline — this table then shows each outlet's real EBITDA vs the ₹2L/month goal.</td></tr>`;
     } else {
       let html = `<tr><th>Outlet</th><th>Period Net Sales</th><th>Rent</th><th>Payroll</th><th>Purchases</th><th>Other</th><th>Real EBITDA</th><th>Margin</th><th>vs ₹2L/mo goal</th></tr>`;
       RAW.branches.forEach(b => {
