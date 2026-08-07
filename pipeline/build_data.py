@@ -282,6 +282,18 @@ def main():
     items = items[items["Invoice Type"] == "Sale"]
     for c in ["Quantity", "Net Amount"]:
         items[c] = pd.to_numeric(items[c], errors="coerce").fillna(0)
+    # POS name hygiene: branches ring the same dish under case/spacing variants
+    # ("Grilled Chicken Breast" vs "Grilled chicken Breast"). Merge them under
+    # the highest-revenue spelling so quantities aren't split across rows.
+    key = items["Item Name"].fillna("").str.strip().str.replace(r"\s+", " ", regex=True)
+    kf = key.str.casefold()
+    disp = (pd.DataFrame({"kf": kf, "name": key, "rev": items["Net Amount"]})
+            .groupby(["kf", "name"])["rev"].sum().reset_index()
+            .sort_values("rev").drop_duplicates("kf", keep="last")
+            .set_index("kf")["name"])
+    merged = int((kf.map(disp) != items["Item Name"]).sum())
+    items["Item Name"] = kf.map(disp)
+    print(f"  name hygiene: {merged} rows re-labelled to canonical spellings")
     it = (items[items["Type"] == "Item"]
           .groupby("Item Name")
           .agg(qty=("Quantity", "sum"), rev=("Net Amount", "sum"),

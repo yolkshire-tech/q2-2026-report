@@ -101,10 +101,15 @@ function getAllMenuItems() {
 }
 
 function getNonMenuItems() {
-  // Includes the POS export spellings of the same items ('Water Bottle', 'Carry Bag'),
-  // so the exclude toggle matches real data rows.
-  return ['Packaged Water Bottle', 'Carry Bag / Packaging Fee', 'Restaurant Packaging Charges', 'Cutlery Set',
-          'Water Bottle', 'Carry Bag', 'Packaging Charges', 'Event sale'];
+  return ['Packaged Water Bottle', 'Carry Bag / Packaging Fee', 'Restaurant Packaging Charges', 'Cutlery Set'];
+}
+
+// Pattern-based: catches every POS spelling variant ("Water Bottle (500 ml)",
+// "Carry Bag", "Packing Charges"...) instead of an exact-name list.
+const NON_MENU_PATTERNS = ['water bottle', 'carry bag', 'packaging', 'packing charge', 'cutlery', 'event sale'];
+function isNonMenuItem(name) {
+  const n = (name || '').toLowerCase();
+  return NON_MENU_PATTERNS.some(pat => n.includes(pat));
 }
 
 
@@ -363,7 +368,6 @@ function getFilteredData() {
   result.dailyTrend = series;
 
   // Item analytics — real per outlet; scope is the item-export range, never scaled
-  const nonMenuItemsSet = new Set(getNonMenuItems());
   let itemSrc;
   if (branch === 'all') {
     itemSrc = RAW.mePoints;
@@ -373,7 +377,7 @@ function getFilteredData() {
     const mq = med(list.map(pt => pt.x)), mr = med(list.map(pt => pt.y));
     itemSrc = list.map(pt => ({ ...pt, cat: pt.x >= mq ? (pt.y >= mr ? 'Star' : 'Plow Horse') : (pt.y >= mr ? 'Puzzle' : 'Dog') }));
   }
-  const itemsF = itemSrc.filter(pt => (!excludeNonMenu || !nonMenuItemsSet.has(pt.item)) && itemPassesCategoryFilter(pt.item));
+  const itemsF = itemSrc.filter(pt => (!excludeNonMenu || !isNonMenuItem(pt.item)) && itemPassesCategoryFilter(pt.item));
   result.mePoints = itemsF;
   const byRev = itemsF.slice().sort((a, b) => b.y - a.y);
   result.top10rItems = byRev.slice(0, 10).map(pt => pt.item);
@@ -470,12 +474,12 @@ function renderOutletTables(fd) {
     const scale = 1; // chain-wide daily pattern (full data range)
     staffingTbl.innerHTML = `
       <tr><th>Hour</th><th>Daily Orders</th><th>Load</th><th>Min Staff</th></tr>
-      <tr style="${F.session === 'breakfast' ? 'background:rgba(231,186,68,0.15);font-weight:700' : ''}"><td>7 AM</td><td>${Math.round(12 * scale)}</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:29%;background:var(--green)"></div></div>29%</div></td><td style="font-weight:700">3</td></tr>
-      <tr style="${F.session === 'breakfast' ? 'background:rgba(231,186,68,0.15);font-weight:700' : ''}"><td>8 AM</td><td>${Math.round(26 * scale)}</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:64%;background:var(--amber)"></div></div>64%</div></td><td style="font-weight:700">5-6</td></tr>
-      <tr style="${F.session === 'breakfast' ? 'background:rgba(231,186,68,0.15);font-weight:700' : ''}"><td>9 AM</td><td>${Math.round(37 * scale)}</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:90%;background:var(--red)"></div></div>90%</div></td><td style="font-weight:700">7-8</td></tr>
-      <tr style="${F.session === 'breakfast' ? 'background:rgba(231,186,68,0.15);font-weight:700' : ''}"><td>10 AM</td><td>${Math.round(41 * scale)}</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:100%;background:var(--red)"></div></div>100%</div></td><td style="font-weight:700">8</td></tr>
-      <tr style="${F.session === 'snack' ? 'background:rgba(144,122,169,0.15);font-weight:700' : ''}"><td>3-5 PM</td><td>${Math.round(12 * scale)}</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:32%;background:var(--green)"></div></div>32%</div></td><td style="font-weight:700">3</td></tr>
-      <tr style="${F.session === 'dinner' ? 'background:rgba(86,117,77,0.15);font-weight:700' : ''}"><td>9 PM</td><td>${Math.round(34 * scale)}</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:83%;background:var(--red)"></div></div>83%</div></td><td style="font-weight:700">6-7</td></tr>
+      <tr style=""><td>7 AM</td><td>${Math.round(12 * scale)}</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:29%;background:var(--green)"></div></div>29%</div></td><td style="font-weight:700">3</td></tr>
+      <tr style=""><td>8 AM</td><td>${Math.round(26 * scale)}</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:64%;background:var(--amber)"></div></div>64%</div></td><td style="font-weight:700">5-6</td></tr>
+      <tr style=""><td>9 AM</td><td>${Math.round(37 * scale)}</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:90%;background:var(--red)"></div></div>90%</div></td><td style="font-weight:700">7-8</td></tr>
+      <tr style=""><td>10 AM</td><td>${Math.round(41 * scale)}</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:100%;background:var(--red)"></div></div>100%</div></td><td style="font-weight:700">8</td></tr>
+      <tr style=""><td>3-5 PM</td><td>${Math.round(12 * scale)}</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:32%;background:var(--green)"></div></div>32%</div></td><td style="font-weight:700">3</td></tr>
+      <tr style=""><td>9 PM</td><td>${Math.round(34 * scale)}</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:83%;background:var(--red)"></div></div>83%</div></td><td style="font-weight:700">6-7</td></tr>
     `;
   }
 
@@ -689,8 +693,6 @@ function renderMoneyTables(fd) {
     `;
 
     RAW.channels.forEach((c, i) => {
-      if (F.channel === 'Delivery' && c !== 'Zomato' && c !== 'Swiggy') return;
-      if (F.channel !== 'all' && F.channel !== 'Delivery' && c !== F.channel) return;
       const cRev = fd.chRevs[i];
       const cShare = fd.rev > 0 ? ((cRev / fd.rev) * 100).toFixed(1) : '0.0';
       const cCogs = Math.round(cRev * 0.30);
@@ -1117,6 +1119,14 @@ function renderMenuCharts(fd) {
 
   const mn = document.getElementById('menu-scope-note');
   if (mn) mn.textContent = fd.itemScopeNote;
+  // Quadrant legend counts — computed from the same filtered item set the scatter plots
+  const qc = { 'Star': 0, 'Plow Horse': 0, 'Puzzle': 0, 'Dog': 0 };
+  fd.mePoints.forEach(pt => { if (qc[pt.cat] != null) qc[pt.cat]++; });
+  const setCount = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = String(v); };
+  setCount('me-count-star', qc['Star']);
+  setCount('me-count-horse', qc['Plow Horse']);
+  setCount('me-count-puzzle', qc['Puzzle']);
+  setCount('me-count-dog', qc['Dog']);
 }
 
 function renderKothrudCharts(fd) {
@@ -1600,7 +1610,6 @@ export function applyCategoryFilter() {
 export function buildMenuCatalogModalHtml() {
   const fd = getFilteredData();
   const scale = 1;
-  const nonMenuItemsSet = new Set(getNonMenuItems());
 
   // Catalog is built exclusively from real POS item data (RAW.mePoints, generated
   // by pipeline/build_data.py). No values are ever synthesized.
@@ -1612,7 +1621,7 @@ export function buildMenuCatalogModalHtml() {
     'Dog': { label: 'Dog 🐕', tag: 'risk' }
   };
   RAW.mePoints.forEach(p => {
-    const isNon = nonMenuItemsSet.has(p.item);
+    const isNon = isNonMenuItem(p.item);
     if (excludeNonMenu && isNon) return;
     if (!itemPassesCategoryFilter(p.item)) return;
 
@@ -2146,6 +2155,9 @@ window.selectBranchProfile = (b) => {
   document.querySelectorAll('.branch-pill').forEach(p => p.classList.toggle('active', p.textContent === b));
   renderBranchProfile(b);
 };
+
+// Diagnostics hook: lets DevTools / automated tests inspect chart instances.
+window.__CHARTS = CHARTS;
 
 window.addEventListener('resize', () => { if (window._hmDrawn) drawHeatmap(); });
 
