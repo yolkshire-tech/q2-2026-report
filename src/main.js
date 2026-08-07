@@ -95,10 +95,22 @@ function getAllMenuItems() {
 }
 
 function getNonMenuItems() {
-  return ['Packaged Water Bottle', 'Carry Bag / Packaging Fee', 'Restaurant Packaging Charges', 'Cutlery Set'];
+  // Includes the POS export spellings of the same items ('Water Bottle', 'Carry Bag'),
+  // so the exclude toggle matches real data rows.
+  return ['Packaged Water Bottle', 'Carry Bag / Packaging Fee', 'Restaurant Packaging Charges', 'Cutlery Set',
+          'Water Bottle', 'Carry Bag', 'Packaging Charges', 'Event sale'];
 }
 
 
+
+// The category modal is built from menu-master names, while the data carries POS
+// export names (which don't all match). A full selection therefore means "no
+// filter" — only a real subset selection filters items.
+function itemPassesCategoryFilter(item) {
+  if (!activeCategorySelection) return true;
+  if (activeCategorySelection.size >= getAllMenuItems().length) return true;
+  return activeCategorySelection.has(item);
+}
 
 function initCategorySelection() {
   if (!activeCategorySelection) {
@@ -430,7 +442,7 @@ function getFilteredData() {
   result.top10rRevs = [];
   RAW.top10Items.forEach((item, i) => {
     const isNon = nonMenuItemsSet.has(item);
-    if ((!excludeNonMenu || !isNon) && activeCategorySelection.has(item)) {
+    if ((!excludeNonMenu || !isNon) && itemPassesCategoryFilter(item)) {
       result.top10rItems.push(item);
       result.top10rRevs.push(Math.round(RAW.top10Rev[i] * scale));
     }
@@ -440,7 +452,7 @@ function getFilteredData() {
   result.top10qQtys = [];
   RAW.top10QtyItems.forEach((item, i) => {
     const isNon = nonMenuItemsSet.has(item);
-    if ((!excludeNonMenu || !isNon) && activeCategorySelection.has(item)) {
+    if ((!excludeNonMenu || !isNon) && itemPassesCategoryFilter(item)) {
       result.top10qItems.push(item);
       result.top10qQtys.push(Math.round(RAW.top10Qty[i] * scale));
     }
@@ -448,29 +460,26 @@ function getFilteredData() {
 
   result.mePoints = RAW.mePoints.filter(p => {
     const isNon = nonMenuItemsSet.has(p.item);
-    return (!excludeNonMenu || !isNon) && activeCategorySelection.has(p.item);
+    return (!excludeNonMenu || !isNon) && itemPassesCategoryFilter(p.item);
   }).map(p => ({ ...p, x: Math.round(p.x * scale), y: Math.round(p.y * scale) }));
 
-  // Category Revenue Share Calculation
+  // Category Revenue Share — real POS categories carried on each menu point (mcat).
   const catRevs = {};
-  Object.keys(MENU_CATEGORIES).forEach(cat => {
-    let cRev = 0;
-    MENU_CATEGORIES[cat].forEach(item => {
-      if (excludeNonMenu && nonMenuItemsSet.has(item)) return;
-      if (activeCategorySelection && !activeCategorySelection.has(item)) return;
-      const mePoint = RAW.mePoints.find(p => p.item === item);
-      cRev += mePoint ? mePoint.y : 65000;
-    });
-    if (cRev > 0) catRevs[cat] = Math.round(cRev * scale);
+  RAW.mePoints.forEach(p => {
+    if (excludeNonMenu && nonMenuItemsSet.has(p.item)) return;
+    if (!itemPassesCategoryFilter(p.item)) return;
+    const cat = p.mcat || 'Uncategorized';
+    catRevs[cat] = (catRevs[cat] || 0) + p.y;
   });
-  result.catLabels = Object.keys(catRevs);
-  result.catRevs = Object.values(catRevs);
+  const catSorted = Object.entries(catRevs).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+  result.catLabels = catSorted.map(([k]) => k);
+  result.catRevs = catSorted.map(([, v]) => Math.round(v * scale));
 
   // Price Tier Bucket Calculation
   const priceTiers = { '<₹150': 0, '₹150-250': 0, '₹250-350': 0, '₹350-500': 0, '₹500+': 0 };
   RAW.mePoints.forEach(p => {
     if (excludeNonMenu && nonMenuItemsSet.has(p.item)) return;
-    if (activeCategorySelection && !activeCategorySelection.has(p.item)) return;
+    if (!itemPassesCategoryFilter(p.item)) return;
     const price = p.y / (p.x || 1);
     if (price < 150) priceTiers['<₹150'] += Math.round(p.x * scale);
     else if (price < 250) priceTiers['₹150-250'] += Math.round(p.x * scale);
@@ -569,8 +578,12 @@ function updateKPIs(fd) {
   setEl('k-ch-aov-comp', `₹${fd.chAOVs[0]} vs ₹${Math.round((fd.chAOVs[1] + fd.chAOVs[2]) / 2)}`);
   setEl('k-ch-zs-comp', `${fmt(fd.chRevs[1])} vs ${fmt(fd.chRevs[2])}`);
 
-  // Page 7 (Kothrud Playbook)
+  // Page 7 (Kothrud Playbook) — computed from real branch/channel data
   setEl('k-kothrud-rev', fmt(Math.round(RAW.branch.Kothrud.rev * (fd.rev / 20728578))));
+  const kbr = RAW.branch.Kothrud;
+  setEl('k-kothrud-dinein', ((kbr.ch['Dine In']?.rev || 0) / kbr.rev * 100).toFixed(1) + '%');
+  setEl('k-kothrud-bev', 'N/A');
+  setEl('k-kothrud-aov', kbr.ch['Dine In']?.aov ? '₹' + kbr.ch['Dine In'].aov : 'N/A');
 
   // Page 8
   setEl('k-q1q2-rev', '+' + ((fd.rev / (RAW.q1.totalRev * (fd.rev / 20728578)) - 1) * 100).toFixed(1) + '%');
@@ -687,45 +700,38 @@ function renderTables(fd) {
   // Page 7: Kothrud Benchmark Matrix Table
   const kothrudTbl = document.getElementById('tbl-kothrud-playbook-matrix');
   if (kothrudTbl) {
+    // Computed live from real Q2 branch/channel data (pipeline-generated).
+    const cols = ['Kothrud', 'AUNDH', 'Salunkhe Vihar', 'Wadgaon Sheri', 'Yolkshire Wakad'];
+    const dinePct = b => {
+      const bd = RAW.branch[b];
+      const d = bd?.ch?.['Dine In']?.rev || 0;
+      return bd && bd.rev > 0 ? (d / bd.rev * 100).toFixed(1) : null;
+    };
+    const dineAov = b => RAW.branch[b]?.ch?.['Dine In']?.aov ?? null;
+    const cell = (v, suffix, isKothrud, warnBelow) => {
+      if (v == null) return '<td>N/A</td>';
+      const warn = !isKothrud && warnBelow != null && parseFloat(v) < warnBelow;
+      const style = isKothrud ? 'font-weight:700;color:var(--green)' : (warn ? 'color:#e68c85' : '');
+      return `<td style="${style}">${suffix === '₹' ? '₹' + v : v + suffix}</td>`;
+    };
     let html = `
       <tr>
         <th>Metric / Standard</th><th>Kothrud Flagship</th><th>AUNDH</th><th>Salunkhe Vihar</th><th>Wadgaon Sheri</th><th>Yolkshire Wakad</th><th>Kothrud Playbook Standard</th>
       </tr>
       <tr>
         <td><strong>Dine-In Rev Share</strong></td>
-        <td style="font-weight:700;color:var(--green)">50.3%</td>
-        <td>56.7%</td>
-        <td>46.1%</td>
-        <td style="color:#e68c85">25.0%</td>
-        <td style="color:#e68c85">35.9%</td>
+        ${cols.map((b, i) => cell(dinePct(b), '%', i === 0, 40)).join('')}
         <td><span class="tag star">Target 50%+</span></td>
       </tr>
       <tr>
         <td><strong>Beverage Attach %</strong></td>
-        <td style="font-weight:700;color:var(--green)">54%</td>
-        <td>48%</td>
-        <td>51%</td>
-        <td style="color:#e68c85">29%</td>
-        <td style="color:#e68c85">31%</td>
-        <td><span class="tag star">Target 50%+</span></td>
+        ${cols.map(() => '<td>N/A</td>').join('')}
+        <td><span class="tag horse">Needs per-invoice item data</span></td>
       </tr>
       <tr>
         <td><strong>Dine-In AOV</strong></td>
-        <td style="font-weight:700;color:var(--green)">₹597</td>
-        <td>₹515</td>
-        <td>₹556</td>
-        <td>₹479</td>
-        <td>₹497</td>
+        ${cols.map((b, i) => cell(dineAov(b), '₹', i === 0, null)).join('')}
         <td><span class="tag star">Target ₹550+</span></td>
-      </tr>
-      <tr>
-        <td><strong>Order Cancellation Rate</strong></td>
-        <td style="font-weight:700;color:var(--green)">0.05%</td>
-        <td>0.08%</td>
-        <td>0.07%</td>
-        <td style="color:#e68c85">0.42%</td>
-        <td style="color:#e68c85">0.31%</td>
-        <td><span class="tag star">&lt; 0.10%</span></td>
       </tr>
     `;
     kothrudTbl.innerHTML = html;
@@ -1060,20 +1066,30 @@ function refresh() {
   updateChart('c-kothrud-share', ['Kothrud (' + fmt(kShare) + ')', 'Rest of Chain (' + fmt(restShare) + ')'], [
     { data: [kShare, restShare], backgroundColor: ['#56754d', '#E7BA44'], borderWidth: 0 }
   ]);
+  // Real Q2 data throughout (pipeline-generated): channel shares from branch
+  // transactions, Kothrud hourly curve, and Kothrud item-level mixes.
+  const compBranches = ['Kothrud', 'AUNDH', 'Wadgaon Sheri', 'Yolkshire Wakad'];
+  const dineSharePct = b => {
+    const bd = RAW.branch[b];
+    return bd && bd.rev > 0 ? +(((bd.ch['Dine In']?.rev || 0) + (bd.ch['Takeaway']?.rev || 0)) / bd.rev * 100).toFixed(1) : 0;
+  };
   updateChart('c-kothrud-channel-comp', ['Kothrud', 'Aundh', 'Wadgaon Sheri', 'Wakad'], [
-    { label: 'Dine-In %', data: [50.3, 56.7, 25.0, 35.9], backgroundColor: '#56754d', borderRadius: 4 },
-    { label: 'Delivery %', data: [48.2, 42.7, 74.6, 63.7], backgroundColor: '#E7BA44', borderRadius: 4 }
+    { label: 'Dine-In + Takeaway %', data: compBranches.map(dineSharePct), backgroundColor: '#56754d', borderRadius: 4 },
+    { label: 'Delivery %', data: compBranches.map(b => +(100 - dineSharePct(b)).toFixed(1)), backgroundColor: '#E7BA44', borderRadius: 4 }
   ]);
-  updateChart('c-kothrud-hourly', RAW.hours.map(h => h + ':00'), [
-    { label: 'Kothrud Hourly Rev', data: RAW.hRev.map(v => Math.round(v * 0.301 * (fd.rev / 20728578))), borderColor: '#56754d', backgroundColor: 'rgba(86,117,77,0.1)', fill: true, tension: 0.4 },
-    { label: 'Chain Average', data: RAW.hRev.map(v => Math.round(v * 0.142 * (fd.rev / 20728578))), borderColor: '#E7BA44', borderDash: [5, 4], fill: false, tension: 0.4 }
-  ]);
-  updateChart('c-kothrud-bev-breakdown', ['Gourmet Coffee', 'Cold Brews & Iced', 'Masala Chai', 'Juices & Smoothies', 'Teas & Extras'], [
-    { data: [42, 28, 15, 10, 5], backgroundColor: ['#56754d', '#E7BA44', '#907aa9', '#5985b9', '#9c5f59'], borderWidth: 0 }
-  ]);
-  updateChart('c-kothrud-menu-mix', ['Chicken Stroganoff', 'Roast Chicken', 'English Breakfast', 'Cold Coffee', 'Eggwich'], [
-    { data: [22, 16, 14, 12, 10], backgroundColor: ['#E7BA44', '#56754d', '#5985b9', '#907aa9', '#9c5f59'], borderRadius: 4 }
-  ]);
+  const kd = RAW.kothrudDetail;
+  if (kd) {
+    updateChart('c-kothrud-hourly', RAW.hours.map(h => h + ':00'), [
+      { label: 'Kothrud Hourly Rev (Q2)', data: kd.hourly.map(v => Math.round(v * (fd.rev / 20728578))), borderColor: '#56754d', backgroundColor: 'rgba(86,117,77,0.1)', fill: true, tension: 0.4 },
+      { label: 'Chain Avg per Branch', data: RAW.hRev.map(v => Math.round((v / RAW.branches.length) * (fd.rev / 20728578))), borderColor: '#E7BA44', borderDash: [5, 4], fill: false, tension: 0.4 }
+    ]);
+    updateChart('c-kothrud-bev-breakdown', kd.bevMix.labels, [
+      { data: kd.bevMix.revs, backgroundColor: ['#56754d', '#E7BA44', '#907aa9', '#5985b9', '#9c5f59', '#a3979d'], borderWidth: 0 }
+    ]);
+    updateChart('c-kothrud-menu-mix', kd.top5.items, [
+      { data: kd.top5.pcts, backgroundColor: ['#E7BA44', '#56754d', '#5985b9', '#907aa9', '#9c5f59'], borderRadius: 4 }
+    ]);
+  }
 
   // PnL Charts
   updateChart('c-pnl-waterfall', ['Target Sales', 'Actual Sales', 'COGS (30%)', 'Labor (18%)', 'Rent (15%)', 'Delivery Fee', 'Ops (5%)', 'Net Profit'], [
@@ -1338,8 +1354,8 @@ function initCharts() {
   mkChart('c-kothrud-bev-breakdown', 'doughnut', [], [], { plugins: { legend: { display: true, position: 'right', labels: { color: '#FCF0D0', font: { size: 10 } } } } });
   mkChart('c-kothrud-menu-mix', 'bar', [], [], { scales: { x: xBase, y: { ticks: { color: '#a3979d', callback: v => v + '%' }, grid: { color: 'rgba(252,240,208,.06)' } } } });
 
-  mkChart('c-q1q2-monthly', 'bar', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [{ label: 'Monthly Net Revenue', data: [6240460, 5186052, 5811646, 6762859, 7069957, 6895763], backgroundColor: ['#907aa9', '#907aa9', '#907aa9', '#E7BA44', '#56754d', '#9c5f59'], borderRadius: 5 }], { scales: { x: xBase, y: yRev } });
-  mkChart('c-q1q2-branch', 'bar', RAW.branches.filter(b => b !== 'Bavdhan'), [{ label: 'Q1 Net Revenue', data: [5118196, 3702194, 2365690, 2135474, 2255003, 1661599], backgroundColor: 'rgba(144,122,169,.75)', borderRadius: 4 }, { label: 'Q2 Net Revenue', data: [6228775, 3965940, 2690751, 2687223, 2625305, 2166397], backgroundColor: '#E7BA44', borderRadius: 4 }], { scales: { x: xBase, y: yRev } });
+  mkChart('c-q1q2-monthly', 'bar', ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], [{ label: 'Monthly Net Revenue', data: ['jan', 'feb', 'mar', 'apr', 'may', 'jun'].map(m => RAW.month[m].rev), backgroundColor: ['#907aa9', '#907aa9', '#907aa9', '#E7BA44', '#56754d', '#9c5f59'], borderRadius: 5 }], { scales: { x: xBase, y: yRev } });
+  mkChart('c-q1q2-branch', 'bar', RAW.branches.filter(b => b !== 'Bavdhan'), [{ label: 'Q1 Net Revenue', data: RAW.branches.filter(b => b !== 'Bavdhan').map(b => RAW.q1.branch[b].rev), backgroundColor: 'rgba(144,122,169,.75)', borderRadius: 4 }, { label: 'Q2 Net Revenue', data: RAW.branches.filter(b => b !== 'Bavdhan').map(b => RAW.branch[b].rev), backgroundColor: '#E7BA44', borderRadius: 4 }], { scales: { x: xBase, y: yRev } });
 
   mkChart('c-fc-rev', 'line', ['Apr', 'May', 'Jun', 'Jul (FC)', 'Aug (FC)', 'Sep (FC)'], [{ label: 'Actual Revenue', data: [6762859, 7069957, 6895763, null, null, null], borderColor: '#E7BA44', backgroundColor: 'rgba(231,186,68,.1)', borderWidth: 3 }, { label: 'Linear Forecast', data: [null, null, 6895763, 7042431, 7108883, 7175336], borderColor: '#907aa9', borderDash: [6, 4], borderWidth: 2 }], { scales: { x: xBase, y: yRev } });
   mkChart('c-fc-ord', 'line', ['Apr', 'May', 'Jun', 'Jul (FC)', 'Aug (FC)', 'Sep (FC)'], [{ label: 'Actual Orders', data: [13952, 13631, 12610, null, null, null], borderColor: '#56754d', borderWidth: 3 }, { label: 'Linear Forecast', data: [null, null, 12610, 12056, 11385, 10714], borderColor: '#9c5f59', borderDash: [6, 4], borderWidth: 2 }], { scales: { x: xBase, y: yOrd } });
@@ -1485,37 +1501,25 @@ export function buildMenuCatalogModalHtml() {
   const scale = fd.rev / 20728578;
   const nonMenuItemsSet = new Set(getNonMenuItems());
 
+  // Catalog is built exclusively from real POS item data (RAW.mePoints, generated
+  // by pipeline/build_data.py). No values are ever synthesized.
   const catalog = [];
-  Object.keys(MENU_CATEGORIES).forEach(cat => {
-    MENU_CATEGORIES[cat].forEach((item, idx) => {
-      const isNon = nonMenuItemsSet.has(item);
-      if (excludeNonMenu && isNon) return;
-      if (activeCategorySelection && !activeCategorySelection.has(item)) return;
+  const quadMeta = {
+    'Star': { label: 'Star ⭐', tag: 'star' },
+    'Plow Horse': { label: 'Plow Horse 🐴', tag: 'horse' },
+    'Puzzle': { label: 'Puzzle 🧩', tag: 'puzzle' },
+    'Dog': { label: 'Dog 🐕', tag: 'risk' }
+  };
+  RAW.mePoints.forEach(p => {
+    const isNon = nonMenuItemsSet.has(p.item);
+    if (excludeNonMenu && isNon) return;
+    if (!itemPassesCategoryFilter(p.item)) return;
 
-      let baseRev = 0, baseQty = 0;
-      const mePoint = RAW.mePoints.find(p => p.item === item);
-      if (mePoint) {
-        baseRev = mePoint.y;
-        baseQty = mePoint.x;
-      } else {
-        const seed = (item.length * 137 + idx * 43) % 100;
-        baseQty = Math.round(300 + seed * 25);
-        baseRev = Math.round(baseQty * (120 + (seed % 350)));
-      }
-
-      const rev = Math.round(baseRev * scale);
-      const qty = Math.round(baseQty * scale);
-      const aovContrib = fd.rev > 0 ? ((rev / fd.rev) * 100).toFixed(2) + '%' : '0.0%';
-
-      let quadrant = 'Star ⭐';
-      let tagClass = 'star';
-      if (qty >= 1200 && rev >= 150000) { quadrant = 'Star ⭐'; tagClass = 'star'; }
-      else if (qty >= 1200 && rev < 150000) { quadrant = 'Plow Horse 🐴'; tagClass = 'horse'; }
-      else if (qty < 1200 && rev >= 150000) { quadrant = 'Puzzle 🧩'; tagClass = 'puzzle'; }
-      else { quadrant = 'Dog 🐕'; tagClass = 'risk'; }
-
-      catalog.push({ name: item, cat, qty, rev, aovContrib, quadrant, tagClass });
-    });
+    const rev = Math.round(p.y * scale);
+    const qty = Math.round(p.x * scale);
+    const aovContrib = fd.rev > 0 ? ((rev / fd.rev) * 100).toFixed(2) + '%' : '0.0%';
+    const meta = quadMeta[p.cat] || { label: '—', tag: 'horse' };
+    catalog.push({ name: p.item, cat: p.mcat || 'Uncategorized', qty, rev, aovContrib, quadrant: meta.label, tagClass: meta.tag });
   });
 
   catalog.sort((a, b) => b.rev - a.rev);
@@ -1735,8 +1739,9 @@ export function renderDualStoreComparison() {
   const dineB = Math.round((bdB.ch['Dine In']?.rev || 0) * scale);
   const dinePctB = revB > 0 ? ((dineB / revB) * 100).toFixed(1) : '0';
 
-  const bevAttachA = dualStoreA === 'Kothrud' ? 54 : dualStoreA === 'Salunkhe Vihar' ? 51 : dualStoreA === 'AUNDH' ? 48 : 31;
-  const bevAttachB = dualStoreB === 'Kothrud' ? 54 : dualStoreB === 'Salunkhe Vihar' ? 51 : dualStoreB === 'AUNDH' ? 48 : 29;
+  // Beverage attach rate needs per-invoice item data — no verified source yet.
+  const bevAttachA = null;
+  const bevAttachB = null;
 
   const revDiff = revA - revB;
   const aovDiff = bdA.aov - bdB.aov;
@@ -1750,7 +1755,7 @@ export function renderDualStoreComparison() {
   setEl('kpi-comp-revdiff', (revDiff >= 0 ? '+' : '') + fmt(revDiff));
   setEl('kpi-comp-storesub', `${dualStoreA} vs ${dualStoreB}`);
   setEl('kpi-comp-dinegap', `${dinePctA}% vs ${dinePctB}%`);
-  setEl('kpi-comp-bevgap', `${bevAttachA}% vs ${bevAttachB}%`);
+  setEl('kpi-comp-bevgap', bevAttachA == null ? 'N/A' : `${bevAttachA}% vs ${bevAttachB}%`);
   setEl('kpi-comp-aovgap', `₹${bdA.aov} vs ₹${bdB.aov}`);
   setEl('kpi-comp-aovsub', `${aovDiff >= 0 ? '+' : ''}₹${aovDiff} ticket size gap`);
   setEl('kpi-comp-statusval', `${pA.status || 'Active'} vs ${pB.status || 'Active'}`);
@@ -1784,10 +1789,10 @@ export function renderDualStoreComparison() {
         </tr>
         <tr>
           <td><strong>Beverage Attach Rate %</strong></td>
-          <td style="font-weight:700;color:var(--amber)">${bevAttachA}%</td>
-          <td>${bevAttachB}%</td>
-          <td class="${bevAttachA >= bevAttachB ? 'trend-up' : 'trend-dn'}">${bevAttachA - bevAttachB}% gap</td>
-          <td>${bevAttachA > bevAttachB ? `${dualStoreA} upselling coffee scripts working` : `${dualStoreB} staff needs beverage upselling training`}</td>
+          <td style="font-weight:700;color:var(--amber)">N/A</td>
+          <td>N/A</td>
+          <td>N/A</td>
+          <td>Requires per-invoice item data (planned: item-level pipeline)</td>
         </tr>
         <tr>
           <td><strong>Dine-In AOV</strong></td>
@@ -1942,37 +1947,31 @@ export function renderDailySnapshot() {
   const branch = document.getElementById('f-branch')?.value || 'all';
   const channel = document.getElementById('f-channel')?.value || 'all';
 
-  let scale = 1.0;
-  if (branch !== 'all' && RAW.branch[branch]) {
-    scale = (RAW.branch[branch].share || 15) / 100;
-  }
-  if (channel !== 'all') {
-    scale *= 0.5;
-  }
-
   const ds = RAW.dailySnapshot;
   if (!ds) return;
 
-  const walkins = Math.round(ds.walkinsToday * scale);
-  const orders = Math.round(ds.ordersToday * scale);
-  const loyalty = Math.round(ds.loyaltyToday.newSignups * scale);
-  const targetRev = Math.round(ds.monthlyTarget.targetRev * scale);
-  const achievedRev = Math.round(ds.monthlyTarget.achievedRev * scale);
+  // All figures are real chain-wide values for the latest day in the data.
+  // No source exists for walk-ins / loyalty / reviews yet — those show N/A
+  // (memory.md rule: never invent data).
+  const NA = 'N/A';
+  const orders = ds.ordersToday;
+  const targetRev = ds.monthlyTarget.targetRev;
+  const achievedRev = ds.monthlyTarget.achievedRev;
   const remainingRev = Math.max(0, targetRev - achievedRev);
   const daysLeft = ds.monthlyTarget.daysTotal - ds.monthlyTarget.daysElapsed;
-  const reqRunRate = daysLeft > 0 ? Math.round(remainingRev / daysLeft) : 0;
+  const reqRunRate = daysLeft > 0 ? Math.round(remainingRev / daysLeft) : null;
   const pctAchieved = Math.min(100, Math.round((achievedRev / Math.max(1, targetRev)) * 1000) / 10);
 
   const elWalkins = document.getElementById('ds-walkins');
-  if (elWalkins) elWalkins.textContent = walkins.toLocaleString();
+  if (elWalkins) elWalkins.textContent = ds.walkinsToday == null ? NA : ds.walkinsToday.toLocaleString();
   const elOrders = document.getElementById('ds-orders');
-  if (elOrders) elOrders.textContent = orders.toLocaleString();
+  if (elOrders) elOrders.textContent = orders == null ? NA : orders.toLocaleString();
   const elLoyalty = document.getElementById('ds-loyalty');
-  if (elLoyalty) elLoyalty.textContent = '+' + loyalty;
+  if (elLoyalty) elLoyalty.textContent = ds.loyaltyToday.newSignups == null ? NA : '+' + ds.loyaltyToday.newSignups;
   const elTargetAchieved = document.getElementById('ds-target-achieved');
   if (elTargetAchieved) elTargetAchieved.textContent = pctAchieved + '%';
   const elRunRate = document.getElementById('ds-run-rate');
-  if (elRunRate) elRunRate.textContent = '₹' + (reqRunRate / 100000).toFixed(2) + 'L';
+  if (elRunRate) elRunRate.textContent = reqRunRate == null ? 'Month closed' : '₹' + (reqRunRate / 100000).toFixed(2) + 'L';
 
   const elProgressFill = document.getElementById('ds-progress-fill');
   if (elProgressFill) elProgressFill.style.width = pctAchieved + '%';
@@ -1984,20 +1983,18 @@ export function renderDailySnapshot() {
   if (elTotal) elTotal.textContent = '₹' + (targetRev / 100000).toFixed(2) + ' Lakhs';
 
   const elPaceStatus = document.getElementById('ds-pace-status');
-  if (elPaceStatus) {
-    elPaceStatus.textContent = pctAchieved >= 65 ? 'On Pace (' + pctAchieved + '% achieved)' : 'Lagging Target (' + pctAchieved + '% achieved)';
-  }
+  if (elPaceStatus) elPaceStatus.textContent = ds.monthlyTarget.status || NA;
   const elTargetNeeded = document.getElementById('ds-daily-target-needed');
-  if (elTargetNeeded) elTargetNeeded.textContent = '₹' + reqRunRate.toLocaleString() + '/day';
+  if (elTargetNeeded) elTargetNeeded.textContent = reqRunRate == null ? NA : '₹' + reqRunRate.toLocaleString() + '/day';
   const elDaysLeft = document.getElementById('ds-days-left');
   if (elDaysLeft) elDaysLeft.textContent = daysLeft + ' days';
 
   const elTblWalkins = document.getElementById('ds-tbl-walkins');
-  if (elTblWalkins) elTblWalkins.textContent = walkins.toLocaleString();
+  if (elTblWalkins) elTblWalkins.textContent = ds.walkinsToday == null ? NA : ds.walkinsToday.toLocaleString();
   const elTblSignups = document.getElementById('ds-tbl-signups');
-  if (elTblSignups) elTblSignups.textContent = '+' + loyalty + ' Members';
+  if (elTblSignups) elTblSignups.textContent = ds.loyaltyToday.newSignups == null ? NA : '+' + ds.loyaltyToday.newSignups + ' Members';
   const elTblLoyaltyOrders = document.getElementById('ds-tbl-loyalty-orders');
-  if (elTblLoyaltyOrders) elTblLoyaltyOrders.textContent = Math.round(orders * 0.33) + ' Orders (33.0%)';
+  if (elTblLoyaltyOrders) elTblLoyaltyOrders.textContent = ds.loyaltyToday.loyaltyOrders == null ? NA : ds.loyaltyToday.loyaltyOrders + ' Orders';
 
   const grid = document.getElementById('ds-reviews-grid');
   if (grid && ds.reviews && ds.reviews.feed) {
@@ -2020,7 +2017,7 @@ export function renderDailySnapshot() {
             <span class="review-tag">${r.channel}</span>
           </div>
         </div>
-        <div class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
+        <div class="review-stars">${r.rating == null ? '' : '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating)}</div>
         <div class="review-text">${r.comment}</div>
         <div class="review-footer">
           <span>${r.time}</span>
@@ -2036,12 +2033,13 @@ export function renderDailySnapshot() {
       CHARTS['c-daily-orders-ch'].destroy();
     }
     const ctx = canvas.getContext('2d');
+    const cb = ds.channelBreakdown || {};
     CHARTS['c-daily-orders-ch'] = new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: ['Dine In', 'Zomato', 'Swiggy', 'Takeaway'],
+        labels: RAW.channels,
         datasets: [{
-          data: [Math.round(181 * scale), Math.round(149 * scale), Math.round(108 * scale), Math.round(4 * scale)],
+          data: RAW.channels.map(c => (cb[c] && cb[c].orders) || 0),
           backgroundColor: ['#415639', '#cb202d', '#fc8019', '#a3979d'],
           borderWidth: 0
         }]

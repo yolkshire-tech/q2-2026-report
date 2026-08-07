@@ -173,41 +173,41 @@
 
 <!-- PAGE 0: DAILY DASHBOARD SNAPSHOT -->
 <div class="page active" id="pg-daily">
-  <div class="sec">Live Daily Snapshot & Operational Pulse</div>
+  <div class="sec">Daily Snapshot &mdash; Latest POS Data Day (Jun 30, 2026) &middot; Live feed pending</div>
   <div class="kpi-grid-6">
     <div class="kpi-card c-blue">
       <div class="kpi-label">Daily Dine-In Tables</div>
-      <div class="kpi-val c-blue" id="ds-walkins">181</div>
+      <div class="kpi-val c-blue" id="ds-walkins">N/A</div>
       <div class="kpi-sub" id="ds-walkins-sub">POS Billed Tables &middot; Footfall Sensor N/A</div>
       <div class="kpi-icon">🚶</div>
     </div>
     <div class="kpi-card c-green">
       <div class="kpi-label">Daily Orders</div>
-      <div class="kpi-val c-green" id="ds-orders">442</div>
-      <div class="kpi-sub" id="ds-orders-sub">POS Verified &middot; 181 Dine In &middot; 257 Del.</div>
+      <div class="kpi-val c-green" id="ds-orders">&mdash;</div>
+      <div class="kpi-sub" id="ds-orders-sub">POS Verified &middot; latest data day</div>
       <div class="kpi-icon">📦</div>
     </div>
     <div class="kpi-card c-amber">
       <div class="kpi-label">POS Customer Repeat Rate</div>
-      <div class="kpi-val c-amber" id="ds-loyalty">68.4%</div>
+      <div class="kpi-val c-amber" id="ds-loyalty">N/A</div>
       <div class="kpi-sub" id="ds-loyalty-sub">POS Repeat Frequency &middot; CRM API N/A</div>
       <div class="kpi-icon">🎁</div>
     </div>
     <div class="kpi-card c-purple">
       <div class="kpi-label">Month Target Achieved</div>
-      <div class="kpi-val c-purple" id="ds-target-achieved">70.0%</div>
-      <div class="kpi-sub" id="ds-target-sub">₹52.4L of ₹75.0L target</div>
+      <div class="kpi-val c-purple" id="ds-target-achieved">&mdash;</div>
+      <div class="kpi-sub" id="ds-target-sub">June 2026 vs branch targets (last full data month)</div>
       <div class="kpi-icon">🎯</div>
     </div>
     <div class="kpi-card c-red">
       <div class="kpi-label">Req. Daily Run-Rate</div>
-      <div class="kpi-val c-red" id="ds-run-rate">₹2.83L</div>
-      <div class="kpi-sub" id="ds-run-rate-sub">₹22.6L left in next 8 days</div>
+      <div class="kpi-val c-red" id="ds-run-rate">&mdash;</div>
+      <div class="kpi-sub" id="ds-run-rate-sub">Recomputes when a live month is loaded</div>
       <div class="kpi-icon">⚡</div>
     </div>
     <div class="kpi-card c-green">
       <div class="kpi-label">Store Scorecard Rating</div>
-      <div class="kpi-val c-green" id="ds-reviews-rating">4.68 ⭐</div>
+      <div class="kpi-val c-green" id="ds-reviews-rating">N/A</div>
       <div class="kpi-sub" id="ds-reviews-sub">Audit Benchmark &middot; Review API N/A</div>
       <div class="kpi-icon">⭐</div>
     </div>
@@ -216,7 +216,7 @@
   <div class="grid g21">
     <div class="chart-card">
       <h3>Monthly Sales Target Acceleration & Daily Pace</h3>
-      <div class="sub">Current month progress vs required daily run-rate for remaining days</div>
+      <div class="sub">June 2026 (last full data month) vs branch sales targets</div>
       <div class="progress-meter">
         <div class="progress-fill" id="ds-progress-fill" style="width: 70%;"></div>
       </div>
@@ -235,7 +235,7 @@
 
     <div class="chart-card">
       <h3>Daily Orders by Channel</h3>
-      <div class="sub">Live channel distribution breakdown</div>
+      <div class="sub">Channel distribution on the latest data day (Jun 30, 2026)</div>
       <div class="cw" style="height:180px"><canvas id="c-daily-orders-ch"></canvas></div>
     </div>
   </div>
@@ -247,10 +247,10 @@
       <div class="sub">Table turnover, walk-in conversion & peak hours</div>
       <table class="tbl">
         <tr><th>Metric</th><th>Today</th><th>Yesterday</th><th>Benchmark Target</th></tr>
-        <tr><td><strong>Total Walk-ins</strong></td><td id="ds-tbl-walkins">348</td><td>312</td><td>300+</td></tr>
-        <tr><td><strong>Order Conversion Rate</strong></td><td id="ds-tbl-conv">88.5%</td><td>86.2%</td><td>85.0%</td></tr>
-        <tr><td><strong>Table Turnover Rate</strong></td><td>4.3x / day</td><td>4.0x / day</td><td>4.0x+</td></tr>
-        <tr><td><strong>Peak Hour Walk-in Surge</strong></td><td>9:00 AM – 11:00 AM</td><td>10:00 AM – 11:30 AM</td><td>Morning Surge</td></tr>
+        <tr><td><strong>Total Walk-ins</strong></td><td id="ds-tbl-walkins">N/A</td><td>N/A</td><td>&mdash;</td></tr>
+        <tr><td><strong>Order Conversion Rate</strong></td><td id="ds-tbl-conv">N/A</td><td>N/A</td><td>&mdash;</td></tr>
+        <tr><td><strong>Table Turnover Rate</strong></td><td>N/A</td><td>N/A</td><td>&mdash;</td></tr>
+        <tr><td><strong>Peak Hour Walk-in Surge</strong></td><td>N/A</td><td>N/A</td><td>&mdash;</td></tr>
       </table>
     </div>
 
@@ -259,24 +259,24 @@
       <div class="sub">New member signups and repeat order velocity</div>
       <table class="tbl">
         <tr><th>Loyalty Metric</th><th>Performance Today</th><th>Growth Trend</th></tr>
-        <tr><td><strong>New Member Signups</strong></td><td id="ds-tbl-signups">+32 Members</td><td class="trend-up">&uarr; +18% vs avg</td></tr>
-        <tr><td><strong>Loyalty Orders Count</strong></td><td id="ds-tbl-loyalty-orders">146 Orders (33.0% of total)</td><td class="trend-up">&uarr; Strong</td></tr>
-        <tr><td><strong>Points Redeemed Today</strong></td><td>4,250 Points (₹425 value)</td><td>Stable</td></tr>
-        <tr><td><strong>Repeat Customer Rate</strong></td><td id="ds-tbl-repeat">68.4% Repeat Rate</td><td class="trend-up">&uarr; Benchmark 65%</td></tr>
+        <tr><td><strong>New Member Signups</strong></td><td id="ds-tbl-signups">N/A</td><td>&mdash;</td></tr>
+        <tr><td><strong>Loyalty Orders Count</strong></td><td id="ds-tbl-loyalty-orders">N/A</td><td>&mdash;</td></tr>
+        <tr><td><strong>Points Redeemed Today</strong></td><td>N/A</td><td>&mdash;</td></tr>
+        <tr><td><strong>Repeat Customer Rate</strong></td><td id="ds-tbl-repeat">N/A</td><td>&mdash;</td></tr>
       </table>
     </div>
   </div>
 
-  <div class="sec">Live Customer Reviews & Sentiment Snapshot</div>
+  <div class="sec">Store Performance Audit Cards (from Q2 POS data)</div>
   <div class="chart-card">
     <div style="display:flex;justify:space-between;align-items:center;margin-bottom:12px">
       <div>
-        <h3>Recent Customer Feedback Cards</h3>
-        <div class="sub" style="margin-bottom:0">Live ratings & comments from Dine-in and Delivery channels</div>
+        <h3>Per-Store Audit Summaries</h3>
+        <div class="sub" style="margin-bottom:0">Generated from verified Q2 POS data &middot; customer review feed integration pending</div>
       </div>
       <div style="display:flex;gap:10px;align-items:center">
-        <span class="badge-pill">Avg Rating: <span id="ds-reviews-score">4.82 / 5.0 ⭐</span></span>
-        <span class="badge-pill">Sentiment: <span style="color:#9fc794">95.8% Positive</span></span>
+        <span class="badge-pill">Avg Rating: <span id="ds-reviews-score">N/A</span></span>
+        <span class="badge-pill">Sentiment: <span>N/A</span></span>
       </div>
     </div>
     <div id="ds-reviews-grid" style="display:grid;grid-template-columns:repeat(3, 1fr);gap:12px">
@@ -362,7 +362,7 @@
     </ul></div>
     <div class="insight warn"><div class="insight-t">Watch Closely</div><ul>
       <li>June orders fell -1,021 vs May (&darr;7.5%)</li>
-      <li>Wadgaon Sheri declining -15.3% Apr&rarr;Jun</li>
+      <li>Wadgaon Sheri declining -15.1% Apr&rarr;Jun &middot; Kothrud -11.8% in June</li>
       <li>3&ndash;5 PM kitchen load only 28% &mdash; idle capacity</li>
       <li>Chicken Stroganoff = 9% item revenue risk</li>
       <li>Swiggy AOV (&#8377;441) vs Dine In (&#8377;590) gap</li>
@@ -715,7 +715,7 @@
   <div class="sec">Branch Trends &amp; Session Breakdown</div>
   <div class="grid g2">
     <div class="chart-card">
-      <button class="info-btn" onclick="showInfoModal('Branch Monthly Trend', 'Compares monthly sales trajectory across stores from April to June. Highlights upward growth (Aundh, Salunkhe Vihar) vs softening stores (Wadgaon Sheri -15.3%).')">i</button>
+      <button class="info-btn" onclick="showInfoModal('Branch Monthly Trend', 'Compares monthly sales trajectory across stores from April to June. Highlights growth vs softening stores from real monthly POS data.')">i</button>
       <button class="expand-btn" onclick="openModal('Branch Monthly Trend','c-br-trend')">&#10178;</button>
       <h3>Branch Revenue &mdash; Monthly Trend</h3>
       <div class="sub" id="br-trend-sub">AUNDH growing &middot; Wadgaon Sheri declining</div>
@@ -776,10 +776,10 @@
     <h3>Popularity vs Revenue &mdash; Menu Engineering Quadrant</h3>
     <div class="sub">Stars: promote &middot; Plow Horses: reprice &middot; Puzzles: reposition &middot; Dogs: remove &middot; Click expand to search all 160+ items</div>
     <div style="display:flex;gap:16px;margin-bottom:10px;flex-wrap:wrap">
-      <span style="font-size:11px;color:#9fc794">&#11044; Stars (67)</span>
-      <span style="font-size:11px;color:#94b8e3">&#11044; Plow Horses (13)</span>
-      <span style="font-size:11px;color:var(--primary)">&#11044; Puzzles (14)</span>
-      <span style="font-size:11px;color:#e68c85">&#11044; Dogs (66)</span>
+      <span style="font-size:11px;color:#9fc794">&#11044; Stars (145)</span>
+      <span style="font-size:11px;color:#94b8e3">&#11044; Plow Horses (16)</span>
+      <span style="font-size:11px;color:var(--primary)">&#11044; Puzzles (15)</span>
+      <span style="font-size:11px;color:#e68c85">&#11044; Dogs (144)</span>
     </div>
     <div class="cw" style="height:300px"><canvas id="c-me-scatter"></canvas></div>
     <div class="note" style="margin-top:14px">
@@ -812,14 +812,14 @@
   <div class="kpi-grid-4" style="margin-bottom:20px">
     <div class="kpi-card c-blue">
       <div class="kpi-label">Reconstructed Baskets</div>
-      <div class="kpi-val c-blue">74,445</div>
-      <div class="kpi-sub">Line items analyzed (Q1 + Q2)</div>
+      <div class="kpi-val c-blue">N/A</div>
+      <div class="kpi-sub">Needs per-invoice item data (pipeline planned)</div>
       <div class="kpi-icon">🛒</div>
     </div>
     <div class="kpi-card c-green">
       <div class="kpi-label">Multi-Item Basket Rate</div>
-      <div class="kpi-val c-green">64.1%</div>
-      <div class="kpi-sub">47,730 orders contain 2+ items</div>
+      <div class="kpi-val c-green">N/A</div>
+      <div class="kpi-sub">Needs per-invoice item data (pipeline planned)</div>
       <div class="kpi-icon">📦</div>
     </div>
     <div class="kpi-card c-purple">
@@ -894,7 +894,7 @@
     <h3>Offline vs Online Revenue Split &mdash; All Branches</h3>
     <div class="sub">Offline = Dine In + Takeaway (Green) &middot; Online = Zomato + Swiggy (Gold)</div>
     <div class="cw" style="height:260px"><canvas id="c-ch-split"></canvas></div>
-    <div class="alert-note" style="margin-top:14px"><strong>Wadgaon Sheri</strong> is 74.6% online-dependent &mdash; the highest in the chain. Its -15.3% revenue decline may reflect delivery platform issues or rating drops.</div>
+    <div class="alert-note" style="margin-top:14px"><strong>Wadgaon Sheri</strong> is 74.6% online-dependent &mdash; the highest in the chain. Its -15.1% Apr&rarr;Jun revenue decline may reflect delivery platform issues or rating drops.</div>
   </div>
 
   <div class="sec">Zomato vs Swiggy by Branch</div>
@@ -989,7 +989,7 @@
   <div class="kpi-grid">
     <div class="kpi-card c-green"><div class="kpi-label">Quarterly Revenue</div><div class="kpi-val c-green" id="k-kothrud-rev">&#8377;62.3L</div><div class="kpi-sub">30.1% of entire chain</div></div>
     <div class="kpi-card c-blue"><div class="kpi-label">Dine-In Preference</div><div class="kpi-val c-blue" id="k-kothrud-dinein">50.3%</div><div class="kpi-sub">&#8377;31.3L non-commissioned</div></div>
-    <div class="kpi-card c-amber"><div class="kpi-label">Beverage Attach</div><div class="kpi-val c-amber" id="k-kothrud-bev">54%</div><div class="kpi-sub">Chain benchmark leader</div></div>
+    <div class="kpi-card c-amber"><div class="kpi-label">Beverage Attach</div><div class="kpi-val c-amber" id="k-kothrud-bev">N/A</div><div class="kpi-sub">Needs per-invoice item data</div></div>
     <div class="kpi-card c-purple"><div class="kpi-label">Dine-In AOV</div><div class="kpi-val c-purple" id="k-kothrud-aov">&#8377;597</div><div class="kpi-sub">Top in major branches</div></div>
   </div>
   <div class="grid g2">
@@ -1016,7 +1016,7 @@
     <div class="chart-card">
       <button class="expand-btn" onclick="openModal('Beverage Category Upsell Mix','c-kothrud-bev-breakdown')">&#10178;</button>
       <h3>Kothrud Beverage Category Mix</h3>
-      <div class="sub">54% attach rate driven by Gourmet Coffee</div>
+      <div class="sub">Kothrud beverage revenue mix &mdash; Q2 item-level POS data</div>
       <div class="cw" style="height:210px"><canvas id="c-kothrud-bev-breakdown"></canvas></div>
     </div>
     <div class="chart-card">
@@ -1066,15 +1066,8 @@
       <div class="sub">Revenue, trend, and status &middot; Click headers to sort</div>
       <table class="tbl" id="tbl-scorecard">
         <tr><th>Branch</th><th>Revenue</th><th>AOV</th><th>Trend</th><th>Status</th></tr>
-        <tr><td>Kothrud</td><td>&#8377;62.3L</td><td>&#8377;515</td><td class="trend-up">Stable</td><td><span class="tag star">Leader</span></td></tr>
-        <tr><td>AUNDH</td><td>&#8377;39.7L</td><td>&#8377;515</td><td class="trend-up">&uarr; Growing</td><td><span class="tag star">Strong</span></td></tr>
-        <tr><td>Salunkhe Vihar</td><td>&#8377;26.9L</td><td>&#8377;556</td><td class="trend-up">&uarr; Growing</td><td><span class="tag horse">Premium</span></td></tr>
-        <tr><td>Saudagar</td><td>&#8377;26.9L</td><td>&#8377;526</td><td class="trend-dn">&darr; -10.2%</td><td><span class="tag warn">Watch</span></td></tr>
-        <tr><td>Wadgaon Sheri</td><td>&#8377;26.3L</td><td>&#8377;479</td><td class="trend-dn">&darr; -15.3%</td><td><span class="tag risk">Urgent</span></td></tr>
-        <tr><td>Yolkshire Wakad</td><td>&#8377;21.7L</td><td>&#8377;497</td><td>Mixed</td><td><span class="tag puzzle">Review</span></td></tr>
-        <tr><td>Bavdhan</td><td>&#8377;3.6L</td><td>&#8377;593</td><td>New (Jun)</td><td><span class="tag grow">High Pot.</span></td></tr>
       </table>
-      <div class="alert-note" style="margin-top:12px"><strong>⚠️ Operational Alert:</strong> Wadgaon Sheri (-15.3%) and Wakad (-27% in June) require immediate audit on kitchen order accuracy and delivery partner wait times.</div>
+      <div class="alert-note" style="margin-top:12px"><strong>⚠️ Operational Alert (real June data):</strong> Kothrud &mdash; the benchmark outlet &mdash; fell -11.8% in June and needs investigation. Wadgaon Sheri is down -15.1% Apr&rarr;Jun. Wakad&rsquo;s June decline is -9.0% (not the previously reported -27%).</div>
     </div>
   </div>
 </div>
@@ -1317,7 +1310,7 @@
     </div>
     <div class="kpi-card c-amber">
       <div class="kpi-label">Bev Attachment Gap</div>
-      <div class="kpi-val c-amber" id="kpi-comp-bevgap">54% vs 48%</div>
+      <div class="kpi-val c-amber" id="kpi-comp-bevgap">N/A</div>
       <div class="kpi-sub">Upsell efficiency</div>
       <div class="kpi-icon">☕</div>
     </div>

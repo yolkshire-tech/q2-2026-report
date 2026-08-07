@@ -7,3 +7,6 @@ scratch/
 .gemini/
 node_modules/
 dist/
+
+# Track the data pipeline (exception to the global *.py ignore)
+!pipeline/*.py
