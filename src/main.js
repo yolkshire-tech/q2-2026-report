@@ -204,6 +204,10 @@ function buildChartTable(chart, chartId) {
   return html + '</table>';
 }
 
+function getTextColor() {
+  return document.body.classList.contains('light-mode') ? '#2B2428' : '#FCF0D0';
+}
+
 export function toggleTheme() {
   const isLight = document.body.classList.toggle('light-mode');
   document.getElementById('theme-icon').textContent = isLight ? '🌙' : '☀️';
@@ -1123,24 +1127,29 @@ export function showPage(param) {
     const pages = Array.from(document.querySelectorAll('.page'));
     const tabs = Array.from(document.querySelectorAll('.tab'));
 
-    let targetIndex = -1;
-    if (typeof param === 'number') {
-      targetIndex = param;
+    // Resolve the target page by id (numeric args are legacy: treated as page index).
+    let targetId = null;
+    if (typeof param === 'number' && pages[param]) {
+      targetId = pages[param].id;
     } else if (typeof param === 'string') {
-      targetIndex = pages.findIndex(p => p.id === param);
+      targetId = param;
     }
 
-    if (targetIndex < 0 || targetIndex >= pages.length) {
+    let targetIndex = pages.findIndex(p => p.id === targetId);
+    if (targetIndex < 0) {
+      console.error(`showPage: no page with id "${targetId}" — falling back to first page`);
       targetIndex = 0;
     }
+    const activeId = pages[targetIndex].id;
 
     pages.forEach((p, i) => p.classList.toggle('active', i === targetIndex));
-    tabs.forEach((t, i) => t.classList.toggle('active', i === targetIndex));
+    // Tabs and pages are not index-aligned; match each tab by the id in its onclick.
+    tabs.forEach(t => {
+      const oc = t.getAttribute('onclick') || '';
+      t.classList.toggle('active', oc.includes(`'${activeId}'`));
+    });
 
     refresh();
-
-    const activePage = pages[targetIndex];
-    const activeId = activePage ? activePage.id : '';
 
     requestAnimationFrame(() => {
       Object.values(CHARTS).forEach(c => {
@@ -1151,8 +1160,8 @@ export function showPage(param) {
 
       if (activeId === 'pg-daily') renderDailySnapshot();
       if (activeId === 'pg-franchisee') recalcFranchiseeModel();
-      if (activeId === 'pg-branches' || activeId === 'pg7') drawHeatmap();
-      if (activeId === 'pg-operations' || activeId === 'pg4') renderMarketBasketTab();
+      if (activeId === 'pg-sales') drawHeatmap();
+      if (activeId === 'pg-operations') renderMarketBasketTab();
       if (activeId === 'pg-comparison') renderDualStoreComparison();
     });
   } catch (err) {

@@ -119,7 +119,9 @@
   <div class="tab" onclick="showPage('pg-customer')">💳 Customer &amp; Transactions</div>
   <div class="tab" onclick="showPage('pg-operations')">⚙️ Operations &amp; Basket Analysis</div>
   <div class="tab" onclick="showPage('pg-channels')">📡 Channel Intelligence</div>
-  <div class="tab" onclick="showPage('pg-branches')">🏢 Branch Profiles &amp; Kitchen Load</div>
+  <div class="tab" onclick="showPage('pg-branches')">🏢 Branch Profiles</div>
+  <div class="tab" onclick="showPage('pg-kothrud')">🏆 Kothrud Playbook</div>
+  <div class="tab" onclick="showPage('pg-kitchen')">🍳 Kitchen Load &amp; Staffing</div>
   <div class="tab" onclick="showPage('pg-q1q2')">⚖️ Q1 vs Q2 Comparison</div>
   <div class="tab" onclick="showPage('pg-forecasting')">🔮 Forecasting</div>
   <div class="tab" onclick="showPage('pg-recommendations')">💡 Recommendations</div>
@@ -982,7 +984,7 @@
 </div>
 
 <!-- PAGE 7: KOTHRUD PLAYBOOK & BENCHMARK -->
-<div style="margin-top:24px">
+<div class="page" id="pg-kothrud">
   <div class="sec">Kothrud Flagship Benchmark Analysis &amp; Playbook</div>
   <div class="kpi-grid">
     <div class="kpi-card c-green"><div class="kpi-label">Quarterly Revenue</div><div class="kpi-val c-green" id="k-kothrud-rev">&#8377;62.3L</div><div class="kpi-sub">30.1% of entire chain</div></div>
@@ -1033,126 +1035,8 @@
   </div>
 </div>
 
-<!-- PAGE 13: STORE-TO-STORE COMPARISON -->
-<div style="margin-top:24px">
-  <!-- CONTROL BAR -->
-  <div style="background:var(--bg3);padding:14px 18px;border-radius:12px;margin-bottom:20px;border:1px solid var(--border)">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px">
-      <div>
-        <h3 style="font-size:15px;color:var(--primary);margin:0">⚔️ Head-to-Head Branch Diagnostic Matrix</h3>
-        <p style="font-size:11px;color:var(--muted);margin-top:2px">Select Store A and Store B to perform dynamic root-cause variance analysis</p>
-      </div>
-      <div style="display:flex;gap:10px;align-items:center">
-        <select id="sel-dual-store-a" style="padding:6px 12px;border-radius:6px;background:var(--bg2);color:var(--text);border:1px solid var(--border);font-family:Raleway;font-weight:600" onchange="setDualStoreA(this.value)">
-          <option value="Kothrud" selected>Store A: Kothrud</option>
-          <option value="AUNDH">Store A: AUNDH</option>
-          <option value="Salunkhe Vihar">Store A: Salunkhe Vihar</option>
-          <option value="Saudagar">Store A: Saudagar</option>
-          <option value="Wadgaon Sheri">Store A: Wadgaon Sheri</option>
-          <option value="Yolkshire Wakad">Store A: Yolkshire Wakad</option>
-          <option value="Bavdhan">Store A: Bavdhan</option>
-        </select>
-        <button style="padding:6px 12px;border-radius:6px;background:var(--primary);color:var(--bg);border:none;font-weight:700;cursor:pointer" onclick="swapDualStores()">⇆ Swap</button>
-        <select id="sel-dual-store-b" style="padding:6px 12px;border-radius:6px;background:var(--bg2);color:var(--text);border:1px solid var(--border);font-family:Raleway;font-weight:600" onchange="setDualStoreB(this.value)">
-          <option value="Kothrud">Store B: Kothrud</option>
-          <option value="AUNDH">Store B: AUNDH</option>
-          <option value="Salunkhe Vihar">Store B: Salunkhe Vihar</option>
-          <option value="Saudagar">Store B: Saudagar</option>
-          <option value="Wadgaon Sheri" selected>Store B: Wadgaon Sheri</option>
-          <option value="Yolkshire Wakad">Store B: Yolkshire Wakad</option>
-          <option value="Bavdhan">Store B: Bavdhan</option>
-        </select>
-      </div>
-    </div>
-  </div>
-
-  <!-- ROOT CAUSE DRIVER KPI CARDS -->
-  <div class="sec">1. Core Root-Cause Performance Drivers</div>
-  <div class="kpi-grid-5" style="margin-bottom:20px">
-    <div class="kpi-card c-blue">
-      <div class="kpi-label">Revenue Variance</div>
-      <div class="kpi-val c-blue" id="kpi-comp-revdiff" style="font-size:18px">+₹36.0L</div>
-      <div class="kpi-sub" id="kpi-comp-storesub">Kothrud vs Wadgaon Sheri</div>
-    </div>
-    <div class="kpi-card c-green">
-      <div class="kpi-label">Dine-In Share Gap</div>
-      <div class="kpi-val c-green" id="kpi-comp-dinegap" style="font-size:18px">50.3% vs 25.0%</div>
-      <div class="kpi-sub">0% commission preference</div>
-    </div>
-    <div class="kpi-card c-amber">
-      <div class="kpi-label">Beverage Attach Gap</div>
-      <div class="kpi-val c-amber" id="kpi-comp-bevgap" style="font-size:18px">54% vs 29%</div>
-      <div class="kpi-sub">High-margin upsell mix</div>
-    </div>
-    <div class="kpi-card c-purple">
-      <div class="kpi-label">AOV Premium</div>
-      <div class="kpi-val c-purple" id="kpi-comp-aovgap" style="font-size:18px">₹515 vs ₹479</div>
-      <div class="kpi-sub" id="kpi-comp-aovsub">+₹36 ticket size gap</div>
-    </div>
-    <div class="kpi-card c-green" id="kpi-comp-statuscard">
-      <div class="kpi-label">Operational Health</div>
-      <div class="kpi-val" id="kpi-comp-statusval" style="font-size:16px">Leader vs Urgent</div>
-      <div class="kpi-sub">Status classification</div>
-    </div>
-  </div>
-
-  <!-- SIDE-BY-SIDE CHARTS GRID -->
-  <div class="sec">2. Comparative Visual Analytics</div>
-  <div class="grid g2">
-    <div class="chart-card">
-      <button class="info-btn" onclick="showInfoModal('Monthly Revenue Trajectory', 'Compares monthly sales progression across Store A and Store B from April to June to see growth or drop-off trends.')">i</button>
-      <h3>Monthly Revenue Trajectory</h3>
-      <div class="sub" id="sub-comp-monthly">Apr &rarr; May &rarr; Jun sales progression</div>
-      <div class="cw" style="height:210px"><canvas id="c-comp-monthly"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <button class="info-btn" onclick="showInfoModal('Channel Revenue Split', 'Compares revenue generated across Dine In, Zomato, Swiggy, and Takeaway. Highlights whether Store B is losing profit due to high delivery platform fees.')">i</button>
-      <h3>Channel Revenue Split</h3>
-      <div class="sub">In-store (0% commission) vs Online (25% fee)</div>
-      <div class="cw" style="height:210px"><canvas id="c-comp-channels"></canvas></div>
-    </div>
-  </div>
-  <div class="grid g3">
-    <div class="chart-card">
-      <button class="info-btn" onclick="showInfoModal('Hourly Demand Curve Overlay', 'Compares sales velocity hour-by-hour (7 AM to 11 PM) to pinpoint breakfast peak or dinner surge differences.')">i</button>
-      <h3>Hourly Demand Curve</h3>
-      <div class="sub">7 AM &ndash; 11 PM revenue overlay</div>
-      <div class="cw" style="height:200px"><canvas id="c-comp-hourly"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <button class="info-btn" onclick="showInfoModal('Meal Session Revenue Mix', 'Groups revenue into Breakfast, Lunch, Snack, and Dinner sessions for both stores.')">i</button>
-      <h3>Session Revenue Mix</h3>
-      <div class="sub">Breakfast, Lunch, Snack &amp; Dinner</div>
-      <div class="cw" style="height:200px"><canvas id="c-comp-session"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <button class="info-btn" onclick="showInfoModal('Category Sales Breakdown', 'Compares revenue contributed by Rice Bowls, Omelettes, Gourmet Coffee, and Sandwiches across both stores.')">i</button>
-      <h3>Category Revenue Breakdown</h3>
-      <div class="sub">Top product line contribution</div>
-      <div class="cw" style="height:200px"><canvas id="c-comp-cat"></canvas></div>
-    </div>
-  </div>
-
-  <!-- ROOT CAUSE DIAGNOSTIC SCORECARD TABLE -->
-  <div class="sec">3. Executive Head-to-Head Diagnostic Scorecard</div>
-  <div class="chart-card" style="margin-bottom:20px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <div>
-        <h3>Root-Cause Diagnostic Variance Matrix</h3>
-        <div class="sub" style="margin-bottom:0">Explicit evaluation of core drivers causing revenue &amp; margin variance</div>
-      </div>
-      <button class="btn-csv-export" onclick="exportTableToCSV('tbl-comp-diagnostic', 'store_head_to_head_diagnostic.csv')">📥 Export CSV</button>
-    </div>
-    <div style="overflow-x:auto">
-      <table class="tbl" id="tbl-comp-diagnostic"></table>
-    </div>
-    <div class="note" id="comp-insight-note" style="margin-top:14px">
-      <strong>💡 Key Executive Diagnostic Insight:</strong> Store performance differences are driven primarily by Dine-In Share and Beverage Attach Rates. Copying Kothrud's beverage upselling scripts to lagging stores generates ~₹10–15L/year in added margin.
-    </div>
-  </div>
-</div>
 <!-- PAGE 7: OPERATIONS & KITCHEN LOAD -->
-<div class="page" id="pg7">
+<div class="page" id="pg-kitchen">
   <div class="sec">Kitchen Load Analysis</div>
   <div class="chart-card">
     <button class="expand-btn" onclick="openModal('Kitchen Load by Hour','c-load')">&#10178;</button>
@@ -1243,7 +1127,7 @@
 </div>
 
 <!-- PAGE 9: Q1 VS Q2 COMPARATIVE ANALYSIS -->
-<div class="page" id="pg9">
+<div class="page" id="pg-q1q2">
   <div class="sec">Quarter-over-Quarter Growth Metrics (Q1 2026 vs Q2 2026)</div>
   <div class="kpi-grid">
     <div class="kpi-card c-green"><div class="kpi-label">QoQ Revenue Growth</div><div class="kpi-val c-green">+20.2%</div><div class="kpi-sub">&#8377;1.72Cr &rarr; &#8377;2.07Cr</div></div>
@@ -1280,7 +1164,7 @@
 </div>
 
 <!-- PAGE 10: FORECASTING -->
-<div class="page" id="pg10">
+<div class="page" id="pg-forecasting">
   <div class="sec">Revenue Forecast Q3 2026</div>
   <div class="grid g2">
     <div class="chart-card">
@@ -1313,7 +1197,7 @@
 </div>
 
 <!-- PAGE 11: RECOMMENDATIONS -->
-<div class="page" id="pg11">
+<div class="page" id="pg-recommendations">
   <div class="sec">Action Plan &amp; Financial Priorities</div>
   <div class="rec-grid" id="rec-grid-container">
     <div class="rec-card" style="border-color:rgba(124,76,71,.4)">
