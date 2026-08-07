@@ -208,10 +208,6 @@ def main():
 
     it["quad"] = it.apply(quadrant, axis=1)
     it = it.sort_values("rev", ascending=False)
-    mePoints = [{"x": int(r.qty), "y": round(r.rev), "cat": r.quad,
-                 "item": r._1 if hasattr(r, "_1") else r[0], "mcat": r.cat}
-                for r in it.itertuples(index=False)]
-    # itertuples name mangling safety: rebuild explicitly
     mePoints = [{"x": int(row["qty"]), "y": round(row["rev"]), "cat": row["quad"],
                  "item": row["Item Name"], "mcat": row["cat"]}
                 for _, row in it.iterrows()]
