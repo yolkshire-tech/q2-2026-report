@@ -3,7 +3,9 @@
 // incentives: t1 = Base, t2 = Stretch, t3 = Super-Achiever.
 //
 // `pos` maps each sheet outlet to its POS branch name (null = outlet has no
-// branch in the POS export, so no live sales tracking is possible yet).
+// branch in this POS export, so no live sales tracking is possible yet).
+// PYC (Incl Cart) bills on a SEPARATE POS account (confirmed 2026-08-08) —
+// its exports must be added to the pipeline when available.
 // Bavdhan (in POS since June) has no targets in the sheet yet.
 
 export const TIERED_TARGETS = [
