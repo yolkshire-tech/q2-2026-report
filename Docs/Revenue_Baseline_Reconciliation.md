@@ -1,6 +1,6 @@
 # Q2 2026 Revenue Baseline Reconciliation
 
-**Date:** 2026-08-08 · **Prepared as Phase 0 of the platform rebuild** · **Status: PENDING APPROVAL**
+**Date:** 2026-08-08 · **Prepared as Phase 0 of the platform rebuild** · **Status: APPROVED 2026-08-08 — the definitions below are canonical and enforced by `pipeline/build_data.py`**
 
 ## Why this exists
 

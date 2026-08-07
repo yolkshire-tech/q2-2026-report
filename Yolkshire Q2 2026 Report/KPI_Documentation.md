@@ -1,7 +1,20 @@
 # Yolkshire Q2 2026 — KPI & Metrics Documentation
 
 ## Overview
-This document defines every KPI and calculated metric used in the Yolkshire Q2 2026 Sales Report and Dashboard. All calculations are reproducible using the Python analysis script (`scratch/analyze.py`).
+This document defines every KPI and calculated metric used in the Yolkshire Q2 2026 Sales Report and Dashboard. All calculations are reproducible using the in-repo pipeline (`pipeline/build_data.py`).
+
+## ✅ CANONICAL DEFINITIONS (approved 2026-08-08)
+Reconciled from raw POS exports — see `Docs/Revenue_Baseline_Reconciliation.md`. These override any conflicting figure elsewhere:
+
+| Metric | Definition | Q2 2026 value | Use for |
+|---|---|---|---|
+| **Net Sales** | Invoice-level: Gross − Discounts + Direct Charges; Sale invoices; Yolkshire brand; 7 revenue outlets; zero-net comped invoices excluded | ₹2,07,28,578.43 | Targets, pace tracking, P&L topline |
+| **Orders** | Count of invoices under the same rules | 40,193 | Volume, AOV denominator |
+| **AOV** | Net Sales ÷ Orders | ₹515.73 | Bill-value analysis, ₹2L model |
+| **Item Revenue** | Item-line net by SKU (excl. The Hoagie Club); = Net Sales − Direct Charges | ₹2,05,65,663 | Menu engineering, combos, category mix |
+| **Menu Coverage** | % of Item Revenue joined to the SKU cost master — published data-quality gate, target ≥98% | ~60% (alias map pending) | Analysis validity check |
+
+⚠️ **Deprecated:** the ₹98,71,208 "Net Sales", AOV ₹245.60, and "74,445 baskets" figures used in the market-basket/combo reports are partial-join artifacts and must not be used. Combo AOV-uplift projections citing the ₹245.60 baseline are overstated and pending restatement.
 
 ---
 
