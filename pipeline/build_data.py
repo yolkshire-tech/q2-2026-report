@@ -182,6 +182,76 @@ def main():
         for d, v, m in zip(daily.index, daily.values, ma.values)
     ]
 
+    print("[4b] Period cube, daily series, per-branch patterns (real slicing)")
+    SESS = ["breakfast", "lunch", "snack", "dinner"]
+    cube = {}
+    for m in MONTHS:
+        g = tx[tx["month"] == m]
+        e = {}
+        for b in BRANCHES:
+            gb = g[g["Branch Name"] == b]
+            e[b] = {
+                "rev": round(gb["Net Amount"].sum()), "ord": int(len(gb)),
+                "ch": {c: {"rev": round(gb.loc[gb["Channel"] == c, "Net Amount"].sum()),
+                           "ord": int((gb["Channel"] == c).sum())} for c in CHANNELS},
+                "sess": {s: {"rev": round(gb.loc[gb["session"] == s, "Net Amount"].sum()),
+                             "ord": int((gb["session"] == s).sum())} for s in SESS},
+            }
+        cube[m.lower()] = e
+
+    daily_g = (tx.groupby([tx["Business Date"].dt.date, "Branch Name"])["Net Amount"]
+               .sum().unstack(fill_value=0))
+    dailyAll = []
+    for d, row in daily_g.iterrows():
+        ts = pd.Timestamp(d)
+        dailyAll.append({"label": ts.strftime("%b ") + str(ts.day),
+                         "m": ts.strftime("%b").lower(),
+                         "total": round(row.sum()),
+                         "br": {b: round(row.get(b, 0)) for b in BRANCHES}})
+
+    def patterns(g):
+        p_hOrd = [int((g["hour"] == h).sum()) for h in HOURS]
+        peak = max(p_hOrd) or 1
+        hm = [[int(((g["weekday"] == d) & (g["hour"] == h)).sum()) for h in HOURS]
+              for d in range(7)]
+        hm_peak = max(max(r) for r in hm) or 1
+        return {
+            "hRev": [round(g.loc[g["hour"] == h, "Net Amount"].sum()) for h in HOURS],
+            "hOrd": p_hOrd,
+            "hLoad": [round(o / peak * 100) for o in p_hOrd],
+            "dRev": [round(g.loc[g["weekday"] == d, "Net Amount"].sum()) for d in range(7)],
+            "heatmap": [[round(v / hm_peak * 100) for v in row] for row in hm],
+            "bills": [int(((g["Net Amount"] >= lo) & (g["Net Amount"] < hi)).sum())
+                      for lo, hi in edges],
+        }
+
+    branchPatterns = {"all": patterns(tx)}
+    for b in BRANCHES:
+        branchPatterns[b] = patterns(tx[tx["Branch Name"] == b])
+
+    FULL_NAMES = {"Jan": "January", "Feb": "February", "Mar": "March",
+                  "Apr": "April", "May": "May", "Jun": "June", "Jul": "July",
+                  "Aug": "August", "Sep": "September", "Oct": "October",
+                  "Nov": "November", "Dec": "December"}
+    days_per_month = (tx.groupby("month")["Business Date"]
+                      .apply(lambda s: s.dt.date.nunique()).to_dict())
+    dmin, dmax = tx["Business Date"].min(), tx["Business Date"].max()
+    year = int(dmax.year)
+    meta = {
+        "year": year,
+        "months": [m.lower() for m in MONTHS],
+        "monthLabels": {m.lower(): f"{FULL_NAMES[m]} {year}" for m in MONTHS},
+        "quarters": {"q1": ["jan", "feb", "mar"], "q2": ["apr", "may", "jun"]},
+        "quarterLabels": {"q1": f"Q1 {year} (Jan–Mar)", "q2": f"Q2 {year} (Apr–Jun)"},
+        "daysInMonth": {m.lower(): int(days_per_month.get(m, 30)) for m in MONTHS},
+        "latestMonth": MONTHS[-1].lower(),
+        "latestDate": dmax.strftime("%b %d, %Y"),
+        "rangeLabel": f"{dmin.strftime('%b %d')} – {dmax.strftime('%b %d, %Y')}",
+        "totalOrders": int(len(tx)),
+        "totalNet": round(tx["Net Amount"].sum()),
+        "itemDataScope": "Q2 2026 (Apr–Jun) item-level exports",
+    }
+
     print("[5] Menu items (Q2 item-line, full coverage)")
     items = pd.read_csv(ROOT / "Docs" / "Q2" / "Multidate - Sales By Items.csv",
                         encoding="utf-8")
@@ -217,6 +287,17 @@ def main():
 
     top_r = it.nlargest(10, "rev")
     top_q = it.nlargest(10, "qty")
+
+    # Per-branch item lists (real branch-level menu analytics; Q2 scope)
+    itemsByBranch = {}
+    ib = items[items["Type"] == "Item"]
+    for b in BRANCHES:
+        gb = (ib[ib["Branch Name"] == b].groupby("Item Name")
+              .agg(qty=("Quantity", "sum"), rev=("Net Amount", "sum"),
+                   cat=("Category", "first")))
+        gb = gb[gb["rev"] > 0].sort_values("rev", ascending=False)
+        itemsByBranch[b] = [{"item": i, "x": int(r["qty"]), "y": round(r["rev"]),
+                             "mcat": r["cat"]} for i, r in gb.iterrows()]
 
     # Kothrud benchmark detail — real branch-level series for the Playbook page
     koth_tx = q2[q2["Branch Name"] == "Kothrud"]
@@ -357,6 +438,26 @@ def main():
     out = []
     out.append(header)
     out.append("export const RAW = {")
+    out.append(f"  meta: {js(meta)},")
+    out.append("  // Period cube: month -> branch -> real rev/ord/channel/session actuals.")
+    out.append("  cube: {")
+    for m in MONTHS:
+        out.append(f"    {m.lower()}: {js(cube[m.lower()])},")
+    out.append("  },")
+    out.append("  dailyAll: [")
+    for d in dailyAll:
+        out.append(f"    {js(d)},")
+    out.append("  ],")
+    out.append("  branchPatterns: {")
+    for k in ["all"] + BRANCHES:
+        key = f"'{k}'" if " " in k else k
+        out.append(f"    {key}: {js(branchPatterns[k])},")
+    out.append("  },")
+    out.append("  itemsByBranch: {")
+    for b in BRANCHES:
+        key = f"'{b}'" if " " in b else b
+        out.append(f"    {key}: {js(itemsByBranch[b])},")
+    out.append("  },")
     out.append(f"  branches: {js(BRANCHES)},")
     out.append("  branchColors: ['#E7BA44', '#56754d', '#5985b9', '#907aa9', '#9c5f59', '#415639', '#7C4C47'],")
     out.append(f"  channels: {js(CHANNELS)},")

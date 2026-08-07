@@ -4,7 +4,8 @@ import { RAW, DAILY_REVENUE, BRANCH_PROFILES } from './data/dashboardData.js';
 import { TIERED_TARGETS, UNTARGETED_POS_BRANCHES } from './data/targets.js';
 import { CHARTS, fmt, fmtN, hexToRgb, mkChart, updateChart, updateChartTheme } from './charts/chartManager.js';
 
-let F = { branch: 'all', month: 'all', channel: 'all', session: 'all' };
+let F = { period: 'all', branch: 'all' };
+let currentHeatmap = null;
 let currentBranchProfile = 'Kothrud';
 let bpCharts = {};
 let modalChart = null;
@@ -255,268 +256,165 @@ export function toggleTheme() {
 }
 
 
+function periodMonths(period) {
+  const meta = RAW.meta;
+  if (period === 'all') return meta.months;
+  if (meta.quarters[period]) return meta.quarters[period];
+  return meta.months.includes(period) ? [period] : meta.months;
+}
+
+// Every number below is a straight sum of real invoices from the period cube.
+// No scale factors, no pro-rating, no fabrication (memory.md rule 2).
 function getFilteredData() {
   initCategorySelection();
-  const { branch, month, channel, session } = F;
+  const { period, branch } = F;
+  const meta = RAW.meta;
+  const months = periodMonths(period);
+  const branchesSel = branch === 'all' ? RAW.branches : [branch];
   const result = {};
-  let rev = 20728578, ord = 40193, aov = 515.73;
+  result.monthsSel = months;
+  result.periodLabel = period === 'all' ? `All data (${meta.rangeLabel})`
+    : (meta.quarterLabels[period] || meta.monthLabels[period] || period);
 
-  // 1. Month Filter Calculation
-  if (month !== 'all') {
-    const md = RAW.month[month];
-    if (md) {
-      rev = md.rev;
-      ord = md.ord;
-      aov = md.aov;
-    }
-  }
+  const cubeSum = (b) => months.reduce((acc, m) => {
+    const e = RAW.cube[m][b];
+    if (e) { acc.rev += e.rev; acc.ord += e.ord; }
+    return acc;
+  }, { rev: 0, ord: 0 });
 
-  // 2. Branch Filter Calculation
-  if (branch !== 'all') {
-    const bd = RAW.branch[branch];
-    if (bd) {
-      if (month !== 'all' && RAW.month[month]?.br?.[branch] !== undefined) {
-        rev = RAW.month[month].br[branch];
-        ord = Math.round(bd.ord * (rev / (bd.rev || 1)));
-      } else {
-        rev = bd.rev;
-        ord = bd.ord;
-      }
-      aov = bd.aov;
-    }
-  }
+  let rev = 0, ord = 0;
+  branchesSel.forEach(b => { const s = cubeSum(b); rev += s.rev; ord += s.ord; });
+  result.rev = rev;
+  result.ord = ord;
+  result.aov = ord ? Math.round(rev / ord) : 0;
+  const totalDays = months.reduce((a, m) => a + (meta.daysInMonth[m] || 30), 0);
+  result.daily = Math.round(rev / Math.max(1, totalDays));
+  result.ordPerDay = Math.round(ord / Math.max(1, totalDays));
 
-  // 3. Channel Filter Calculation
-  if (channel !== 'all') {
-    if (channel === 'Delivery') {
-      const zRev = RAW.channel.Zomato.rev;
-      const sRev = RAW.channel.Swiggy.rev;
-      const delShare = (RAW.channel.Zomato.share + RAW.channel.Swiggy.share) / 100;
-      rev = Math.round(rev * delShare);
-      ord = Math.round(ord * delShare);
-      aov = Math.round((RAW.channel.Zomato.aov + RAW.channel.Swiggy.aov) / 2);
-    } else {
-      const chData = RAW.channel[channel];
-      if (chData) {
-        if (branch !== 'all' && RAW.branch[branch]?.ch?.[channel]) {
-          rev = RAW.branch[branch].ch[channel].rev;
-          ord = RAW.branch[branch].ch[channel].ord;
-        } else {
-          rev = Math.round(rev * (chData.share / 100));
-          ord = Math.round(ord * (chData.share / 100));
-        }
-        aov = chData.aov;
-      }
-    }
-  }
+  // Branch series
+  result.branchRevs = RAW.branches.map(b => cubeSum(b).rev);
+  result.branchColors = RAW.branches.map((b, i) =>
+    branch !== 'all' && b !== branch ? `rgba(${hexToRgb(RAW.branchColors[i])},0.25)` : RAW.branchColors[i]);
+  result.branchAOVs = RAW.branches.map(b => { const s = cubeSum(b); return s.ord ? Math.round(s.rev / s.ord) : 0; });
+  result.branchAOVColors = result.branchColors;
 
-  // 4. Session Filter Calculation
-  const sessionShares = {
-    all: 1.0,
-    breakfast: 0.273, // 27.3%
-    lunch: 0.303,     // 30.3%
-    snack: 0.093,     // 9.3%
-    dinner: 0.331     // 33.1%
+  // Channel series (per selection) + per-branch channel matrix
+  const chAgg = (b, c, k) => months.reduce((x, m) => x + (RAW.cube[m][b]?.ch?.[c]?.[k] || 0), 0);
+  result.chRevs = RAW.channels.map(c => branchesSel.reduce((a, b) => a + chAgg(b, c, 'rev'), 0));
+  result.chOrds = RAW.channels.map(c => branchesSel.reduce((a, b) => a + chAgg(b, c, 'ord'), 0));
+  result.chAOVs = RAW.channels.map((c, i) => result.chOrds[i] ? Math.round(result.chRevs[i] / result.chOrds[i]) : 0);
+  result.chColors = RAW.channelColors.slice();
+  result.chAOVColors = RAW.channelColors.slice();
+  result.branchCh = {};
+  result.branchChOrd = {};
+  RAW.branches.forEach(b => {
+    result.branchCh[b] = {}; result.branchChOrd[b] = {};
+    RAW.channels.forEach(c => {
+      result.branchCh[b][c] = chAgg(b, c, 'rev');
+      result.branchChOrd[b][c] = chAgg(b, c, 'ord');
+    });
+  });
+  result.chTrend = {
+    labels: months.map(m => meta.monthLabels[m].split(' ')[0]),
+    series: {}
   };
-  const sessionFactor = sessionShares[session] || 1.0;
-  rev = Math.round(rev * sessionFactor);
-  ord = Math.round(ord * sessionFactor);
-
-  // 5. Non-Menu & Category Filters
-  const nonMenuFactor = excludeNonMenu ? 0.978 : 1.0;
-  const totalItemsCount = getAllMenuItems().length;
-  const selectedCount = activeCategorySelection ? activeCategorySelection.size : totalItemsCount;
-  const categoryFactor = totalItemsCount > 0 ? (selectedCount / totalItemsCount) : 1;
-
-  rev = Math.round(rev * nonMenuFactor * categoryFactor);
-  ord = Math.round(ord * nonMenuFactor * categoryFactor);
-
-  const overallBaseRev = 20728578;
-  const scale = rev / overallBaseRev;
-
-  result.rev = rev; result.ord = ord; result.aov = Math.round(aov);
-  result.daily = Math.round(rev / (month === 'jan' || month === 'mar' || month === 'may' ? 31 : month === 'feb' ? 28 : month === 'apr' || month === 'jun' ? 30 : 91));
-
-  // Branch Revenues
-  result.branchRevs = RAW.branches.map(b => {
-    let bRev = RAW.branch[b].rev;
-    if (month !== 'all' && RAW.month[month]?.br?.[b] !== undefined) bRev = RAW.month[month].br[b];
-    if (channel === 'Delivery') bRev = Math.round(bRev * 0.525);
-    else if (channel !== 'all' && RAW.branch[b]?.ch?.[channel]) bRev = RAW.branch[b].ch[channel].rev;
-    return Math.round(bRev * sessionFactor * nonMenuFactor * categoryFactor);
+  RAW.channels.forEach(c => {
+    result.chTrend.series[c] = months.map(m => branchesSel.reduce((a, b) => a + (RAW.cube[m][b]?.ch?.[c]?.rev || 0), 0));
   });
 
-  result.branchColors = RAW.branches.map((b, i) => {
-    if (branch !== 'all') return b === branch ? RAW.branchColors[i] : `rgba(${hexToRgb(RAW.branchColors[i])},0.25)`;
-    return RAW.branchColors[i];
-  });
-
-  // Channel Revenues
-  result.chRevs = RAW.channels.map((c, i) => {
-    let cRev = RAW.channel[c].rev;
-    if (branch !== 'all' && RAW.branch[branch]?.ch?.[c]) cRev = RAW.branch[branch].ch[c].rev;
-    if (channel !== 'all') {
-      if (channel === 'Delivery') cRev = (c === 'Zomato' || c === 'Swiggy') ? cRev : 0;
-      else cRev = (c === channel) ? cRev : 0;
-    }
-    return Math.round(cRev * (month !== 'all' ? (RAW.month[month]?.rev || 20728578) / 20728578 : 1) * sessionFactor * nonMenuFactor * categoryFactor);
-  });
-
-  result.chColors = RAW.channels.map((c, i) => {
-    if (channel === 'Delivery') return (c === 'Zomato' || c === 'Swiggy') ? RAW.channelColors[i] : `rgba(${hexToRgb(RAW.channelColors[i])},0.2)`;
-    if (channel !== 'all') return c === channel ? RAW.channelColors[i] : `rgba(${hexToRgb(RAW.channelColors[i])},0.2)`;
-    return RAW.channelColors[i];
-  });
-
-  // Monthly Trend Revenues
-  if (branch !== 'all') {
-    const bd = RAW.branch[branch];
-    result.monthlyRevs = [bd.apr, bd.may, bd.jun].map(v => Math.round(v * sessionFactor * nonMenuFactor * categoryFactor));
-  } else {
-    result.monthlyRevs = [RAW.month.apr.rev, RAW.month.may.rev, RAW.month.jun.rev].map(v => Math.round(v * sessionFactor * nonMenuFactor * categoryFactor));
-  }
-
-  result.monthColors = ['apr', 'may', 'jun'].map((m, i) => {
-    if (month !== 'all') return m === month ? ['#E7BA44', '#56754d', '#9c5f59'][i] : 'rgba(163,151,157,0.3)';
-    return ['#E7BA44', '#56754d', '#9c5f59'][i];
-  });
-
-  // Sessions
-  const sessMap = { breakfast: 5663273, lunch: 6275153, snack: 1918526, dinner: 6856676 };
-  result.sessRevs = ['breakfast', 'lunch', 'snack', 'dinner'].map(s => {
-    let r = sessMap[s];
-    if (session !== 'all' && s !== session) r = 0;
-    return Math.round(r * (rev / (20728578 * sessionFactor)));
-  });
-
-  result.sessOrds = result.sessRevs.map((r, i) => Math.round(r / (fd_aov(i) || 480)));
-  function fd_aov(i) { return [510, 530, 470, 540][i]; }
-
+  // Session series
+  const sessKeys = ['breakfast', 'lunch', 'snack', 'dinner'];
   const sessColors = ['#E7BA44', '#5985b9', '#907aa9', '#56754d'];
-  result.sessColors = ['breakfast', 'lunch', 'snack', 'dinner'].map((s, i) => {
-    if (session !== 'all') return s === session ? sessColors[i] : `rgba(${hexToRgb(sessColors[i])},0.2)`;
-    return sessColors[i];
+  const sessAgg = (s, k) => branchesSel.reduce((a, b) => a + months.reduce((x, m) => x + (RAW.cube[m][b]?.sess?.[s]?.[k] || 0), 0), 0);
+  result.sessRevs = sessKeys.map(s => sessAgg(s, 'rev'));
+  result.sessOrds = sessKeys.map(s => sessAgg(s, 'ord'));
+  result.sessColors = sessColors;
+  result.activeHours = null;
+
+  // Monthly trend across ALL known months (selection highlighted)
+  result.trendLabels = meta.months.map(m => meta.monthLabels[m].split(' ')[0]);
+  result.trendSelected = meta.months.map(m => months.includes(m));
+  result.branchMonthly = {};
+  RAW.branches.forEach(b => {
+    result.branchMonthly[b] = meta.months.map(m => RAW.cube[m][b]?.rev || 0);
   });
 
-  const sessionHours = { all: null, breakfast: [7, 8, 9, 10], lunch: [11, 12, 13, 14], snack: [15, 16, 17], dinner: [18, 19, 20, 21, 22, 23] };
-  result.activeHours = sessionHours[session];
-  result.branchAOVs = RAW.branches.map(b => RAW.branch[b].aov);
-  result.branchAOVColors = RAW.branches.map((b, i) => {
-    if (branch !== 'all') return b === branch ? RAW.branchColors[i] : `rgba(${hexToRgb(RAW.branchColors[i])},0.25)`;
-    return RAW.branchColors[i];
+  // Time-of-day / day-of-week / bill patterns — real, per outlet, full range
+  const pat = RAW.branchPatterns[branch === 'all' ? 'all' : branch] || RAW.branchPatterns.all;
+  result.hRev = pat.hRev;
+  result.hOrd = pat.hOrd;
+  result.hLoad = pat.hLoad;
+  result.dRev = pat.dRev;
+  result.bills = pat.bills;
+  currentHeatmap = pat.heatmap;
+  result.patternNote = `${branch === 'all' ? 'Chain-wide' : branch} time patterns computed over the full data range (${meta.rangeLabel}) — patterns are structural, not period-sliced.`;
+
+  // Daily trend — real per period + outlet, 7-day MA computed on the slice
+  const series = RAW.dailyAll.filter(d => months.includes(d.m))
+    .map(d => ({ date: d.label, rev: branch === 'all' ? d.total : (d.br[branch] || 0) }));
+  series.forEach((d, i) => {
+    const s = series.slice(Math.max(0, i - 6), i + 1);
+    d.ma = Math.round(s.reduce((a, x) => a + x.rev, 0) / s.length);
   });
-  result.chAOVs = RAW.channels.map(c => RAW.channel[c].aov);
-  result.chAOVColors = RAW.channels.map((c, i) => {
-    if (channel === 'Delivery') return (c === 'Zomato' || c === 'Swiggy') ? RAW.channelColors[i] : `rgba(${hexToRgb(RAW.channelColors[i])},0.25)`;
-    if (channel !== 'all') return c === channel ? RAW.channelColors[i] : `rgba(${hexToRgb(RAW.channelColors[i])},0.25)`;
-    return RAW.channelColors[i];
-  });
+  result.dailyTrend = series;
 
-  // Day of week distribution
-  result.dRev = RAW.dRev.map(v => Math.round(v * scale));
-
-  // Filter Daily Revenue Trend by selected Month
-  let rawDailySlice = DAILY_REVENUE;
-  let periodBase = overallBaseRev;
-  if (month === 'apr') { rawDailySlice = DAILY_REVENUE.slice(0, 30); periodBase = RAW.month.apr.rev; }
-  else if (month === 'may') { rawDailySlice = DAILY_REVENUE.slice(30, 61); periodBase = RAW.month.may.rev; }
-  else if (month === 'jun') { rawDailySlice = DAILY_REVENUE.slice(61, 91); periodBase = RAW.month.jun.rev; }
-  else if (month === 'q1') { periodBase = RAW.q1.totalRev; }
-  const periodScale = rev / (periodBase || 1);
-
-  result.dailyTrend = rawDailySlice.map(d => ({ date: d.date, rev: Math.round(d.rev * periodScale), ma: Math.round(d.ma * periodScale) }));
-
-
-  // Hourly arrays
-  result.hRev = RAW.hRev.map((v, h) => {
-    const isHourActive = !result.activeHours || result.activeHours.includes(RAW.hours[h]);
-    return isHourActive ? Math.round(v * scale) : 0;
-  });
-  result.hOrd = RAW.hOrd.map((v, h) => {
-    const isHourActive = !result.activeHours || result.activeHours.includes(RAW.hours[h]);
-    return isHourActive ? Math.round(v * scale) : 0;
-  });
-
-  // Menu items filtering
+  // Item analytics — real per outlet; scope is the item-export range, never scaled
   const nonMenuItemsSet = new Set(getNonMenuItems());
-  result.top10rItems = [];
-  result.top10rRevs = [];
-  RAW.top10Items.forEach((item, i) => {
-    const isNon = nonMenuItemsSet.has(item);
-    if ((!excludeNonMenu || !isNon) && itemPassesCategoryFilter(item)) {
-      result.top10rItems.push(item);
-      result.top10rRevs.push(Math.round(RAW.top10Rev[i] * scale));
-    }
-  });
-
-  result.top10qItems = [];
-  result.top10qQtys = [];
-  RAW.top10QtyItems.forEach((item, i) => {
-    const isNon = nonMenuItemsSet.has(item);
-    if ((!excludeNonMenu || !isNon) && itemPassesCategoryFilter(item)) {
-      result.top10qItems.push(item);
-      result.top10qQtys.push(Math.round(RAW.top10Qty[i] * scale));
-    }
-  });
-
-  result.mePoints = RAW.mePoints.filter(p => {
-    const isNon = nonMenuItemsSet.has(p.item);
-    return (!excludeNonMenu || !isNon) && itemPassesCategoryFilter(p.item);
-  }).map(p => ({ ...p, x: Math.round(p.x * scale), y: Math.round(p.y * scale) }));
-
-  // Category Revenue Share — real POS categories carried on each menu point (mcat).
+  let itemSrc;
+  if (branch === 'all') {
+    itemSrc = RAW.mePoints;
+  } else {
+    const list = RAW.itemsByBranch[branch] || [];
+    const med = arr => { const s = arr.slice().sort((a, b) => a - b); return s.length ? s[Math.floor(s.length / 2)] : 0; };
+    const mq = med(list.map(pt => pt.x)), mr = med(list.map(pt => pt.y));
+    itemSrc = list.map(pt => ({ ...pt, cat: pt.x >= mq ? (pt.y >= mr ? 'Star' : 'Plow Horse') : (pt.y >= mr ? 'Puzzle' : 'Dog') }));
+  }
+  const itemsF = itemSrc.filter(pt => (!excludeNonMenu || !nonMenuItemsSet.has(pt.item)) && itemPassesCategoryFilter(pt.item));
+  result.mePoints = itemsF;
+  const byRev = itemsF.slice().sort((a, b) => b.y - a.y);
+  result.top10rItems = byRev.slice(0, 10).map(pt => pt.item);
+  result.top10rRevs = byRev.slice(0, 10).map(pt => pt.y);
+  const byQty = itemsF.slice().sort((a, b) => b.x - a.x);
+  result.top10qItems = byQty.slice(0, 10).map(pt => pt.item);
+  result.top10qQtys = byQty.slice(0, 10).map(pt => pt.x);
   const catRevs = {};
-  RAW.mePoints.forEach(p => {
-    if (excludeNonMenu && nonMenuItemsSet.has(p.item)) return;
-    if (!itemPassesCategoryFilter(p.item)) return;
-    const cat = p.mcat || 'Uncategorized';
-    catRevs[cat] = (catRevs[cat] || 0) + p.y;
-  });
+  itemsF.forEach(pt => { const c = pt.mcat || 'Uncategorized'; catRevs[c] = (catRevs[c] || 0) + pt.y; });
   const catSorted = Object.entries(catRevs).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
   result.catLabels = catSorted.map(([k]) => k);
-  result.catRevs = catSorted.map(([, v]) => Math.round(v * scale));
-
-  // Price Tier Bucket Calculation
+  result.catRevs = catSorted.map(([, v]) => v);
   const priceTiers = { '<₹150': 0, '₹150-250': 0, '₹250-350': 0, '₹350-500': 0, '₹500+': 0 };
-  RAW.mePoints.forEach(p => {
-    if (excludeNonMenu && nonMenuItemsSet.has(p.item)) return;
-    if (!itemPassesCategoryFilter(p.item)) return;
-    const price = p.y / (p.x || 1);
-    if (price < 150) priceTiers['<₹150'] += Math.round(p.x * scale);
-    else if (price < 250) priceTiers['₹150-250'] += Math.round(p.x * scale);
-    else if (price < 350) priceTiers['₹250-350'] += Math.round(p.x * scale);
-    else if (price < 500) priceTiers['₹350-500'] += Math.round(p.x * scale);
-    else priceTiers['₹500+'] += Math.round(p.x * scale);
+  itemsF.forEach(pt => {
+    const price = pt.y / (pt.x || 1);
+    if (price < 150) priceTiers['<₹150'] += pt.x;
+    else if (price < 250) priceTiers['₹150-250'] += pt.x;
+    else if (price < 350) priceTiers['₹250-350'] += pt.x;
+    else if (price < 500) priceTiers['₹350-500'] += pt.x;
+    else priceTiers['₹500+'] += pt.x;
   });
   result.priceTierLabels = Object.keys(priceTiers);
   result.priceTierQtys = Object.values(priceTiers);
+  const outsideItemScope = months.some(m => !meta.quarters.q2.includes(m));
+  result.itemScopeNote = `📦 Item analytics scope: ${meta.itemDataScope}${branch !== 'all' ? ' · ' + branch + ' only' : ' · all outlets'}.` +
+    (outsideItemScope ? ' ⚠️ Your selected period includes months outside the item-export range — menu figures stay Q2-scoped rather than being faked.' : '');
 
-
-  // Target & PnL
+  // Targets & modelled P&L (real revenue; benchmark cost ratios until cost actuals land)
   let targetRev = 0;
-  RAW.branches.forEach(b => {
-    if (branch !== 'all' && b !== branch) return;
-    const bTargets = RAW.branchTargets[b] || { apr: 0, may: 0, jun: 0 };
-    if (month === 'apr' || month === 'may' || month === 'jun') targetRev += (bTargets[month] || 0);
-    else targetRev += (bTargets.apr + bTargets.may + bTargets.jun);
+  branchesSel.forEach(b => {
+    const bt = RAW.branchTargets[b] || {};
+    months.forEach(m => { targetRev += (bt[m] || 0); });
   });
-  if (channel === 'Delivery') targetRev = Math.round(targetRev * 0.525);
-  else if (channel !== 'all') targetRev = Math.round(targetRev * (RAW.channel[channel].share / 100));
-  targetRev = Math.round(targetRev * sessionFactor);
-
   result.targetRev = targetRev;
   result.actualRev = rev;
   result.variancePct = targetRev > 0 ? ((rev / targetRev) * 100).toFixed(1) : '100.0';
   result.varianceVal = rev - targetRev;
-
-  // PnL Expenses
   result.cogs = Math.round(rev * 0.30);
   result.labor = Math.round(rev * 0.18);
   result.rent = Math.round(rev * 0.15);
-  const deliveryShare = channel === 'Delivery' ? 1.0 : channel === 'Zomato' || channel === 'Swiggy' ? 1.0 : channel === 'Dine In' || channel === 'Takeaway' ? 0.0 : 0.5253;
-  result.commissions = Math.round(rev * deliveryShare * 0.25);
+  const zi = RAW.channels.indexOf('Zomato'), si = RAW.channels.indexOf('Swiggy');
+  const deliveryRev = (result.chRevs[zi] || 0) + (result.chRevs[si] || 0);
+  result.deliveryShare = rev > 0 ? deliveryRev / rev : 0;
+  result.commissions = Math.round(deliveryRev * 0.25);
   result.ops = Math.round(rev * 0.05);
-
   result.totalOpEx = result.cogs + result.labor + result.rent + result.commissions + result.ops;
   result.netProfit = rev - result.totalOpEx;
   result.ebitdaMargin = rev > 0 ? ((result.netProfit / rev) * 100).toFixed(1) : '0.0';
@@ -525,23 +423,16 @@ function getFilteredData() {
 }
 
 function buildContextLabel() {
+  const meta = RAW.meta;
   const parts = [];
+  parts.push(F.period === 'all' ? `All data (${meta.rangeLabel})`
+    : (meta.quarterLabels[F.period] || meta.monthLabels[F.period] || F.period));
   if (F.branch !== 'all') parts.push(F.branch);
-  if (F.month !== 'all') {
-    const monthLabels = { jan: 'January 2026', feb: 'February 2026', mar: 'March 2026', q1: 'Q1 2026 (Jan-Mar)', q2: 'Q2 2026 (Apr-Jun)', apr: 'April 2026', may: 'May 2026', jun: 'June 2026' };
-    parts.push(monthLabels[F.month] || F.month);
-  }
-  if (F.channel !== 'all') parts.push(F.channel === 'Delivery' ? 'Delivery Only (Zomato+Swiggy)' : F.channel);
-  if (F.session !== 'all') parts.push({ breakfast: 'Breakfast (7-10)', lunch: 'Lunch (11-14)', snack: 'Snack (15-17)', dinner: 'Dinner (18-23)' }[F.session]);
-  if (excludeNonMenu) parts.push('Food & Drink Only');
-  const selCount = activeCategorySelection ? activeCategorySelection.size : getAllMenuItems().length;
-  if (selCount < getAllMenuItems().length) parts.push(`${selCount} Menu Items Selected`);
-
-  return parts.length ? 'Filtered: ' + parts.join(' · ') : 'Showing: All Q1 + Q2 2026 Data · 40,193 orders';
+  return 'Showing: ' + parts.join(' · ');
 }
 
 function updateFilterStyles() {
-  ['f-branch', 'f-month', 'f-channel', 'f-session'].forEach(id => {
+  ['f-period', 'f-branch'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.toggle('filter-active', el.value !== 'all');
   });
@@ -554,24 +445,11 @@ function updateKPIs(fd) {
   setEl('k-rev', fmt(fd.rev));
   setEl('k-rev-sub', fmtN(fd.ord) + ' orders');
   setEl('k-ord', fmtN(fd.ord));
-  setEl('k-ord-sub', (fd.ord / (F.month === 'all' ? 91 : 30)).toFixed(0) + '/day avg');
+  setEl('k-ord-sub', fd.ordPerDay + '/day avg');
   setEl('k-aov', '₹' + fd.aov);
   setEl('k-daily', fmt(fd.daily));
 
-  if (F.branch !== 'all') {
-    const bd = RAW.branch[F.branch];
-    setEl('k-branch', F.branch);
-    setEl('k-branch-sub', fmt(bd.rev) + ' · ' + bd.share + '%');
-  } else {
-    setEl('k-branch', 'Kothrud');
-    setEl('k-branch-sub', '₹62.3L · 30.1%');
-  }
 
-  // Page 3
-  setEl('k-bill-max', fmt(Math.round(28800 * (fd.rev / 20728578))));
-  setEl('k-bill-med', '₹' + Math.round(420 * (fd.aov / 516)));
-  setEl('k-bill-mean', '₹' + fd.aov);
-  setEl('k-bill-75', '₹' + Math.round(651 * (fd.aov / 516)));
 
   // Page 5
   setEl('k-ch-off-rev', fmt(fd.chRevs[0] + fd.chRevs[3]));
@@ -580,16 +458,12 @@ function updateKPIs(fd) {
   setEl('k-ch-zs-comp', `${fmt(fd.chRevs[1])} vs ${fmt(fd.chRevs[2])}`);
 
   // Page 7 (Kothrud Playbook) — computed from real branch/channel data
-  setEl('k-kothrud-rev', fmt(Math.round(RAW.branch.Kothrud.rev * (fd.rev / 20728578))));
+  setEl('k-kothrud-rev', fmt(fd.branchRevs[RAW.branches.indexOf('Kothrud')]));
   const kbr = RAW.branch.Kothrud;
   setEl('k-kothrud-dinein', ((kbr.ch['Dine In']?.rev || 0) / kbr.rev * 100).toFixed(1) + '%');
   setEl('k-kothrud-bev', 'N/A');
   setEl('k-kothrud-aov', kbr.ch['Dine In']?.aov ? '₹' + kbr.ch['Dine In'].aov : 'N/A');
 
-  // Page 8
-  setEl('k-q1q2-rev', '+' + ((fd.rev / (RAW.q1.totalRev * (fd.rev / 20728578)) - 1) * 100).toFixed(1) + '%');
-  setEl('k-q1q2-vol', fmtN(fd.ord));
-  setEl('k-q1q2-aov', '₹' + fd.aov);
 
   // Page 12 (PnL)
   setEl('k-pnl-target', fmt(fd.targetRev));
@@ -606,7 +480,7 @@ function renderTables(fd) {
   // Page 4: Staffing Guide Table
   const staffingTbl = document.getElementById('tbl-staffing');
   if (staffingTbl) {
-    const scale = fd.rev / 20728578;
+    const scale = 1; // chain-wide daily pattern (full data range)
     staffingTbl.innerHTML = `
       <tr><th>Hour</th><th>Daily Orders</th><th>Load</th><th>Min Staff</th></tr>
       <tr style="${F.session === 'breakfast' ? 'background:rgba(231,186,68,0.15);font-weight:700' : ''}"><td>7 AM</td><td>${Math.round(12 * scale)}</td><td><div class="load-cell"><div class="load-bar-wrap"><div class="load-bar-fill" style="width:29%;background:var(--green)"></div></div>29%</div></td><td style="font-weight:700">3</td></tr>
@@ -625,7 +499,7 @@ function renderTables(fd) {
     RAW.branches.forEach(b => {
       if (F.branch !== 'all' && b !== F.branch) return;
       const bp = BRANCH_PROFILES[b];
-      const bRev = Math.round(RAW.branch[b].rev * (fd.rev / 20728578));
+      const bRev = fd.branchRevs[RAW.branches.indexOf(b)];
       const tc = bp.trendClass === 'trend-up' ? 'trend-up' : 'trend-dn';
       html += `<tr><td><strong>${b}</strong></td><td>${fmt(bRev)}</td><td>₹${bp.aov}</td><td class="${tc}">${bp.trend}</td><td><span class="tag ${bp.statusTag}">${bp.status}</span></td></tr>`;
     });
@@ -643,12 +517,14 @@ function renderTables(fd) {
 
     RAW.branches.forEach(b => {
       if (F.branch !== 'all' && b !== F.branch) return;
-      const bd = RAW.branch[b];
-      const scale = fd.rev / 20728578;
-      const dineInRev = Math.round((bd.ch['Dine In']?.rev || 0) * scale);
-      const takeawayRev = Math.round((bd.ch['Takeaway']?.rev || 0) * scale);
-      const zomatoRev = Math.round((bd.ch['Zomato']?.rev || 0) * scale);
-      const swiggyRev = Math.round((bd.ch['Swiggy']?.rev || 0) * scale);
+      const bc = fd.branchCh[b] || {};
+      const bo = fd.branchChOrd[b] || {};
+      const chAov = c => (bo[c] ? Math.round((bc[c] || 0) / bo[c]) : null);
+      const bd = { ch: { 'Zomato': { aov: chAov('Zomato') }, 'Swiggy': { aov: chAov('Swiggy') }, 'Dine In': { aov: chAov('Dine In') } } };
+      const dineInRev = bc['Dine In'] || 0;
+      const takeawayRev = bc['Takeaway'] || 0;
+      const zomatoRev = bc['Zomato'] || 0;
+      const swiggyRev = bc['Swiggy'] || 0;
       const offRev = dineInRev + takeawayRev;
       const onRev = zomatoRev + swiggyRev;
       const totRev = offRev + onRev;
@@ -679,19 +555,20 @@ function renderTables(fd) {
   // Page 5: Platform Commission Impact Table
   const commTbl = document.getElementById('tbl-commission-impact');
   if (commTbl) {
-    const scale = fd.rev / 20728578;
-    const zomatoDrain = Math.round(1640000 * scale);
-    const swiggyDrain = Math.round(1080000 * scale);
+    const zRev = fd.chRevs[RAW.channels.indexOf('Zomato')] || 0;
+    const sRev = fd.chRevs[RAW.channels.indexOf('Swiggy')] || 0;
+    const zomatoDrain = Math.round(zRev * 0.25);
+    const swiggyDrain = Math.round(sRev * 0.25);
     const totalDrain = zomatoDrain + swiggyDrain;
-    const zomatoNet = Math.round(4920000 * scale);
-    const swiggyNet = Math.round(3250000 * scale);
-    const dineNet = Math.round(9690000 * scale);
+    const zomatoNet = zRev - zomatoDrain;
+    const swiggyNet = sRev - swiggyDrain;
+    const dineNet = fd.chRevs[RAW.channels.indexOf('Dine In')] || 0;
 
     commTbl.innerHTML = `
       <tr><th>Metric</th><th>Value</th></tr>
-      <tr><td>Zomato commission drain</td><td style="color:#e68c85;font-weight:700">~${fmt(zomatoDrain)}/quarter</td></tr>
-      <tr><td>Swiggy commission drain</td><td style="color:#e68c85;font-weight:700">~${fmt(swiggyDrain)}/quarter</td></tr>
-      <tr><td>Total delivery commission</td><td style="color:#e68c85;font-weight:700">~${fmt(totalDrain)}/quarter</td></tr>
+      <tr><td>Zomato commission drain</td><td style="color:#e68c85;font-weight:700">~${fmt(zomatoDrain)}/period</td></tr>
+      <tr><td>Swiggy commission drain</td><td style="color:#e68c85;font-weight:700">~${fmt(swiggyDrain)}/period</td></tr>
+      <tr><td>Total delivery commission</td><td style="color:#e68c85;font-weight:700">~${fmt(totalDrain)}/period</td></tr>
       <tr><td>True net from Zomato</td><td style="color:#9fc794;font-weight:700">~${fmt(zomatoNet)}</td></tr>
       <tr><td>True net from Swiggy</td><td style="color:#9fc794;font-weight:700">~${fmt(swiggyNet)}</td></tr>
       <tr><td>Dine In true net (0% commission)</td><td style="color:#9fc794;font-weight:700">${fmt(dineNet)}</td></tr>
@@ -744,8 +621,8 @@ function renderTables(fd) {
     let html = `<tr><th>Metric / Branch</th><th>Q1 Revenue</th><th>Q2 Revenue</th><th>QoQ Change</th><th>Q1 AOV</th><th>Q2 AOV</th><th>Status</th></tr>`;
     RAW.branches.forEach(b => {
       if (F.branch !== 'all' && b !== F.branch) return;
-      const q1Rev = Math.round((RAW.q1.branch[b]?.rev || 0) * (fd.rev / 20728578));
-      const q2Rev = Math.round((RAW.branch[b]?.rev || 0) * (fd.rev / 20728578));
+      const q1Rev = RAW.q1.branch[b]?.rev || 0;
+      const q2Rev = RAW.branch[b]?.rev || 0;
       const qoq = q1Rev > 0 ? (((q2Rev - q1Rev) / q1Rev) * 100).toFixed(1) : 'New';
       const q1Aov = RAW.q1.branch[b]?.aov || 0;
       const q2Aov = RAW.branch[b]?.aov || 0;
@@ -769,7 +646,7 @@ function renderTables(fd) {
   // Page 9: Forecast Summary Table
   const fcTbl = document.getElementById('tbl-forecast-summary');
   if (fcTbl) {
-    const scale = fd.rev / 20728578;
+    const scale = 1;
     fcTbl.innerHTML = `
       <tr><th>Month</th><th>Revenue</th><th>Orders</th><th>AOV</th><th>MoM</th><th>Type</th></tr>
       <tr><td>April 2026</td><td>${fmt(Math.round(6762859 * scale))}</td><td>${fmtN(Math.round(13952 * scale))}</td><td>₹485</td><td>&mdash;</td><td><span class="tag star">Actual</span></td></tr>
@@ -792,18 +669,16 @@ function renderTables(fd) {
 
     RAW.branches.forEach(b => {
       if (F.branch !== 'all' && b !== F.branch) return;
-      const bTargets = RAW.branchTargets[b] || { apr: 0, may: 0, jun: 0 };
-      let bTarget = F.month !== 'all' ? bTargets[F.month] : (bTargets.apr + bTargets.may + bTargets.jun);
-      if (F.channel === 'Delivery') bTarget = Math.round(bTarget * 0.525);
-      else if (F.channel !== 'all') bTarget = Math.round(bTarget * (RAW.channel[F.channel].share / 100));
+      const bTargets = RAW.branchTargets[b] || {};
+      const bTarget = fd.monthsSel.reduce((a, m) => a + (bTargets[m] || 0), 0);
 
-      const bActual = Math.round(RAW.branch[b].rev * (fd.rev / 20728578));
+      const bActual = fd.branchRevs[RAW.branches.indexOf(b)];
+      const bDelReal = (fd.branchCh[b]?.Zomato || 0) + (fd.branchCh[b]?.Swiggy || 0);
       const bVarPct = bTarget > 0 ? ((bActual / bTarget) * 100).toFixed(1) : '100.0';
       const bCogs = Math.round(bActual * 0.30);
       const bLabor = Math.round(bActual * 0.18);
       const bRent = Math.round(bActual * 0.15);
-      const bDelRev = Math.round(bActual * 0.5253);
-      const bComm = Math.round(bDelRev * 0.25);
+      const bComm = Math.round(bDelReal * 0.25);
       const bOps = Math.round(bActual * 0.05);
       const bProfit = bActual - (bCogs + bLabor + bRent + bComm + bOps);
       const bMargin = bActual > 0 ? ((bProfit / bActual) * 100).toFixed(1) : '0.0';
@@ -978,6 +853,7 @@ export function showSub(groupId, subId) {
     const oc = p.getAttribute('onclick') || '';
     p.classList.toggle('active', oc.includes(`'${subId}'`));
   });
+  try { history.replaceState(null, '', '#' + groupId + '/' + subId); } catch (e) {}
   requestAnimationFrame(() => {
     Object.values(CHARTS).forEach(c => { try { c && c.resize && c.resize(); } catch (e) {} });
     renderSubContent(subId);
@@ -993,9 +869,17 @@ function renderSubContent(subId) {
 }
 
 // ── HOME: tiered target board, alerts, daily trend ───────────────────────────
+function latestMonths() {
+  const meta = RAW.meta;
+  const idx = meta.months.indexOf(meta.latestMonth);
+  return { latest: meta.latestMonth, prev: idx > 0 ? meta.months[idx - 1] : null, label: meta.monthLabels[meta.latestMonth] };
+}
+
 const MONTH_TREND = b => {
-  const may = RAW.branch[b]?.may || 0, jun = RAW.branch[b]?.jun || 0;
-  return may > 0 ? (jun / may - 1) * 100 : null;
+  const { latest, prev } = latestMonths();
+  const cur = RAW.cube[latest]?.[b]?.rev || 0;
+  const before = prev ? (RAW.cube[prev]?.[b]?.rev || 0) : 0;
+  return before > 0 ? (cur / before - 1) * 100 : null;
 };
 
 function achievedTier(v, tiers) {
@@ -1007,34 +891,41 @@ function achievedTier(v, tiers) {
 
 function renderHome() {
   const setEl = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
-  const jun = RAW.month.jun, may = RAW.month.may;
+  const { latest, prev, label } = latestMonths();
+  const latestRev = b => RAW.cube[latest]?.[b]?.rev || 0;
+  const monRev = RAW.branches.reduce((a, b) => a + latestRev(b), 0);
+  const monOrd = RAW.branches.reduce((a, b) => a + (RAW.cube[latest]?.[b]?.ord || 0), 0);
+  const prevRev = prev ? RAW.branches.reduce((a, b) => a + (RAW.cube[prev]?.[b]?.rev || 0), 0) : 0;
 
-  // KPI strip
-  const chainTrend = ((jun.rev / may.rev - 1) * 100).toFixed(1);
-  setEl('home-rev', fmt(jun.rev));
-  setEl('home-rev-sub', `${chainTrend >= 0 ? '+' : ''}${chainTrend}% vs May`);
+  const homeSec = document.querySelector('#pg-home .sec');
+  if (homeSec) homeSec.textContent = `This Month at a Glance — ${label} (last full data month)`;
+  const boardSub = document.querySelector('#pg-home .chart-card .sub');
+  if (boardSub) boardSub.textContent = `${label} net sales vs the three incentive tiers (T1 Base · T2 Stretch · T3 Super-Achiever) · click an outlet for its profile`;
+
+  const chainTrend = prevRev > 0 ? ((monRev / prevRev - 1) * 100).toFixed(1) : null;
+  setEl('home-rev', fmt(monRev));
+  setEl('home-rev-sub', chainTrend == null ? '—' : `${chainTrend >= 0 ? '+' : ''}${chainTrend}% vs ${prev ? RAW.meta.monthLabels[prev].split(' ')[0] : ''}`);
   const mapped = TIERED_TARGETS.filter(tt => tt.pos);
-  const mappedActual = mapped.reduce((s, tt) => s + (RAW.branch[tt.pos]?.jun || 0), 0);
+  const mappedActual = mapped.reduce((s, tt) => s + latestRev(tt.pos), 0);
   const mappedT1 = mapped.reduce((s, tt) => s + tt.sales.t1, 0);
   setEl('home-tier', (mappedActual / mappedT1 * 100).toFixed(1) + '%');
-  setEl('home-orders', jun.ord.toLocaleString());
-  setEl('home-orders-sub', 'AOV ₹' + Math.round(jun.aov));
+  setEl('home-orders', monOrd.toLocaleString());
+  setEl('home-orders-sub', 'AOV ₹' + (monOrd ? Math.round(monRev / monOrd) : 0));
   const chainProfit = TIERED_TARGETS.reduce((s, tt) => s + tt.currentAvgProfit, 0);
   const lossCount = TIERED_TARGETS.filter(tt => tt.currentAvgProfit < 0).length;
   setEl('home-profit', fmt(chainProfit));
   setEl('home-profit-sub', lossCount > 0 ? `⚠️ ${lossCount} outlets currently loss-making` : 'All outlets profitable');
 
-  // Target board
   const board = document.getElementById('home-board');
   if (board) {
-    let html = `<tr><th>Outlet</th><th>June Sales</th><th style="min-width:240px">Progress vs Tiers (markers: T1 · T2 · T3)</th><th>Tier Achieved</th><th>Jun vs May</th><th>Avg Profit / mo*</th></tr>`;
+    const shortLabel = label.split(' ')[0];
+    let html = `<tr><th>Outlet</th><th>${shortLabel} Sales</th><th style="min-width:240px">Progress vs Tiers (markers: T1 · T2 · T3)</th><th>Tier Achieved</th><th>vs Prev Month</th><th>Avg Profit / mo*</th></tr>`;
     const rows = [];
     TIERED_TARGETS.forEach(tt => {
-      const actual = tt.pos ? (RAW.branch[tt.pos]?.jun ?? null) : null;
-      rows.push({ name: tt.outlet, pos: tt.pos, actual, tiers: tt.sales, profit: tt.currentAvgProfit });
+      rows.push({ name: tt.outlet, pos: tt.pos, actual: tt.pos ? latestRev(tt.pos) : null, tiers: tt.sales, profit: tt.currentAvgProfit });
     });
     UNTARGETED_POS_BRANCHES.forEach(b => {
-      rows.push({ name: b + ' (new)', pos: b, actual: RAW.branch[b]?.jun ?? null, tiers: null, profit: null });
+      rows.push({ name: b + ' (new)', pos: b, actual: latestRev(b), tiers: null, profit: null });
     });
     rows.sort((a, b) => (b.actual ?? -1) - (a.actual ?? -1));
     rows.forEach(r => {
@@ -1060,12 +951,12 @@ function renderHome() {
       }
       if (r.pos) {
         const tr = MONTH_TREND(r.pos);
-        trendCell = tr == null ? 'New (Jun)' : `<span class="${tr >= 0 ? 'trend-up' : 'trend-dn'}">${tr >= 0 ? '+' : ''}${tr.toFixed(1)}%</span>`;
+        trendCell = tr == null ? 'New' : `<span class="${tr >= 0 ? 'trend-up' : 'trend-dn'}">${tr >= 0 ? '+' : ''}${tr.toFixed(1)}%</span>`;
       }
       const profitCell = r.profit == null ? '—'
         : `<span style="color:${r.profit >= 0 ? 'var(--green)' : '#e68c85'};font-weight:700">${r.profit < 0 ? '−' : ''}${fmt(Math.abs(r.profit))}</span>`;
       html += `<tr${click}>
-        <td><strong>${r.name}</strong>${r.pos ? '' : ' <span style="font-size:10px;color:var(--muted)">(no POS feed)</span>'}</td>
+        <td><strong>${r.name}</strong>${r.pos ? '' : ' <span style="font-size:10px;color:var(--muted)">(separate POS — feed pending)</span>'}</td>
         <td style="font-weight:700">${r.actual == null ? 'N/A' : fmt(r.actual)}</td>
         <td>${barCell}</td><td>${tierCell}</td><td>${trendCell}</td><td>${profitCell}</td>
       </tr>`;
@@ -1074,19 +965,19 @@ function renderHome() {
     board.innerHTML = html;
   }
 
-  // Alerts — computed, ranked by severity
   const alertsEl = document.getElementById('home-alerts');
   if (alertsEl) {
+    const shortLabel = label.split(' ')[0];
     const alerts = [];
     const kTrend = MONTH_TREND('Kothrud');
-    if (kTrend != null && kTrend < -5) alerts.push({ sev: 'high', icon: '🏆', text: `<strong>Kothrud — the benchmark — fell ${kTrend.toFixed(1)}% in June.</strong> Diagnose before replicating its playbook this quarter.` });
+    if (kTrend != null && kTrend < -5) alerts.push({ sev: 'high', icon: '🏆', text: `<strong>Kothrud — the benchmark — fell ${kTrend.toFixed(1)}% in ${shortLabel}.</strong> Diagnose before replicating its playbook.` });
     TIERED_TARGETS.filter(tt => tt.currentAvgProfit < 0).forEach(tt => {
       alerts.push({ sev: 'high', icon: '📉', text: `<strong>${tt.outlet} is loss-making</strong> (−${fmt(Math.abs(tt.currentAvgProfit))}/mo per targets sheet). Tier-1 profit goal: ${fmt(tt.profit.t1)}.` });
     });
     TIERED_TARGETS.filter(tt => tt.pos).forEach(tt => {
-      const actual = RAW.branch[tt.pos]?.jun || 0;
+      const actual = latestRev(tt.pos);
       if (actual > 0 && actual < tt.sales.t1) {
-        alerts.push({ sev: 'med', icon: '🎯', text: `<strong>${tt.outlet}</strong> closed June at ${(actual / tt.sales.t1 * 100).toFixed(0)}% of Tier-1 (${fmt(actual)} vs ${fmt(tt.sales.t1)}).` });
+        alerts.push({ sev: 'med', icon: '🎯', text: `<strong>${tt.outlet}</strong> closed ${shortLabel} at ${(actual / tt.sales.t1 * 100).toFixed(0)}% of Tier-1 (${fmt(actual)} vs ${fmt(tt.sales.t1)}).` });
       }
     });
     if (!alerts.length) alerts.push({ sev: 'info', icon: '✅', text: 'All outlets on or above Tier-1 pace.' });
@@ -1094,15 +985,21 @@ function renderHome() {
       `<div class="home-alert sev-${a.sev}"><div>${a.icon}</div><div>${a.text}</div></div>`).join('');
   }
 
-  // Daily trend chart
   const canvas = document.getElementById('c-home-daily');
-  if (canvas) {
-    if (!CHARTS['c-home-daily']) {
-      mkChart('c-home-daily', 'line', DAILY_REVENUE.map(d => d.date), [
-        { label: 'Daily Net Sales', data: DAILY_REVENUE.map(d => d.rev), borderColor: 'rgba(231,186,68,0.55)', borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
-        { label: '7-Day Average', data: DAILY_REVENUE.map(d => d.ma), borderColor: '#56754d', borderWidth: 2.5, pointRadius: 0, tension: 0.35 }
-      ], { scales: { x: { ticks: { color: '#a3979d', maxTicksLimit: 12 }, grid: { display: false } }, y: { ticks: { color: '#a3979d', callback: v => fmt(v) }, grid: { color: 'rgba(252,240,208,.06)' } } } });
-    }
+  if (canvas && !CHARTS['c-home-daily']) {
+    const days = RAW.dailyAll;
+    const ma = days.map((d, i) => {
+      const s = days.slice(Math.max(0, i - 6), i + 1);
+      return Math.round(s.reduce((a, x) => a + x.total, 0) / s.length);
+    });
+    mkChart('c-home-daily', 'line', days.map(d => d.label), [
+      { label: 'Daily Net Sales', data: days.map(d => d.total), borderColor: 'rgba(231,186,68,0.5)', borderWidth: 1.2, pointRadius: 0, tension: 0.3 },
+      { label: '7-Day Average', data: ma, borderColor: '#56754d', borderWidth: 2.5, pointRadius: 0, tension: 0.35 }
+    ], { scales: { x: { ticks: { color: '#a3979d', maxTicksLimit: 14 }, grid: { display: false } }, y: { ticks: { color: '#a3979d', callback: v => fmt(v) }, grid: { color: 'rgba(252,240,208,.06)' } } } });
+    const homeChartSub = document.querySelector('#pg-home .grid .chart-card:nth-child(2) .sub');
+    if (homeChartSub) homeChartSub.textContent = `Chain-wide daily net sales with 7-day average · ${RAW.meta.rangeLabel}`;
+    const homeChartH3 = document.querySelector('#pg-home .grid .chart-card:nth-child(2) h3');
+    if (homeChartH3) homeChartH3.textContent = 'Daily Revenue Trend';
   }
 }
 
@@ -1113,16 +1010,14 @@ function renderKothrudGap() {
   const K = RAW.branch.Kothrud;
   const kDine = (K.ch['Dine In']?.rev || 0) / K.rev;
   const kAov = K.aov;
-  let html = `<tr><th>Outlet</th><th>Q2 Revenue</th><th>AOV vs ₹${Math.round(kAov)}</th><th>₹ impact / mo*</th><th>Dine-In share vs ${(kDine * 100).toFixed(1)}%</th><th>Commission drain saved*</th><th>June trend</th><th>Biggest replicable lever</th></tr>`;
+  let html = `<tr><th>Outlet</th><th>Q2 Revenue</th><th>AOV vs ₹${Math.round(kAov)}</th><th>₹ impact / mo*</th><th>Dine-In share vs ${(kDine * 100).toFixed(1)}%</th><th>Commission drain saved*</th><th>Latest trend</th><th>Biggest replicable lever</th></tr>`;
   RAW.branches.filter(b => b !== 'Kothrud').forEach(b => {
     const bd = RAW.branch[b];
     if (!bd || !bd.rev) return;
     const aovGap = kAov - bd.aov;
-    // Monthly ₹ impact of closing the AOV gap at current order volume (Q2 avg / 3)
     const aovImpact = aovGap > 0 ? Math.round(aovGap * bd.ord / 3) : 0;
     const dine = (bd.ch['Dine In']?.rev || 0) / bd.rev;
     const dineGap = kDine - dine;
-    // Delivery commission (~25%) saved if dine-in share rose to Kothrud's level
     const commSaved = dineGap > 0 ? Math.round(dineGap * bd.rev / 3 * 0.25) : 0;
     const tr = MONTH_TREND(b);
     const lever = aovImpact >= commSaved
@@ -1135,7 +1030,7 @@ function renderKothrudGap() {
       <td style="font-weight:700;color:var(--primary)">${aovImpact > 0 ? '+' + fmt(aovImpact) : '—'}</td>
       <td><span class="${dineGap > 0.02 ? 'trend-dn' : 'trend-up'}">${(dine * 100).toFixed(1)}%</span></td>
       <td style="font-weight:700;color:var(--green)">${commSaved > 0 ? '+' + fmt(commSaved) : '—'}</td>
-      <td>${tr == null ? 'New (Jun)' : `<span class="${tr >= 0 ? 'trend-up' : 'trend-dn'}">${tr >= 0 ? '+' : ''}${tr.toFixed(1)}%</span>`}</td>
+      <td>${tr == null ? 'New' : `<span class="${tr >= 0 ? 'trend-up' : 'trend-dn'}">${tr >= 0 ? '+' : ''}${tr.toFixed(1)}%</span>`}</td>
       <td style="font-size:11px">${lever}</td>
     </tr>`;
   });
@@ -1149,15 +1044,14 @@ function refresh() {
   document.getElementById('filter-ctx').textContent = buildContextLabel();
   updateFilterStyles();
 
-  const monthLabels = ['Apr 2026', 'May 2026', 'Jun 2026', 'Jul 2026', 'Aug 2026', 'Sep 2026'];
-  const allRevs = [...fd.monthlyRevs, Math.round(7042431 * (fd.rev / 20728578)), Math.round(7108883 * (fd.rev / 20728578)), Math.round(7175336 * (fd.rev / 20728578))];
-  const monthColors = [...fd.monthColors, 'rgba(144,122,169,.5)', 'rgba(144,122,169,.4)', 'rgba(144,122,169,.3)'];
-
-  updateChart('c-monthly', monthLabels, [{ data: allRevs, backgroundColor: monthColors, borderRadius: 6, borderSkipped: false, label: 'Revenue' }]);
-  updateChart('c-ch-donut', RAW.channels, [{ data: fd.chRevs, backgroundColor: fd.chColors, borderWidth: 0, hoverOffset: 8 }]);
+updateChart('c-ch-donut', RAW.channels, [{ data: fd.chRevs, backgroundColor: fd.chColors, borderWidth: 0, hoverOffset: 8 }]);
   updateChart('c-br-bar', RAW.branches, [{ data: fd.branchRevs, backgroundColor: fd.branchColors, borderRadius: 5, borderSkipped: false }]);
   updateChart('c-dow', RAW.days, [{ data: fd.dRev, backgroundColor: fd.dRev.map(v => v > Math.max(...fd.dRev) * 0.7 ? '#56754d' : '#E7BA44'), borderRadius: 5, borderSkipped: false, label: 'Revenue' }]);
   updateChart('c-session-donut', ['Breakfast', 'Lunch', 'Snack', 'Dinner'], [{ data: fd.sessRevs, backgroundColor: fd.sessColors, borderWidth: 0, hoverOffset: 8 }]);
+  const noteEl = document.getElementById('pattern-note');
+  if (noteEl) noteEl.textContent = fd.patternNote;
+  const menuNoteEl = document.getElementById('menu-scope-note');
+  if (menuNoteEl) menuNoteEl.textContent = fd.itemScopeNote;
 
   updateChart('c-top10r', fd.top10rItems, [{ data: fd.top10rRevs, backgroundColor: 'rgba(144,122,169,.75)', borderRadius: 4, borderSkipped: false }]);
   updateChart('c-top10r2', fd.top10rItems, [{ data: fd.top10rRevs, backgroundColor: 'rgba(65,86,57,.75)', borderRadius: 4, borderSkipped: false }]);
@@ -1173,20 +1067,18 @@ function refresh() {
 
   const hrOrdColors = RAW.hours.map((h, i) => {
     const dim = fd.activeHours && !fd.activeHours.includes(h) ? 0.15 : 1;
-    const load = RAW.hLoad[i];
+    const load = fd.hLoad[i];
     const base = load >= 80 ? '124,76,71' : load >= 50 ? '231,186,68' : '65,86,57';
     return `rgba(${base},${dim * 0.8})`;
   });
   updateChart('c-hr-ord', RAW.hours.map(h => h + ':00'), [{ data: fd.hOrd, backgroundColor: hrOrdColors, borderRadius: 4, borderSkipped: false }]);
 
-  const branchKeys = F.branch !== 'all' ? [F.branch] : Object.keys(RAW.branch).filter(b => b !== 'Bavdhan');
+  const branchKeys = F.branch !== 'all' ? [F.branch] : RAW.branches.filter(b => b !== 'Bavdhan');
   const brTrendDs = branchKeys.map(b => {
-    const bd = RAW.branch[b];
     const ci = RAW.branches.indexOf(b);
-    const mult = fd.rev / 20728578;
-    return { label: b, data: [Math.round(bd.apr * mult), Math.round(bd.may * mult), Math.round(bd.jun * mult)], borderColor: RAW.branchColors[ci], backgroundColor: 'transparent', tension: .3, borderWidth: F.branch !== 'all' ? 2 : 1.5, pointRadius: 4 };
+    return { label: b, data: fd.branchMonthly[b], borderColor: RAW.branchColors[ci], backgroundColor: 'transparent', tension: .3, borderWidth: F.branch !== 'all' ? 2 : 1.5, pointRadius: 4 };
   });
-  updateChart('c-br-trend', ['Apr', 'May', 'Jun'], brTrendDs);
+  updateChart('c-br-trend', fd.trendLabels, brTrendDs);
 
   updateChart('c-sess-bar', ['Breakfast', 'Lunch', 'Snack', 'Dinner'], [
     { label: 'Revenue', data: fd.sessRevs, backgroundColor: fd.sessColors, borderRadius: 5, borderSkipped: false, yAxisID: 'y' },
@@ -1203,35 +1095,34 @@ function refresh() {
   updateChart('c-menu-cat-pie', fd.catLabels, [{ data: fd.catRevs, backgroundColor: ['#E7BA44', '#56754d', '#5985b9', '#907aa9', '#9c5f59', '#7C4C47'], borderWidth: 0 }]);
   updateChart('c-menu-price-tier', fd.priceTierLabels, [{ data: fd.priceTierQtys, backgroundColor: ['#56754d', '#E7BA44', '#5985b9', '#907aa9', '#9c5f59'], borderRadius: 5, label: 'Units Sold' }]);
 
-  updateChart('c-bill', RAW.billBuckets, [{ data: RAW.billCounts.map(v => Math.round(v * (fd.ord / 40193))), backgroundColor: RAW.billCounts.map(v => v === Math.max(...RAW.billCounts) ? '#E7BA44' : 'rgba(231,186,68,.45)'), borderRadius: 5, borderSkipped: false }]);
+  updateChart('c-bill', RAW.billBuckets, [{ data: fd.bills, backgroundColor: fd.bills.map(v => v === Math.max(...fd.bills) ? '#E7BA44' : 'rgba(231,186,68,.45)'), borderRadius: 5, borderSkipped: false }]);
 
   updateChart('c-aov-ch', RAW.channels, [{ data: fd.chAOVs, backgroundColor: fd.chAOVColors, borderRadius: 6, borderSkipped: false }]);
   updateChart('c-aov-br', RAW.branches, [{ data: fd.branchAOVs, backgroundColor: fd.branchAOVColors, borderRadius: 5, borderSkipped: false }]);
 
-  const loadColors = RAW.hLoad.map((l, i) => {
+  const loadColors = fd.hLoad.map((l, i) => {
     const dim = fd.activeHours && !fd.activeHours.includes(RAW.hours[i]) ? 0.2 : 0.85;
     return l >= 80 ? `rgba(124,76,71,${dim})` : l >= 50 ? `rgba(231,186,68,${dim})` : `rgba(65,86,57,${dim})`;
   });
-  updateChart('c-load', RAW.hours.map(h => h + ':00'), [{ data: RAW.hLoad, backgroundColor: loadColors, borderRadius: 5, borderSkipped: false }]);
+  updateChart('c-load', RAW.hours.map(h => h + ':00'), [{ data: fd.hLoad, backgroundColor: loadColors, borderRadius: 5, borderSkipped: false }]);
 
-  // Channel Intelligence Charts
+  // Channel Intelligence Charts — real per-branch channel actuals for the period
   updateChart('c-ch-split', RAW.branches, [
-    { label: 'Offline (Dine In+Takeaway)', data: fd.branchRevs.map(r => Math.round(r * 0.52)), backgroundColor: '#415639', borderRadius: 4, borderSkipped: false },
-    { label: 'Online (Zomato+Swiggy)', data: fd.branchRevs.map(r => Math.round(r * 0.48)), backgroundColor: '#E7BA44', borderRadius: 4, borderSkipped: false }
+    { label: 'Offline (Dine In+Takeaway)', data: RAW.branches.map(b => (fd.branchCh[b]['Dine In'] || 0) + (fd.branchCh[b]['Takeaway'] || 0)), backgroundColor: '#415639', borderRadius: 4, borderSkipped: false },
+    { label: 'Online (Zomato+Swiggy)', data: RAW.branches.map(b => (fd.branchCh[b]['Zomato'] || 0) + (fd.branchCh[b]['Swiggy'] || 0)), backgroundColor: '#E7BA44', borderRadius: 4, borderSkipped: false }
   ]);
   updateChart('c-zs-bar', RAW.branches, [
-    { label: 'Zomato', data: fd.branchRevs.map(r => Math.round(r * 0.32)), backgroundColor: '#cb202d', borderRadius: 4, borderSkipped: false },
-    { label: 'Swiggy', data: fd.branchRevs.map(r => Math.round(r * 0.20)), backgroundColor: '#fc8019', borderRadius: 4, borderSkipped: false }
+    { label: 'Zomato', data: RAW.branches.map(b => fd.branchCh[b]['Zomato'] || 0), backgroundColor: '#cb202d', borderRadius: 4, borderSkipped: false },
+    { label: 'Swiggy', data: RAW.branches.map(b => fd.branchCh[b]['Swiggy'] || 0), backgroundColor: '#fc8019', borderRadius: 4, borderSkipped: false }
   ]);
-  updateChart('c-ch-trend', ['April', 'May', 'June'], [
-    { label: 'Dine In', data: [Math.round(3163618 * (fd.rev / 20728578)), Math.round(3307261 * (fd.rev / 20728578)), Math.round(3222182 * (fd.rev / 20728578))], borderColor: '#415639', backgroundColor: 'rgba(65,86,57,.08)', fill: true, tension: .3, borderWidth: 2.5, pointRadius: 5 },
-    { label: 'Zomato', data: [Math.round(2139234 * (fd.rev / 20728578)), Math.round(2233700 * (fd.rev / 20728578)), Math.round(2180841 * (fd.rev / 20728578))], borderColor: '#cb202d', backgroundColor: 'rgba(203,32,45,.06)', fill: true, tension: .3, borderWidth: 2, pointRadius: 4 },
-    { label: 'Swiggy', data: [Math.round(1415008 * (fd.rev / 20728578)), Math.round(1476996 * (fd.rev / 20728578)), Math.round(1440728 * (fd.rev / 20728578))], borderColor: '#fc8019', backgroundColor: 'rgba(252,128,25,.06)', fill: true, tension: .3, borderWidth: 2, pointRadius: 4 }
+  updateChart('c-ch-trend', fd.chTrend.labels, [
+    { label: 'Dine In', data: fd.chTrend.series['Dine In'], borderColor: '#415639', backgroundColor: 'rgba(65,86,57,.08)', fill: true, tension: .3, borderWidth: 2.5, pointRadius: 5 },
+    { label: 'Zomato', data: fd.chTrend.series['Zomato'], borderColor: '#cb202d', backgroundColor: 'rgba(203,32,45,.06)', fill: true, tension: .3, borderWidth: 2, pointRadius: 4 },
+    { label: 'Swiggy', data: fd.chTrend.series['Swiggy'], borderColor: '#fc8019', backgroundColor: 'rgba(252,128,25,.06)', fill: true, tension: .3, borderWidth: 2, pointRadius: 4 }
   ]);
 
-  // Page 7: Kothrud Playbook Charts
-  const kShare = Math.round(RAW.branch.Kothrud.rev * (fd.rev / 20728578));
-  const restShare = fd.rev - kShare;
+  const kShare = fd.branchRevs[RAW.branches.indexOf('Kothrud')];
+  const restShare = Math.max(0, fd.rev - kShare);
   updateChart('c-kothrud-share', ['Kothrud (' + fmt(kShare) + ')', 'Rest of Chain (' + fmt(restShare) + ')'], [
     { data: [kShare, restShare], backgroundColor: ['#56754d', '#E7BA44'], borderWidth: 0 }
   ]);
@@ -1249,8 +1140,8 @@ function refresh() {
   const kd = RAW.kothrudDetail;
   if (kd) {
     updateChart('c-kothrud-hourly', RAW.hours.map(h => h + ':00'), [
-      { label: 'Kothrud Hourly Rev (Q2)', data: kd.hourly.map(v => Math.round(v * (fd.rev / 20728578))), borderColor: '#56754d', backgroundColor: 'rgba(86,117,77,0.1)', fill: true, tension: 0.4 },
-      { label: 'Chain Avg per Branch', data: RAW.hRev.map(v => Math.round((v / RAW.branches.length) * (fd.rev / 20728578))), borderColor: '#E7BA44', borderDash: [5, 4], fill: false, tension: 0.4 }
+      { label: 'Kothrud Hourly Rev (full range)', data: RAW.branchPatterns.Kothrud.hRev, borderColor: '#56754d', backgroundColor: 'rgba(86,117,77,0.1)', fill: true, tension: 0.4 },
+      { label: 'Chain Avg per Outlet', data: RAW.branchPatterns.all.hRev.map(v => Math.round(v / RAW.branches.length)), borderColor: '#E7BA44', borderDash: [5, 4], fill: false, tension: 0.4 }
     ]);
     updateChart('c-kothrud-bev-breakdown', kd.bevMix.labels, [
       { data: kd.bevMix.revs, backgroundColor: ['#56754d', '#E7BA44', '#907aa9', '#5985b9', '#9c5f59', '#a3979d'], borderWidth: 0 }
@@ -1272,11 +1163,8 @@ function refresh() {
   renderBranchProfile(currentBranchProfile);
   renderMarketBasketTab();
   renderTables(fd);
-  renderRecommendations(fd);
-  buildExecutiveReport();
   renderWhatIfSimulator();
   renderDualStoreComparison();
-  renderDailySnapshot();
   recalcFranchiseeModel();
   renderHome();
   renderKothrudGap();
@@ -1284,28 +1172,20 @@ function refresh() {
 
 
 export function applyFilters() {
+  F.period = document.getElementById('f-period').value;
   F.branch = document.getElementById('f-branch').value;
-  F.month = document.getElementById('f-month').value;
-  F.channel = document.getElementById('f-channel').value;
-  F.session = document.getElementById('f-session').value;
+  try { localStorage.setItem('yolk.filters', JSON.stringify(F)); } catch (e) {}
   refresh();
 }
 
 export function resetFilters() {
-  F = { branch: 'all', month: 'all', channel: 'all', session: 'all' };
-  ['f-branch', 'f-month', 'f-channel', 'f-session'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = 'all';
-  });
+  F = { period: 'all', branch: 'all' };
+  ['f-period', 'f-branch'].forEach(id => { const el = document.getElementById(id); if (el) el.value = 'all'; });
   excludeNonMenu = false;
   const btn = document.getElementById('btn-exclude-nonmenu');
-  if (btn) {
-    btn.textContent = '💧 Exclude Water/Misc (OFF)';
-    btn.style.background = 'var(--bg2)';
-    btn.style.color = 'var(--text)';
-    btn.style.borderColor = 'var(--border)';
-  }
+  if (btn) btn.textContent = '💧 Exclude Water/Misc (OFF)';
   activeCategorySelection = new Set(getAllMenuItems());
+  try { localStorage.setItem('yolk.filters', JSON.stringify(F)); } catch (e) {}
   refresh();
 }
 
@@ -1336,6 +1216,7 @@ export function showPage(param) {
       t.classList.toggle('active', oc.includes(`'${activeId}'`));
     });
 
+    try { history.replaceState(null, '', '#' + activeId); } catch (e) {}
     refresh();
 
     requestAnimationFrame(() => {
@@ -1366,7 +1247,7 @@ function drawHeatmap() {
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const hrs = RAW.hours; const data = RAW.heatmap;
+  const hrs = RAW.hours; const data = currentHeatmap || RAW.heatmap;
   const padL = 44, padT = 24, padR = 10, padB = 28;
   const cellW = (W - padL - padR) / hrs.length, cellH = (H - padT - padB) / days.length;
   const maxV = Math.max(...data.flat());
@@ -1453,37 +1334,6 @@ function renderBranchProfile(branch) {
   }
 }
 
-function renderRecommendations(fd) {
-  const container = document.getElementById('rec-grid-container');
-  if (!container) return;
-
-  const branchStr = F.branch !== 'all' ? F.branch : 'All Branches';
-  const channelStr = F.channel !== 'all' ? (F.channel === 'Delivery' ? 'Delivery Only' : F.channel) : 'All Channels';
-
-  container.innerHTML = `
-    <div class="rec-card" style="border-color:rgba(124,76,71,.4)">
-      <h3>Quick Wins (${branchStr})</h3><div class="rec-period">Low Effort / Immediate</div>
-      <div class="rec-item"><div class="rec-num" style="background:var(--accent);color:var(--text)">1</div><div class="rec-text">Google Reviews Drive: Focus on collecting customer reviews to convert local search intent in ${branchStr}</div></div>
-      <div class="rec-item"><div class="rec-num" style="background:var(--accent);color:var(--text)">2</div><div class="rec-text">Brief staff on beverage upselling (coffee and tea pairings for ${F.session !== 'all' ? F.session : 'breakfast/afternoon'})</div></div>
-      <div class="rec-item"><div class="rec-num" style="background:var(--accent);color:var(--text)">3</div><div class="rec-text">Add 3 combo bundles to ${channelStr} to boost AOV beyond ₹${fd.aov}</div></div>
-      <div class="rec-item"><div class="rec-num" style="background:var(--accent);color:var(--text)">4</div><div class="rec-text">Remove 20 Dog menu items to reduce kitchen complexity and speed up table turn</div></div>
-    </div>
-    <div class="rec-card" style="border-color:rgba(231,186,68,.3)">
-      <h3>High Impact Initiatives</h3><div class="rec-period">Medium Effort / 30 Days</div>
-      <div class="rec-item"><div class="rec-num" style="background:var(--primary);color:var(--bg)">1</div><div class="rec-text">Roll out Mon–Wed Weekday Campaigns (Monday Breakfast Club) targeting ₹${fmt(Math.round(fd.rev * 1.15))} monthly target</div></div>
-      <div class="rec-item"><div class="rec-num" style="background:var(--primary);color:var(--bg)">2</div><div class="rec-text">Launch Wednesday Work From Yolkshire workspace packages during low-utilization 3–5 PM snack slot</div></div>
-      <div class="rec-item"><div class="rec-num" style="background:var(--primary);color:var(--bg)">3</div><div class="rec-text">Delivery Commission Cushion: Reprice high-demand Zomato & Swiggy items by 5–8% to save ~${fmt(fd.commissions)} in commissions</div></div>
-      <div class="rec-item"><div class="rec-num" style="background:var(--primary);color:var(--bg)">4</div><div class="rec-text">Customer loyalty program: design stamps/points to improve retention across ${branchStr}</div></div>
-    </div>
-    <div class="rec-card" style="border-color:rgba(65,86,57,.4)">
-      <h3>Strategic Priorities</h3><div class="rec-period">High Effort / 90 Days</div>
-      <div class="rec-item"><div class="rec-num" style="background:var(--secondary);color:var(--text)">1</div><div class="rec-text">Scale Transition: Build repeatable operational systems copying Kothrud's 50.3% Dine-In playbook</div></div>
-      <div class="rec-item"><div class="rec-num" style="background:var(--secondary);color:var(--text)">2</div><div class="rec-text">Initiate direct WhatsApp & Web ordering channel to convert delivery customers with 0% platform drain</div></div>
-      <div class="rec-item"><div class="rec-num" style="background:var(--secondary);color:var(--text)">3</div><div class="rec-text">Scout 8th branch location (evaluate Hinjewadi / Viman Nagar / Koregaon Park) based on Bavdhan debut model</div></div>
-    </div>
-  `;
-}
-
 function initCharts() {
   const yRev = { ticks: { color: '#a3979d', font: { size: 10, family: 'Raleway' }, callback: v => fmt(v) }, grid: { color: 'rgba(252,240,208,.06)' } };
   const yOrd = { ticks: { color: '#a3979d', font: { size: 10, family: 'Raleway' } }, grid: { color: 'rgba(252,240,208,.06)' } };
@@ -1548,71 +1398,6 @@ function initCharts() {
 }
 
 
-export function buildExecutiveReport() {
-  const el = document.getElementById('report-content');
-  if (!el) return;
-  const fd = getFilteredData();
-  el.innerHTML = `
-    <div style="border-bottom:2px solid var(--primary);padding-bottom:14px;margin-bottom:20px">
-      <h1 style="font-size:22px;color:var(--primary);margin-bottom:6px">YOLKSHIRE — Comprehensive Business, PnL & Performance Audit</h1>
-      <p style="font-size:12px;color:var(--muted)">Prepared for Executive Leadership & Operations Team · Active Context: ${buildContextLabel()}</p>
-    </div>
-
-    <h2 style="font-size:16px;color:var(--primary);margin-top:20px;margin-bottom:10px">1. Executive Summary & Revenue Performance</h2>
-    <p style="line-height:1.6;margin-bottom:12px">Under active filter selection (<strong>${buildContextLabel()}</strong>), Yolkshire generated <strong>${fmt(fd.rev)}</strong> in net sales across <strong>${fmtN(fd.ord)} orders</strong> with an Average Order Value (AOV) of <strong>₹${fd.aov}</strong>. Target achievement is <strong>${fd.variancePct}%</strong> against a set sales target of ${fmt(fd.targetRev)}.</p>
-
-    <h2 style="font-size:16px;color:var(--primary);margin-top:20px;margin-bottom:10px">2. Profit & Loss (PnL) Overview</h2>
-    <p style="line-height:1.6;margin-bottom:12px">Total operating expenses are estimated at <strong>${fmt(fd.totalOpEx)}</strong> (${((fd.totalOpEx / (fd.rev || 1)) * 100).toFixed(1)}% of revenue), delivering a Net EBITDA Profit of <strong>${fmt(fd.netProfit)}</strong> (${fd.ebitdaMargin}% margin). Expense breakdown: COGS (${fmt(fd.cogs)}), Labor (${fmt(fd.labor)}), Rent (${fmt(fd.rent)}), Delivery Platform Commissions (${fmt(fd.commissions)}), and General Ops (${fmt(fd.ops)}).</p>
-
-    <h2 style="font-size:16px;color:var(--primary);margin-top:20px;margin-bottom:10px">3. Operational & Channel Intelligence Summary</h2>
-    <p style="line-height:1.6;margin-bottom:12px">Offline Dine-In & Takeaway generated <strong>${fmt(fd.chRevs[0] + fd.chRevs[3])}</strong> at 0% platform drain, whereas Zomato & Swiggy contributed <strong>${fmt(fd.chRevs[1] + fd.chRevs[2])}</strong> online while absorbing ~${fmt(fd.commissions)} in commissions.</p>
-
-    <h2 style="font-size:16px;color:var(--primary);margin-top:20px;margin-bottom:10px">4. Strategic Action Recommendations</h2>
-    <ul style="margin-left:20px;line-height:1.8">
-      <li><strong>Standardize Kothrud Playbook:</strong> Copy Kothrud's 50.3% Dine-In model and 54% beverage attach scripts to Wadgaon Sheri and Wakad.</li>
-      <li><strong>Cushion Commission Drain:</strong> Reprice delivery-exclusive combos on Zomato & Swiggy by 5–8% to regain ~${fmt(Math.round(fd.commissions * 0.2))} in margin.</li>
-      <li><strong>Monetize Afternoon Slack:</strong> Launch 3–5 PM workspace packages to utilize idle kitchen capacity across all active branches.</li>
-    </ul>
-  `;
-}
-
-// Target Modal Functions
-export function openTargetModal() {
-  const overlay = document.getElementById('target-modal-overlay');
-  if (overlay) overlay.classList.add('open');
-}
-
-export function closeTargetModal() {
-  const overlay = document.getElementById('target-modal-overlay');
-  if (overlay) overlay.classList.remove('open');
-}
-
-export function saveSalesTargets() {
-  const branches = RAW.branches;
-  const months = ['apr', 'may', 'jun'];
-  RAW.branchTargets = {};
-
-  let totalChainTarget = 0;
-  branches.forEach(b => {
-    RAW.branchTargets[b] = {};
-    months.forEach(m => {
-      const inputEl = document.getElementById(`t-${b}-${m}`);
-      const val = inputEl ? parseFloat(inputEl.value) || 0 : 0;
-      RAW.branchTargets[b][m] = val;
-      totalChainTarget += val;
-    });
-  });
-
-  const fd = getFilteredData();
-  const totalPct = ((fd.actualRev / (totalChainTarget || 1)) * 100).toFixed(1);
-
-  alert(`🎯 Branch-Wise Targets Updated Live!\n\nOverall Chain Q2 Target: ${fmt(totalChainTarget)}\nActual Q2 Revenue: ${fmt(fd.actualRev)}\nChain Achievement: ${totalPct}% of target!`);
-
-  closeTargetModal();
-  refresh();
-}
-
-// Category & Item Filter Functions
 export function openCategoryModal() {
   initCategorySelection();
   const overlay = document.getElementById('category-modal-overlay');
@@ -1669,7 +1454,7 @@ export function applyCategoryFilter() {
 
 export function buildMenuCatalogModalHtml() {
   const fd = getFilteredData();
-  const scale = fd.rev / 20728578;
+  const scale = 1;
   const nonMenuItemsSet = new Set(getNonMenuItems());
 
   // Catalog is built exclusively from real POS item data (RAW.mePoints, generated
@@ -1841,7 +1626,7 @@ export function renderWhatIfSimulator() {
   const simCogs = Math.round(simRev * (simState.cogsPct / 100));
   const simLabor = Math.round(simRev * 0.18);
   const simRent = Math.round(simRev * 0.15);
-  const delShare = F.channel === 'Delivery' ? 1.0 : (F.channel === 'Zomato' || F.channel === 'Swiggy' ? 1.0 : (F.channel === 'Dine In' || F.channel === 'Takeaway' ? 0.0 : 0.5253));
+  const delShare = fd.deliveryShare ?? 0.5253;
   const simComm = Math.round(simRev * delShare * (simState.commRate / 100));
   const simOps = Math.round(simRev * 0.05);
 
@@ -1893,7 +1678,7 @@ export function renderDualStoreComparison() {
   if (!bdA || !bdB) return;
 
   const fd = getFilteredData();
-  const scale = fd.rev / 20728578;
+  const scale = 1;
 
   const revA = Math.round(bdA.rev * scale);
   const revB = Math.round(bdB.rev * scale);
@@ -1994,8 +1779,8 @@ export function renderDualStoreComparison() {
   ]);
 
   updateChart('c-comp-hourly', RAW.hours.map(h => h + ':00'), [
-    { label: dualStoreA, data: RAW.hRev.map(v => Math.round(v * (revA / 20728578))), borderColor: '#E7BA44', backgroundColor: 'transparent', borderWidth: 2, tension: 0.3 },
-    { label: dualStoreB, data: RAW.hRev.map(v => Math.round(v * (revB / 20728578))), borderColor: '#5985b9', backgroundColor: 'transparent', borderWidth: 2, tension: 0.3 }
+    { label: dualStoreA, data: (RAW.branchPatterns[dualStoreA] || RAW.branchPatterns.all).hRev, borderColor: '#E7BA44', backgroundColor: 'transparent', borderWidth: 2, tension: 0.3 },
+    { label: dualStoreB, data: (RAW.branchPatterns[dualStoreB] || RAW.branchPatterns.all).hRev, borderColor: '#5985b9', backgroundColor: 'transparent', borderWidth: 2, tension: 0.3 }
   ]);
 
   updateChart('c-comp-session', ['Breakfast', 'Lunch', 'Snack', 'Dinner'], [
@@ -2114,118 +1899,6 @@ export function filterMBRules() {
   renderMBRulesTable(filtered);
 }
 
-export function renderDailySnapshot() {
-  const branch = document.getElementById('f-branch')?.value || 'all';
-  const channel = document.getElementById('f-channel')?.value || 'all';
-
-  const ds = RAW.dailySnapshot;
-  if (!ds) return;
-
-  // All figures are real chain-wide values for the latest day in the data.
-  // No source exists for walk-ins / loyalty / reviews yet — those show N/A
-  // (memory.md rule: never invent data).
-  const NA = 'N/A';
-  const orders = ds.ordersToday;
-  const targetRev = ds.monthlyTarget.targetRev;
-  const achievedRev = ds.monthlyTarget.achievedRev;
-  const remainingRev = Math.max(0, targetRev - achievedRev);
-  const daysLeft = ds.monthlyTarget.daysTotal - ds.monthlyTarget.daysElapsed;
-  const reqRunRate = daysLeft > 0 ? Math.round(remainingRev / daysLeft) : null;
-  const pctAchieved = Math.min(100, Math.round((achievedRev / Math.max(1, targetRev)) * 1000) / 10);
-
-  const elWalkins = document.getElementById('ds-walkins');
-  if (elWalkins) elWalkins.textContent = ds.walkinsToday == null ? NA : ds.walkinsToday.toLocaleString();
-  const elOrders = document.getElementById('ds-orders');
-  if (elOrders) elOrders.textContent = orders == null ? NA : orders.toLocaleString();
-  const elLoyalty = document.getElementById('ds-loyalty');
-  if (elLoyalty) elLoyalty.textContent = ds.loyaltyToday.newSignups == null ? NA : '+' + ds.loyaltyToday.newSignups;
-  const elTargetAchieved = document.getElementById('ds-target-achieved');
-  if (elTargetAchieved) elTargetAchieved.textContent = pctAchieved + '%';
-  const elRunRate = document.getElementById('ds-run-rate');
-  if (elRunRate) elRunRate.textContent = reqRunRate == null ? 'Month closed' : '₹' + (reqRunRate / 100000).toFixed(2) + 'L';
-
-  const elProgressFill = document.getElementById('ds-progress-fill');
-  if (elProgressFill) elProgressFill.style.width = pctAchieved + '%';
-  const elAchieved = document.getElementById('ds-progress-achieved');
-  if (elAchieved) elAchieved.textContent = '₹' + (achievedRev / 100000).toFixed(2) + ' Lakhs';
-  const elRemaining = document.getElementById('ds-progress-remaining');
-  if (elRemaining) elRemaining.textContent = '₹' + (remainingRev / 100000).toFixed(2) + ' Lakhs';
-  const elTotal = document.getElementById('ds-progress-total');
-  if (elTotal) elTotal.textContent = '₹' + (targetRev / 100000).toFixed(2) + ' Lakhs';
-
-  const elPaceStatus = document.getElementById('ds-pace-status');
-  if (elPaceStatus) elPaceStatus.textContent = ds.monthlyTarget.status || NA;
-  const elTargetNeeded = document.getElementById('ds-daily-target-needed');
-  if (elTargetNeeded) elTargetNeeded.textContent = reqRunRate == null ? NA : '₹' + reqRunRate.toLocaleString() + '/day';
-  const elDaysLeft = document.getElementById('ds-days-left');
-  if (elDaysLeft) elDaysLeft.textContent = daysLeft + ' days';
-
-  const elTblWalkins = document.getElementById('ds-tbl-walkins');
-  if (elTblWalkins) elTblWalkins.textContent = ds.walkinsToday == null ? NA : ds.walkinsToday.toLocaleString();
-  const elTblSignups = document.getElementById('ds-tbl-signups');
-  if (elTblSignups) elTblSignups.textContent = ds.loyaltyToday.newSignups == null ? NA : '+' + ds.loyaltyToday.newSignups + ' Members';
-  const elTblLoyaltyOrders = document.getElementById('ds-tbl-loyalty-orders');
-  if (elTblLoyaltyOrders) elTblLoyaltyOrders.textContent = ds.loyaltyToday.loyaltyOrders == null ? NA : ds.loyaltyToday.loyaltyOrders + ' Orders';
-
-  const grid = document.getElementById('ds-reviews-grid');
-  if (grid && ds.reviews && ds.reviews.feed) {
-    let reviews = ds.reviews.feed;
-    if (branch !== 'all') {
-      const match = reviews.filter(r => r.branch.toLowerCase().includes(branch.toLowerCase()));
-      if (match.length > 0) reviews = match;
-    }
-    if (channel !== 'all') {
-      const match = reviews.filter(r => r.channel.toLowerCase().includes(channel.toLowerCase()));
-      if (match.length > 0) reviews = match;
-    }
-
-    grid.innerHTML = reviews.map(r => `
-      <div class="review-card">
-        <div class="review-header">
-          <span class="review-user">${r.customer}</span>
-          <div class="review-tags">
-            <span class="review-tag">${r.branch}</span>
-            <span class="review-tag">${r.channel}</span>
-          </div>
-        </div>
-        <div class="review-stars">${r.rating == null ? '' : '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating)}</div>
-        <div class="review-text">${r.comment}</div>
-        <div class="review-footer">
-          <span>${r.time}</span>
-          <span style="color:${r.sentiment==='positive'?'#9fc794':'var(--muted)'}">${r.sentiment.toUpperCase()}</span>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  const canvas = document.getElementById('c-daily-orders-ch');
-  if (canvas && typeof Chart !== 'undefined') {
-    if (CHARTS['c-daily-orders-ch']) {
-      CHARTS['c-daily-orders-ch'].destroy();
-    }
-    const ctx = canvas.getContext('2d');
-    const cb = ds.channelBreakdown || {};
-    CHARTS['c-daily-orders-ch'] = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: RAW.channels,
-        datasets: [{
-          data: RAW.channels.map(c => (cb[c] && cb[c].orders) || 0),
-          backgroundColor: ['#415639', '#cb202d', '#fc8019', '#a3979d'],
-          borderWidth: 0
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'right', labels: { color: getTextColor(), font: { size: 10 } } }
-        }
-      }
-    });
-  }
-}
-
 export function recalcFranchiseeModel() {
   const targetProfit = parseFloat(document.getElementById('inp-target-profit')?.value || 200000);
   const capex = parseFloat(document.getElementById('inp-capex')?.value || 4000000);
@@ -2302,16 +1975,12 @@ export function recalcFranchiseeModel() {
 window.toggleTheme = toggleTheme;
 window.renderMarketBasketTab = renderMarketBasketTab;
 window.filterMBRules = filterMBRules;
-window.renderDailySnapshot = renderDailySnapshot;
 window.recalcFranchiseeModel = recalcFranchiseeModel;
 window.applyFilters = applyFilters;
 window.resetFilters = resetFilters;
 window.showPage = showPage;
 window.openModal = openModal;
 window.closeModal = closeModal;
-window.openTargetModal = openTargetModal;
-window.closeTargetModal = closeTargetModal;
-window.saveSalesTargets = saveSalesTargets;
 window.openCategoryModal = openCategoryModal;
 window.closeCategoryModal = closeCategoryModal;
 window.toggleCategoryGroup = toggleCategoryGroup;
@@ -2319,7 +1988,6 @@ window.selectAllCategories = selectAllCategories;
 window.applyCategoryFilter = applyCategoryFilter;
 window.toggleNonMenuFilter = toggleNonMenuFilter;
 window.showInfoModal = showInfoModal;
-window.buildExecutiveReport = buildExecutiveReport;
 window.sortTable = sortTable;
 window.exportTableToCSV = exportTableToCSV;
 window.updateSim = updateSim;
@@ -2335,16 +2003,72 @@ window.selectBranchProfile = (b) => {
 };
 
 window.addEventListener('resize', () => { if (window._hmDrawn) drawHeatmap(); });
+
+// Deep links also work as same-document navigations (typed/pasted #hashes).
+window.addEventListener('hashchange', () => {
+  const hash = (location.hash || '').replace('#', '');
+  if (!hash) return;
+  const [pg, sub] = hash.split('/');
+  if (!document.getElementById(pg)) return;
+  const activeNow = document.querySelector('.page.active')?.id;
+  const activeSub = document.querySelector(`#${pg} .subpage.active`)?.id;
+  if (activeNow !== pg) showPage(pg);
+  if (sub && document.getElementById(sub) && sub !== activeSub) showSub(pg, sub);
+});
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
 window.addEventListener('DOMContentLoaded', () => {
+  // Period & outlet selectors are built from the data itself — the app never
+  // assumes what months exist. New pipeline runs extend these automatically.
+  const meta = RAW.meta;
+  const periodSel = document.getElementById('f-period');
+  if (periodSel) {
+    let opts = `<option value="all">All data (${meta.rangeLabel})</option>`;
+    Object.keys(meta.quarters).slice().reverse().forEach(q => {
+      opts += `<option value="${q}">${meta.quarterLabels[q]}</option>`;
+    });
+    meta.months.slice().reverse().forEach(m => {
+      opts += `<option value="${m}">${meta.monthLabels[m]}</option>`;
+    });
+    periodSel.innerHTML = opts;
+  }
+  const branchSel = document.getElementById('f-branch');
+  if (branchSel) {
+    branchSel.innerHTML = `<option value="all">All Outlets</option>` +
+      RAW.branches.map(b => `<option value="${b}">${b === 'Kothrud' ? 'Kothrud (Benchmark)' : b}</option>`).join('');
+  }
+
+  // Restore last-used filters
+  try {
+    const saved = JSON.parse(localStorage.getItem('yolk.filters') || '{}');
+    if (saved.period && (saved.period === 'all' || meta.quarters[saved.period] || meta.months.includes(saved.period))) F.period = saved.period;
+    if (saved.branch && (saved.branch === 'all' || RAW.branches.includes(saved.branch))) F.branch = saved.branch;
+  } catch (e) {}
+  if (periodSel) periodSel.value = F.period;
+  if (branchSel) branchSel.value = F.branch;
+
+  // Header identity comes from the data too
+  const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  setTxt('badge-period', meta.rangeLabel);
+  setTxt('badge-orders', meta.totalOrders.toLocaleString());
+  setTxt('badge-branches', String(RAW.branches.length));
+  const sub = document.getElementById('header-subtitle');
+  if (sub) sub.textContent = `Operations & Intelligence Platform · data through ${meta.latestDate}`;
+
   initCategorySelection();
   initCharts();
   refresh();
   renderBranchProfile('Kothrud');
   renderDualStoreComparison();
-  renderDailySnapshot();
   recalcFranchiseeModel();
+
+  // Deep link: #page or #group/subpage
+  const hash = (location.hash || '').replace('#', '');
+  if (hash) {
+    const [pg, sub2] = hash.split('/');
+    if (document.getElementById(pg)) {
+      showPage(pg);
+      if (sub2 && document.getElementById(sub2)) showSub(pg, sub2);
+    }
+  }
 });
-
-
