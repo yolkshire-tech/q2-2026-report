@@ -260,3 +260,30 @@
 .g21 { grid-template-columns: 2fr 1fr; }
 .g12 { grid-template-columns: 1fr 2fr; }
 .g31 { grid-template-columns: 3fr 1fr; }
+
+/* ── Sub-navigation inside group pages (Outlets / Menu / Money) ── */
+.subnav { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+.subpill {
+  padding: 7px 14px; border-radius: 20px; background: var(--bg3);
+  border: 1px solid var(--border); font-size: 12px; font-weight: 600;
+  cursor: pointer; color: var(--muted); transition: all .15s ease;
+  font-family: 'Raleway', sans-serif;
+}
+.subpill:hover { color: var(--text); border-color: var(--primary); }
+.subpill.active { background: var(--primary); color: #2B2428; border-color: var(--primary); }
+.subpage { display: none; }
+.subpage.active { display: block; }
+
+/* ── Home: outlet target board tier bars ── */
+.tier-track {
+  position: relative; height: 16px; background: var(--bg3);
+  border-radius: 8px; border: 1px solid var(--border); min-width: 220px;
+}
+.tier-fill { position: absolute; top: 0; left: 0; bottom: 0; border-radius: 8px 0 0 8px; }
+.tier-marker { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--muted); opacity: .85; }
+.home-board-row { cursor: pointer; }
+.home-board-row:hover td { background: var(--bg3); }
+.home-alert { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 8px; background: var(--bg3); border: 1px solid var(--border); margin-bottom: 8px; font-size: 12px; line-height: 1.45; }
+.home-alert.sev-high { border-left: 3px solid #cb202d; }
+.home-alert.sev-med { border-left: 3px solid var(--amber, #E7BA44); }
+.home-alert.sev-info { border-left: 3px solid #5985b9; }

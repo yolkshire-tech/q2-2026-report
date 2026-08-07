@@ -1,6 +1,7 @@
 import './styles/main.css';
 import Chart from 'chart.js/auto';
 import { RAW, DAILY_REVENUE, BRANCH_PROFILES } from './data/dashboardData.js';
+import { TIERED_TARGETS, UNTARGETED_POS_BRANCHES } from './data/targets.js';
 import { CHARTS, fmt, fmtN, hexToRgb, mkChart, updateChart, updateChartTheme } from './charts/chartManager.js';
 
 let F = { branch: 'all', month: 'all', channel: 'all', session: 'all' };
@@ -861,53 +862,50 @@ function renderTables(fd) {
   // Page 12: Outlet Sales Target Roadmap Table
   const pnlSalesRoadmapTbl = document.getElementById('tbl-pnl-outlet-sales-roadmap');
   if (pnlSalesRoadmapTbl) {
-    const salesData = [
-      { outlet: 'Kothrud', cur: 2000000, t1: 2250000, t2: 2500000, t3: 2750000 },
-      { outlet: 'PYC (Incl Cart)', cur: 700000, t1: 1000000, t2: 1250000, t3: 1500000 },
-      { outlet: 'Aundh', cur: 1350000, t1: 1500000, t2: 1750000, t3: 2000000 },
-      { outlet: 'Salunkhe Vihar', cur: 1000000, t1: 1250000, t2: 1500000, t3: 1750000 },
-      { outlet: 'Wadgaon Sheri', cur: 850000, t1: 1000000, t2: 1250000, t3: 1500000 },
-      { outlet: 'Pimple Saudagar', cur: 850000, t1: 1000000, t2: 1250000, t3: 1500000 },
-      { outlet: 'Wakad', cur: 600000, t1: 1000000, t2: 1250000, t3: 1500000 }
-    ];
-
+    // Single source: src/data/targets.js (the management targets sheet).
     let html = `
       <thead>
         <tr>
           <th onclick="sortTable('tbl-pnl-outlet-sales-roadmap',0)">Outlet</th>
           <th onclick="sortTable('tbl-pnl-outlet-sales-roadmap',1)">Current Avg Sale / mo</th>
-          <th onclick="sortTable('tbl-pnl-outlet-sales-roadmap',2)">Tier 1 (Base Target)</th>
-          <th onclick="sortTable('tbl-pnl-outlet-sales-roadmap',3)">Tier 2 (Stretch Target)</th>
-          <th onclick="sortTable('tbl-pnl-outlet-sales-roadmap',4)">Tier 3 (Super-Achiever)</th>
-          <th onclick="sortTable('tbl-pnl-outlet-sales-roadmap',5)">Incentive Multiplier</th>
+          <th onclick="sortTable('tbl-pnl-outlet-sales-roadmap',2)">June Actual (POS)</th>
+          <th onclick="sortTable('tbl-pnl-outlet-sales-roadmap',3)">Tier 1 (Base)</th>
+          <th onclick="sortTable('tbl-pnl-outlet-sales-roadmap',4)">Tier 2 (Stretch)</th>
+          <th onclick="sortTable('tbl-pnl-outlet-sales-roadmap',5)">Tier 3 (Super)</th>
+          <th onclick="sortTable('tbl-pnl-outlet-sales-roadmap',6)">June Tier Achieved</th>
         </tr>
       </thead>
       <tbody>
     `;
 
-    let totCur = 0, totT1 = 0, totT2 = 0, totT3 = 0;
-    salesData.forEach(row => {
-      totCur += row.cur; totT1 += row.t1; totT2 += row.t2; totT3 += row.t3;
+    let totCur = 0, totT1 = 0, totT2 = 0, totT3 = 0, totJun = 0;
+    TIERED_TARGETS.forEach(row => {
+      totCur += row.currentAvgSale; totT1 += row.sales.t1; totT2 += row.sales.t2; totT3 += row.sales.t3;
+      const junActual = row.pos ? (RAW.branch[row.pos]?.jun ?? null) : null;
+      if (junActual) totJun += junActual;
+      const at = junActual != null ? achievedTier(junActual, row.sales) : null;
       html += `
         <tr>
           <td><strong>${row.outlet}</strong></td>
-          <td style="font-weight:700;color:var(--primary)">${fmt(row.cur)}</td>
-          <td><span class="tag star">${fmt(row.t1)}</span></td>
-          <td><span class="tag horse">${fmt(row.t2)}</span></td>
-          <td style="font-weight:700;color:var(--green)"><span class="tag puzzle">${fmt(row.t3)}</span></td>
-          <td>Up to 1.5x Staff Bonus</td>
+          <td style="color:var(--muted)">${fmt(row.currentAvgSale)}</td>
+          <td style="font-weight:700;color:var(--primary)">${junActual == null ? 'N/A' : fmt(junActual)}</td>
+          <td>${fmt(row.sales.t1)}</td>
+          <td>${fmt(row.sales.t2)}</td>
+          <td style="color:var(--green)">${fmt(row.sales.t3)}</td>
+          <td>${at ? `<span class="tag ${at.tag}">${at.label}</span>` : '<span class="tag horse">No POS feed</span>'}</td>
         </tr>
       `;
     });
 
     html += `
       <tr style="background:var(--bg3);font-weight:800;border-top:2px solid var(--primary)">
-        <td>TOTAL CHAIN SALES / MO</td>
-        <td style="color:var(--primary)">${fmt(totCur)}</td>
-        <td style="color:var(--primary)">${fmt(totT1)}</td>
+        <td>TOTAL CHAIN / MO</td>
+        <td style="color:var(--muted)">${fmt(totCur)}</td>
+        <td style="color:var(--primary)">${fmt(totJun)}</td>
+        <td>${fmt(totT1)}</td>
         <td>${fmt(totT2)}</td>
         <td style="color:var(--green)">${fmt(totT3)}</td>
-        <td><span class="tag star">+70.1% Max Capacity</span></td>
+        <td><span class="tag star">T3 = +${((totT3 / totCur - 1) * 100).toFixed(0)}% vs current</span></td>
       </tr>
       </tbody>
     `;
@@ -917,15 +915,12 @@ function renderTables(fd) {
   // Page 12: Outlet Profit & Turnaround Target Roadmap Table
   const pnlProfitRoadmapTbl = document.getElementById('tbl-pnl-outlet-profit-roadmap');
   if (pnlProfitRoadmapTbl) {
-    const profitData = [
-      { outlet: 'Kothrud', cur: 420000, t1: 450000, t2: 525000, t3: 605000 },
-      { outlet: 'PYC (Incl Cart)', cur: -180000, t1: 100000, t2: 137500, t3: 180000 },
-      { outlet: 'Aundh', cur: 178000, t1: 300000, t2: 350000, t3: 400000 },
-      { outlet: 'Salunkhe Vihar', cur: 116000, t1: 250000, t2: 300000, t3: 350000 },
-      { outlet: 'Wadgaon Sheri', cur: -5000, t1: 200000, t2: 250000, t3: 300000 },
-      { outlet: 'Pimple Saudagar', cur: 20000, t1: 200000, t2: 250000, t3: 300000 },
-      { outlet: 'Wakad', cur: -79000, t1: 200000, t2: 250000, t3: 300000 }
-    ];
+    // Single source: src/data/targets.js. (Fixes an old transcription error:
+    // Pimple Saudagar's current avg profit is −₹40k, not +₹20k.)
+    const profitData = TIERED_TARGETS.map(tt => ({
+      outlet: tt.outlet, cur: tt.currentAvgProfit,
+      t1: tt.profit.t1, t2: tt.profit.t2, t3: tt.profit.t3
+    }));
 
     let html = `
       <thead>
@@ -966,12 +961,186 @@ function renderTables(fd) {
         <td style="color:var(--green)">${fmt(totT1)}</td>
         <td>${fmt(totT2)}</td>
         <td style="color:var(--green)">${fmt(totT3)}</td>
-        <td><span class="tag star">+418% Max Uplift</span></td>
+        <td><span class="tag star">T3 = +${((totT3 / Math.max(1, totCur) - 1) * 100).toFixed(0)}% vs current</span></td>
       </tr>
       </tbody>
     `;
     pnlProfitRoadmapTbl.innerHTML = html;
   }
+}
+
+// ── Sub-navigation for group pages (Outlets / Menu / Money) ──────────────────
+export function showSub(groupId, subId) {
+  const group = document.getElementById(groupId);
+  if (!group) return;
+  group.querySelectorAll('.subpage').forEach(s => s.classList.toggle('active', s.id === subId));
+  group.querySelectorAll('.subpill').forEach(p => {
+    const oc = p.getAttribute('onclick') || '';
+    p.classList.toggle('active', oc.includes(`'${subId}'`));
+  });
+  requestAnimationFrame(() => {
+    Object.values(CHARTS).forEach(c => { try { c && c.resize && c.resize(); } catch (e) {} });
+    renderSubContent(subId);
+  });
+}
+
+function renderSubContent(subId) {
+  if (subId === 'pg-sales') drawHeatmap();
+  if (subId === 'pg-operations') renderMarketBasketTab();
+  if (subId === 'pg-comparison') renderDualStoreComparison();
+  if (subId === 'pg-franchisee') recalcFranchiseeModel();
+  if (subId === 'pg-branches') renderBranchProfile(currentBranchProfile);
+}
+
+// ── HOME: tiered target board, alerts, daily trend ───────────────────────────
+const MONTH_TREND = b => {
+  const may = RAW.branch[b]?.may || 0, jun = RAW.branch[b]?.jun || 0;
+  return may > 0 ? (jun / may - 1) * 100 : null;
+};
+
+function achievedTier(v, tiers) {
+  if (v >= tiers.t3) return { label: 'T3 Super', tag: 'star' };
+  if (v >= tiers.t2) return { label: 'T2 Stretch', tag: 'grow' };
+  if (v >= tiers.t1) return { label: 'T1 Base', tag: 'horse' };
+  return { label: 'Below T1', tag: 'risk' };
+}
+
+function renderHome() {
+  const setEl = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
+  const jun = RAW.month.jun, may = RAW.month.may;
+
+  // KPI strip
+  const chainTrend = ((jun.rev / may.rev - 1) * 100).toFixed(1);
+  setEl('home-rev', fmt(jun.rev));
+  setEl('home-rev-sub', `${chainTrend >= 0 ? '+' : ''}${chainTrend}% vs May`);
+  const mapped = TIERED_TARGETS.filter(tt => tt.pos);
+  const mappedActual = mapped.reduce((s, tt) => s + (RAW.branch[tt.pos]?.jun || 0), 0);
+  const mappedT1 = mapped.reduce((s, tt) => s + tt.sales.t1, 0);
+  setEl('home-tier', (mappedActual / mappedT1 * 100).toFixed(1) + '%');
+  setEl('home-orders', jun.ord.toLocaleString());
+  setEl('home-orders-sub', 'AOV ₹' + Math.round(jun.aov));
+  const chainProfit = TIERED_TARGETS.reduce((s, tt) => s + tt.currentAvgProfit, 0);
+  const lossCount = TIERED_TARGETS.filter(tt => tt.currentAvgProfit < 0).length;
+  setEl('home-profit', fmt(chainProfit));
+  setEl('home-profit-sub', lossCount > 0 ? `⚠️ ${lossCount} outlets currently loss-making` : 'All outlets profitable');
+
+  // Target board
+  const board = document.getElementById('home-board');
+  if (board) {
+    let html = `<tr><th>Outlet</th><th>June Sales</th><th style="min-width:240px">Progress vs Tiers (markers: T1 · T2 · T3)</th><th>Tier Achieved</th><th>Jun vs May</th><th>Avg Profit / mo*</th></tr>`;
+    const rows = [];
+    TIERED_TARGETS.forEach(tt => {
+      const actual = tt.pos ? (RAW.branch[tt.pos]?.jun ?? null) : null;
+      rows.push({ name: tt.outlet, pos: tt.pos, actual, tiers: tt.sales, profit: tt.currentAvgProfit });
+    });
+    UNTARGETED_POS_BRANCHES.forEach(b => {
+      rows.push({ name: b + ' (new)', pos: b, actual: RAW.branch[b]?.jun ?? null, tiers: null, profit: null });
+    });
+    rows.sort((a, b) => (b.actual ?? -1) - (a.actual ?? -1));
+    rows.forEach(r => {
+      const click = r.pos ? ` class="home-board-row" onclick="showPage('pg-outlets');selectBranchProfile('${r.pos}')" title="Open ${r.name} profile"` : '';
+      let barCell = '<span style="color:var(--muted)">N/A</span>';
+      let tierCell = '—', trendCell = '—';
+      if (r.actual != null && r.tiers) {
+        const max = r.tiers.t3 * 1.05;
+        const pct = Math.min(100, r.actual / max * 100);
+        const at = achievedTier(r.actual, r.tiers);
+        const fillColor = at.tag === 'risk' ? '#cb202d' : at.tag === 'horse' ? '#E7BA44' : '#56754d';
+        barCell = `<div class="tier-track">
+          <div class="tier-fill" style="width:${pct.toFixed(1)}%;background:${fillColor}"></div>
+          <div class="tier-marker" style="left:${(r.tiers.t1 / max * 100).toFixed(1)}%" title="T1 ${fmt(r.tiers.t1)}"></div>
+          <div class="tier-marker" style="left:${(r.tiers.t2 / max * 100).toFixed(1)}%" title="T2 ${fmt(r.tiers.t2)}"></div>
+          <div class="tier-marker" style="left:${(r.tiers.t3 / max * 100).toFixed(1)}%" title="T3 ${fmt(r.tiers.t3)}"></div>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">${(r.actual / r.tiers.t1 * 100).toFixed(0)}% of T1 ${fmt(r.tiers.t1)}</div>`;
+        tierCell = `<span class="tag ${at.tag}">${at.label}</span>`;
+      } else if (r.actual != null) {
+        barCell = `<span style="color:var(--muted)">No targets set yet</span>`;
+        tierCell = '<span class="tag grow">New</span>';
+      }
+      if (r.pos) {
+        const tr = MONTH_TREND(r.pos);
+        trendCell = tr == null ? 'New (Jun)' : `<span class="${tr >= 0 ? 'trend-up' : 'trend-dn'}">${tr >= 0 ? '+' : ''}${tr.toFixed(1)}%</span>`;
+      }
+      const profitCell = r.profit == null ? '—'
+        : `<span style="color:${r.profit >= 0 ? 'var(--green)' : '#e68c85'};font-weight:700">${r.profit < 0 ? '−' : ''}${fmt(Math.abs(r.profit))}</span>`;
+      html += `<tr${click}>
+        <td><strong>${r.name}</strong>${r.pos ? '' : ' <span style="font-size:10px;color:var(--muted)">(no POS feed)</span>'}</td>
+        <td style="font-weight:700">${r.actual == null ? 'N/A' : fmt(r.actual)}</td>
+        <td>${barCell}</td><td>${tierCell}</td><td>${trendCell}</td><td>${profitCell}</td>
+      </tr>`;
+    });
+    html += `<tr><td colspan="6" style="font-size:10px;color:var(--muted)">*Current average profit from the management targets sheet (Aug 2026) — monthly cost actuals pending.</td></tr>`;
+    board.innerHTML = html;
+  }
+
+  // Alerts — computed, ranked by severity
+  const alertsEl = document.getElementById('home-alerts');
+  if (alertsEl) {
+    const alerts = [];
+    const kTrend = MONTH_TREND('Kothrud');
+    if (kTrend != null && kTrend < -5) alerts.push({ sev: 'high', icon: '🏆', text: `<strong>Kothrud — the benchmark — fell ${kTrend.toFixed(1)}% in June.</strong> Diagnose before replicating its playbook this quarter.` });
+    TIERED_TARGETS.filter(tt => tt.currentAvgProfit < 0).forEach(tt => {
+      alerts.push({ sev: 'high', icon: '📉', text: `<strong>${tt.outlet} is loss-making</strong> (−${fmt(Math.abs(tt.currentAvgProfit))}/mo per targets sheet). Tier-1 profit goal: ${fmt(tt.profit.t1)}.` });
+    });
+    TIERED_TARGETS.filter(tt => tt.pos).forEach(tt => {
+      const actual = RAW.branch[tt.pos]?.jun || 0;
+      if (actual > 0 && actual < tt.sales.t1) {
+        alerts.push({ sev: 'med', icon: '🎯', text: `<strong>${tt.outlet}</strong> closed June at ${(actual / tt.sales.t1 * 100).toFixed(0)}% of Tier-1 (${fmt(actual)} vs ${fmt(tt.sales.t1)}).` });
+      }
+    });
+    if (!alerts.length) alerts.push({ sev: 'info', icon: '✅', text: 'All outlets on or above Tier-1 pace.' });
+    alertsEl.innerHTML = alerts.slice(0, 6).map(a =>
+      `<div class="home-alert sev-${a.sev}"><div>${a.icon}</div><div>${a.text}</div></div>`).join('');
+  }
+
+  // Daily trend chart
+  const canvas = document.getElementById('c-home-daily');
+  if (canvas) {
+    if (!CHARTS['c-home-daily']) {
+      mkChart('c-home-daily', 'line', DAILY_REVENUE.map(d => d.date), [
+        { label: 'Daily Net Sales', data: DAILY_REVENUE.map(d => d.rev), borderColor: 'rgba(231,186,68,0.55)', borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
+        { label: '7-Day Average', data: DAILY_REVENUE.map(d => d.ma), borderColor: '#56754d', borderWidth: 2.5, pointRadius: 0, tension: 0.35 }
+      ], { scales: { x: { ticks: { color: '#a3979d', maxTicksLimit: 12 }, grid: { display: false } }, y: { ticks: { color: '#a3979d', callback: v => fmt(v) }, grid: { color: 'rgba(252,240,208,.06)' } } } });
+    }
+  }
+}
+
+// ── KOTHRUD GAP: replicable-driver board ─────────────────────────────────────
+function renderKothrudGap() {
+  const tbl = document.getElementById('tbl-kothrud-gap');
+  if (!tbl) return;
+  const K = RAW.branch.Kothrud;
+  const kDine = (K.ch['Dine In']?.rev || 0) / K.rev;
+  const kAov = K.aov;
+  let html = `<tr><th>Outlet</th><th>Q2 Revenue</th><th>AOV vs ₹${Math.round(kAov)}</th><th>₹ impact / mo*</th><th>Dine-In share vs ${(kDine * 100).toFixed(1)}%</th><th>Commission drain saved*</th><th>June trend</th><th>Biggest replicable lever</th></tr>`;
+  RAW.branches.filter(b => b !== 'Kothrud').forEach(b => {
+    const bd = RAW.branch[b];
+    if (!bd || !bd.rev) return;
+    const aovGap = kAov - bd.aov;
+    // Monthly ₹ impact of closing the AOV gap at current order volume (Q2 avg / 3)
+    const aovImpact = aovGap > 0 ? Math.round(aovGap * bd.ord / 3) : 0;
+    const dine = (bd.ch['Dine In']?.rev || 0) / bd.rev;
+    const dineGap = kDine - dine;
+    // Delivery commission (~25%) saved if dine-in share rose to Kothrud's level
+    const commSaved = dineGap > 0 ? Math.round(dineGap * bd.rev / 3 * 0.25) : 0;
+    const tr = MONTH_TREND(b);
+    const lever = aovImpact >= commSaved
+      ? (aovImpact > 0 ? 'Raise AOV (upsell, combos)' : 'Grow order volume')
+      : 'Shift mix to dine-in';
+    html += `<tr>
+      <td><strong>${b}</strong></td>
+      <td>${fmt(bd.rev)}</td>
+      <td><span class="${aovGap > 0 ? 'trend-dn' : 'trend-up'}">₹${Math.round(bd.aov)} (${aovGap > 0 ? '−' : '+'}₹${Math.abs(Math.round(aovGap))})</span></td>
+      <td style="font-weight:700;color:var(--primary)">${aovImpact > 0 ? '+' + fmt(aovImpact) : '—'}</td>
+      <td><span class="${dineGap > 0.02 ? 'trend-dn' : 'trend-up'}">${(dine * 100).toFixed(1)}%</span></td>
+      <td style="font-weight:700;color:var(--green)">${commSaved > 0 ? '+' + fmt(commSaved) : '—'}</td>
+      <td>${tr == null ? 'New (Jun)' : `<span class="${tr >= 0 ? 'trend-up' : 'trend-dn'}">${tr >= 0 ? '+' : ''}${tr.toFixed(1)}%</span>`}</td>
+      <td style="font-size:11px">${lever}</td>
+    </tr>`;
+  });
+  html += `<tr><td colspan="8" style="font-size:10px;color:var(--muted)">*Directional estimates from real Q2 POS data: AOV impact = gap × outlet monthly orders; commission saved assumes ~25% aggregator fee on the shifted share. Repeat-visit and attach-rate drivers unlock once the loyalty API and item-level transaction data land.</td></tr>`;
+  tbl.innerHTML = html;
 }
 
 function refresh() {
@@ -1109,6 +1278,8 @@ function refresh() {
   renderDualStoreComparison();
   renderDailySnapshot();
   recalcFranchiseeModel();
+  renderHome();
+  renderKothrudGap();
 }
 
 
@@ -1174,11 +1345,11 @@ export function showPage(param) {
         } catch (e) {}
       });
 
-      if (activeId === 'pg-daily') renderDailySnapshot();
-      if (activeId === 'pg-franchisee') recalcFranchiseeModel();
-      if (activeId === 'pg-sales') drawHeatmap();
-      if (activeId === 'pg-operations') renderMarketBasketTab();
-      if (activeId === 'pg-comparison') renderDualStoreComparison();
+      if (activeId === 'pg-home') renderHome();
+      if (activeId === 'pg-kothrud') renderKothrudGap();
+      // Group pages: re-render whichever subpage is currently active.
+      const activeSub = pages[targetIndex].querySelector('.subpage.active');
+      if (activeSub) renderSubContent(activeSub.id);
     });
   } catch (err) {
     console.error('Error in showPage navigation:', err);
@@ -2156,6 +2327,7 @@ window.setDualStoreA = setDualStoreA;
 window.setDualStoreB = setDualStoreB;
 window.swapDualStores = swapDualStores;
 window.filterModalMenuTable = filterModalMenuTable;
+window.showSub = showSub;
 window.selectBranchProfile = (b) => {
   currentBranchProfile = b;
   document.querySelectorAll('.branch-pill').forEach(p => p.classList.toggle('active', p.textContent === b));
