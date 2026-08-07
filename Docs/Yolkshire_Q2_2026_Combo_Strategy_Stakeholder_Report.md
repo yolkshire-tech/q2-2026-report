@@ -1,5 +1,11 @@
 # Yolkshire Q2 2026 Combo Strategy & Launch Recommendations
 
+> ### ⚠️ Restatement addendum (2026-08-08)
+> This report's headline baselines — **"Total Q2 Revenue ₹98,71,208"** and **"AOV ₹245.60"** — are superseded. Reconciliation against raw POS data (`Docs/Revenue_Baseline_Reconciliation.md`) showed they came from a partial join that captured only ~48% of item revenue. Canonical Q2 figures: **Net Sales ₹2,07,28,578 · AOV ₹515.73 · median bill ₹420**.
+> **What still stands:** combo compositions, margin calculations, and margin-based rankings (per-combo food costs are unaffected).
+> **What must be re-derived:** every "AOV uplift %" claim and revenue projection built on the ₹245.60 baseline. A ₹379 combo is *below* the real average order — combos are an attach/margin play, not an automatic AOV raiser. Live measurement now runs in the platform's Combo Tracker (Menu → Combos & Baskets).
+
+
 **Analysis period:** April–June 2026 (Q2)  
 **Prepared:** July 2026  
 **Purpose:** A stakeholder-ready consolidation of the Q2 market-basket analyses, focused on the recommended combo menu and launch priorities.

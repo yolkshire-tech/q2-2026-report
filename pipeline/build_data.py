@@ -252,6 +252,30 @@ def main():
         "itemDataScope": "Q2 2026 (Apr–Jun) item-level exports",
     }
 
+    # Cost actuals (optional): drop monthly CSVs from accounts into
+    # "Docs/Cost Actuals/" using pipeline/cost_actuals_template.csv columns
+    # (outlet = POS branch name, month = jan..dec lowercase). When present,
+    # the Money page shows real per-outlet EBITDA instead of the %-model.
+    costActuals = {}
+    ca_dir = ROOT / "Docs" / "Cost Actuals"
+    if ca_dir.exists():
+        for f in sorted(ca_dir.glob("*.csv")):
+            ca = pd.read_csv(f, encoding="utf-8-sig")
+            for _, r in ca.iterrows():
+                b, m = str(r["outlet"]).strip(), str(r["month"]).strip().lower()
+                if b not in BRANCHES:
+                    print(f"  WARN cost actuals: unknown outlet '{b}' in {f.name} — skipped")
+                    continue
+                costActuals.setdefault(b, {})[m] = {
+                    "rent": round(float(r.get("rent", 0) or 0)),
+                    "payroll": round(float(r.get("payroll", 0) or 0)),
+                    "purchases": round(float(r.get("purchases", 0) or 0)),
+                    "other": round(float(r.get("other_opex", 0) or 0)),
+                }
+        print(f"  cost actuals: {sum(len(v) for v in costActuals.values())} outlet-months loaded")
+    else:
+        print("  cost actuals: none (Docs/Cost Actuals/ not present)")
+
     print("[5] Menu items (Q2 item-line, full coverage)")
     items = pd.read_csv(ROOT / "Docs" / "Q2" / "Multidate - Sales By Items.csv",
                         encoding="utf-8")
@@ -439,6 +463,7 @@ def main():
     out.append(header)
     out.append("export const RAW = {")
     out.append(f"  meta: {js(meta)},")
+    out.append(f"  costActuals: {js(costActuals)},")
     out.append("  // Period cube: month -> branch -> real rev/ord/channel/session actuals.")
     out.append("  cube: {")
     for m in MONTHS:

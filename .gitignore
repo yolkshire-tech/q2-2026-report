@@ -10,3 +10,4 @@ dist/
 
 # Track the data pipeline (exception to the global *.py ignore)
 !pipeline/*.py
+!pipeline/cost_actuals_template.csv

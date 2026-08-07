@@ -2,9 +2,13 @@ import './styles/main.css';
 import Chart from 'chart.js/auto';
 import { RAW, DAILY_REVENUE, BRANCH_PROFILES } from './data/dashboardData.js';
 import { TIERED_TARGETS, UNTARGETED_POS_BRANCHES } from './data/targets.js';
+import { parseCSV, detectKind, processTransactions, processItems, loadUploads, saveUploads, clearUploads, applyUploads } from './data/ingest.js';
+import { matchCombo } from './data/combos.js';
 import { CHARTS, fmt, fmtN, hexToRgb, mkChart, updateChart, updateChartTheme } from './charts/chartManager.js';
 
 let F = { period: 'all', branch: 'all' };
+let baseMonths = [];
+let uploadInfo = { applied: [], skipped: [], items: null };
 let currentHeatmap = null;
 let currentBranchProfile = 'Kothrud';
 let bpCharts = {};
@@ -347,7 +351,7 @@ function getFilteredData() {
   result.dRev = pat.dRev;
   result.bills = pat.bills;
   currentHeatmap = pat.heatmap;
-  result.patternNote = `${branch === 'all' ? 'Chain-wide' : branch} time patterns computed over the full data range (${meta.rangeLabel}) — patterns are structural, not period-sliced.`;
+  result.patternNote = `${branch === 'all' ? 'Chain-wide' : branch} time patterns computed over the committed data range (${meta.patternRangeLabel || meta.rangeLabel}) — patterns are structural, not period-sliced.`;
 
   // Daily trend — real per period + outlet, 7-day MA computed on the slice
   const series = RAW.dailyAll.filter(d => months.includes(d.m))
@@ -438,34 +442,17 @@ function updateFilterStyles() {
   });
 }
 
-function updateKPIs(fd) {
+function renderKothrudKPIs(fd) {
   const setEl = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
-
-  // Page 0
-  setEl('k-rev', fmt(fd.rev));
-  setEl('k-rev-sub', fmtN(fd.ord) + ' orders');
-  setEl('k-ord', fmtN(fd.ord));
-  setEl('k-ord-sub', fd.ordPerDay + '/day avg');
-  setEl('k-aov', '₹' + fd.aov);
-  setEl('k-daily', fmt(fd.daily));
-
-
-
-  // Page 5
-  setEl('k-ch-off-rev', fmt(fd.chRevs[0] + fd.chRevs[3]));
-  setEl('k-ch-on-rev', fmt(fd.chRevs[1] + fd.chRevs[2]));
-  setEl('k-ch-aov-comp', `₹${fd.chAOVs[0]} vs ₹${Math.round((fd.chAOVs[1] + fd.chAOVs[2]) / 2)}`);
-  setEl('k-ch-zs-comp', `${fmt(fd.chRevs[1])} vs ${fmt(fd.chRevs[2])}`);
-
-  // Page 7 (Kothrud Playbook) — computed from real branch/channel data
   setEl('k-kothrud-rev', fmt(fd.branchRevs[RAW.branches.indexOf('Kothrud')]));
   const kbr = RAW.branch.Kothrud;
   setEl('k-kothrud-dinein', ((kbr.ch['Dine In']?.rev || 0) / kbr.rev * 100).toFixed(1) + '%');
   setEl('k-kothrud-bev', 'N/A');
   setEl('k-kothrud-aov', kbr.ch['Dine In']?.aov ? '₹' + kbr.ch['Dine In'].aov : 'N/A');
+}
 
-
-  // Page 12 (PnL)
+function updateMoneyKPIs(fd) {
+  const setEl = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
   setEl('k-pnl-target', fmt(fd.targetRev));
   setEl('k-pnl-actual', fmt(fd.actualRev));
   setEl('k-pnl-var', fd.variancePct + '%');
@@ -476,8 +463,8 @@ function updateKPIs(fd) {
   setEl('k-pnl-margin', fd.ebitdaMargin + '% EBITDA Margin');
 }
 
-function renderTables(fd) {
-  // Page 4: Staffing Guide Table
+function renderOutletTables(fd) {
+// Page 4: Staffing Guide Table
   const staffingTbl = document.getElementById('tbl-staffing');
   if (staffingTbl) {
     const scale = 1; // chain-wide daily pattern (full data range)
@@ -575,6 +562,37 @@ function renderTables(fd) {
     `;
   }
 
+  // Page 8: Q1 vs Q2 Scorecard Table
+  const q1q2Tbl = document.getElementById('tbl-q1q2-scorecard');
+  if (q1q2Tbl) {
+    let html = `<tr><th>Metric / Branch</th><th>Q1 Revenue</th><th>Q2 Revenue</th><th>QoQ Change</th><th>Q1 AOV</th><th>Q2 AOV</th><th>Status</th></tr>`;
+    RAW.branches.forEach(b => {
+      if (F.branch !== 'all' && b !== F.branch) return;
+      const q1Rev = RAW.q1.branch[b]?.rev || 0;
+      const q2Rev = RAW.branch[b]?.rev || 0;
+      const qoq = q1Rev > 0 ? (((q2Rev - q1Rev) / q1Rev) * 100).toFixed(1) : 'New';
+      const q1Aov = RAW.q1.branch[b]?.aov || 0;
+      const q2Aov = RAW.branch[b]?.aov || 0;
+      const tc = typeof qoq === 'string' && qoq.startsWith('-') ? 'trend-dn' : 'trend-up';
+
+      html += `
+        <tr>
+          <td><strong>${b}</strong></td>
+          <td>${fmt(q1Rev)}</td>
+          <td>${fmt(q2Rev)}</td>
+          <td class="${tc}">${typeof qoq === 'number' || !isNaN(qoq) ? '+' + qoq + '%' : qoq}</td>
+          <td>${q1Aov ? '₹' + Math.round(q1Aov) : '—'}</td>
+          <td>₹${Math.round(q2Aov)}</td>
+          <td><span class="tag star">${RAW.branchProfiles?.[b]?.status || 'Active'}</span></td>
+        </tr>
+      `;
+    });
+    q1q2Tbl.innerHTML = html;
+  }
+
+  }
+
+function renderKothrudTables(fd) {
   // Page 7: Kothrud Benchmark Matrix Table
   const kothrudTbl = document.getElementById('tbl-kothrud-playbook-matrix');
   if (kothrudTbl) {
@@ -615,50 +633,10 @@ function renderTables(fd) {
     kothrudTbl.innerHTML = html;
   }
 
-  // Page 8: Q1 vs Q2 Scorecard Table
-  const q1q2Tbl = document.getElementById('tbl-q1q2-scorecard');
-  if (q1q2Tbl) {
-    let html = `<tr><th>Metric / Branch</th><th>Q1 Revenue</th><th>Q2 Revenue</th><th>QoQ Change</th><th>Q1 AOV</th><th>Q2 AOV</th><th>Status</th></tr>`;
-    RAW.branches.forEach(b => {
-      if (F.branch !== 'all' && b !== F.branch) return;
-      const q1Rev = RAW.q1.branch[b]?.rev || 0;
-      const q2Rev = RAW.branch[b]?.rev || 0;
-      const qoq = q1Rev > 0 ? (((q2Rev - q1Rev) / q1Rev) * 100).toFixed(1) : 'New';
-      const q1Aov = RAW.q1.branch[b]?.aov || 0;
-      const q2Aov = RAW.branch[b]?.aov || 0;
-      const tc = typeof qoq === 'string' && qoq.startsWith('-') ? 'trend-dn' : 'trend-up';
+}
 
-      html += `
-        <tr>
-          <td><strong>${b}</strong></td>
-          <td>${fmt(q1Rev)}</td>
-          <td>${fmt(q2Rev)}</td>
-          <td class="${tc}">${typeof qoq === 'number' || !isNaN(qoq) ? '+' + qoq + '%' : qoq}</td>
-          <td>${q1Aov ? '₹' + Math.round(q1Aov) : '—'}</td>
-          <td>₹${Math.round(q2Aov)}</td>
-          <td><span class="tag star">${RAW.branchProfiles?.[b]?.status || 'Active'}</span></td>
-        </tr>
-      `;
-    });
-    q1q2Tbl.innerHTML = html;
-  }
-
-  // Page 9: Forecast Summary Table
-  const fcTbl = document.getElementById('tbl-forecast-summary');
-  if (fcTbl) {
-    const scale = 1;
-    fcTbl.innerHTML = `
-      <tr><th>Month</th><th>Revenue</th><th>Orders</th><th>AOV</th><th>MoM</th><th>Type</th></tr>
-      <tr><td>April 2026</td><td>${fmt(Math.round(6762859 * scale))}</td><td>${fmtN(Math.round(13952 * scale))}</td><td>₹485</td><td>&mdash;</td><td><span class="tag star">Actual</span></td></tr>
-      <tr><td>May 2026</td><td>${fmt(Math.round(7069957 * scale))}</td><td>${fmtN(Math.round(13631 * scale))}</td><td>₹519</td><td class="trend-up">+4.5%</td><td><span class="tag star">Actual</span></td></tr>
-      <tr><td>June 2026</td><td>${fmt(Math.round(6895763 * scale))}</td><td>${fmtN(Math.round(12610 * scale))}</td><td>₹547</td><td class="trend-dn">-2.5%</td><td><span class="tag star">Actual</span></td></tr>
-      <tr style="opacity:.8"><td>July 2026</td><td>${fmt(Math.round(7042431 * scale))}</td><td>${fmtN(Math.round(12056 * scale))}</td><td>₹584</td><td class="trend-up">+2.1%</td><td><span class="tag puzzle">Forecast</span></td></tr>
-      <tr style="opacity:.7"><td>August 2026</td><td>${fmt(Math.round(7108883 * scale))}</td><td>${fmtN(Math.round(11385 * scale))}</td><td>₹624</td><td class="trend-up">+0.9%</td><td><span class="tag puzzle">Forecast</span></td></tr>
-      <tr style="opacity:.6"><td>September 2026</td><td>${fmt(Math.round(7175336 * scale))}</td><td>${fmtN(Math.round(10714 * scale))}</td><td>₹670</td><td class="trend-up">+0.9%</td><td><span class="tag puzzle">Forecast</span></td></tr>
-    `;
-  }
-
-  // Page 12: PnL Branch Statement Table
+function renderMoneyTables(fd) {
+// Page 12: PnL Branch Statement Table
   const pnlTbl = document.getElementById('tbl-pnl-statement');
   if (pnlTbl) {
     let html = `
@@ -897,8 +875,11 @@ function renderHome() {
   const monOrd = RAW.branches.reduce((a, b) => a + (RAW.cube[latest]?.[b]?.ord || 0), 0);
   const prevRev = prev ? RAW.branches.reduce((a, b) => a + (RAW.cube[prev]?.[b]?.rev || 0), 0) : 0;
 
+  const partialInfo = (RAW.meta.partialMonths || {})[latest];
   const homeSec = document.querySelector('#pg-home .sec');
-  if (homeSec) homeSec.textContent = `This Month at a Glance — ${label} (last full data month)`;
+  if (homeSec) homeSec.textContent = partialInfo
+    ? `This Month at a Glance — ${label.replace(' — partial', '')} (month to date · ${partialInfo.days} of ${partialInfo.calendarDays} days)`
+    : `This Month at a Glance — ${label} (last full data month)`;
   const boardSub = document.querySelector('#pg-home .chart-card .sub');
   if (boardSub) boardSub.textContent = `${label} net sales vs the three incentive tiers (T1 Base · T2 Stretch · T3 Super-Achiever) · click an outlet for its profile`;
 
@@ -974,14 +955,36 @@ function renderHome() {
     TIERED_TARGETS.filter(tt => tt.currentAvgProfit < 0).forEach(tt => {
       alerts.push({ sev: 'high', icon: '📉', text: `<strong>${tt.outlet} is loss-making</strong> (−${fmt(Math.abs(tt.currentAvgProfit))}/mo per targets sheet). Tier-1 profit goal: ${fmt(tt.profit.t1)}.` });
     });
-    TIERED_TARGETS.filter(tt => tt.pos).forEach(tt => {
-      const actual = latestRev(tt.pos);
-      if (actual > 0 && actual < tt.sales.t1) {
-        alerts.push({ sev: 'med', icon: '🎯', text: `<strong>${tt.outlet}</strong> closed ${shortLabel} at ${(actual / tt.sales.t1 * 100).toFixed(0)}% of Tier-1 (${fmt(actual)} vs ${fmt(tt.sales.t1)}).` });
-      }
+    // Below-Tier-1: only the three furthest from target (the board shows the rest)
+    const belowT1 = TIERED_TARGETS.filter(tt => tt.pos)
+      .map(tt => ({ tt, actual: latestRev(tt.pos) }))
+      .filter(x => x.actual > 0 && x.actual < x.tt.sales.t1)
+      .sort((a, b) => (a.actual / a.tt.sales.t1) - (b.actual / b.tt.sales.t1))
+      .slice(0, 3);
+    belowT1.forEach(({ tt, actual }) => {
+      alerts.push({ sev: 'med', icon: '🎯', text: `<strong>${tt.outlet}</strong> closed ${shortLabel} at ${(actual / tt.sales.t1 * 100).toFixed(0)}% of Tier-1 (${fmt(actual)} vs ${fmt(tt.sales.t1)}).` });
     });
+    // Week-over-week from real daily data: last 7 data days vs the prior 7
+    const dAll = RAW.dailyAll;
+    if (dAll.length >= 14) {
+      const last7 = dAll.slice(-7), prev7 = dAll.slice(-14, -7);
+      const sumW = (arr, b) => arr.reduce((a, d) => a + (b ? (d.br[b] || 0) : d.total), 0);
+      const cw = sumW(last7), pw = sumW(prev7);
+      if (pw > 0) {
+        const wow = (cw / pw - 1) * 100;
+        alerts.push({ sev: wow < -10 ? 'high' : 'info', icon: '📊', text: `<strong>Chain, last 7 data days:</strong> ${fmt(cw)} vs ${fmt(pw)} the week before (${wow >= 0 ? '+' : ''}${wow.toFixed(1)}%).` });
+      }
+      RAW.branches.forEach(b => {
+        const cb = sumW(last7, b), pb = sumW(prev7, b);
+        if (pb > 20000 && cb / pb - 1 < -0.15) {
+          alerts.push({ sev: 'med', icon: '📉', text: `<strong>${b}</strong> down ${Math.abs((cb / pb - 1) * 100).toFixed(0)}% week-over-week (${fmt(cb)} vs ${fmt(pb)}, last 7 data days).` });
+        }
+      });
+    }
     if (!alerts.length) alerts.push({ sev: 'info', icon: '✅', text: 'All outlets on or above Tier-1 pace.' });
-    alertsEl.innerHTML = alerts.slice(0, 6).map(a =>
+    const sevRank = { high: 0, med: 1, info: 2 };
+    alerts.sort((a, b) => sevRank[a.sev] - sevRank[b.sev]);
+    alertsEl.innerHTML = alerts.slice(0, 8).map(a =>
       `<div class="home-alert sev-${a.sev}"><div>${a.icon}</div><div>${a.text}</div></div>`).join('');
   }
 
@@ -1038,25 +1041,7 @@ function renderKothrudGap() {
   tbl.innerHTML = html;
 }
 
-function refresh() {
-  const fd = getFilteredData();
-  updateKPIs(fd);
-  document.getElementById('filter-ctx').textContent = buildContextLabel();
-  updateFilterStyles();
-
-updateChart('c-ch-donut', RAW.channels, [{ data: fd.chRevs, backgroundColor: fd.chColors, borderWidth: 0, hoverOffset: 8 }]);
-  updateChart('c-br-bar', RAW.branches, [{ data: fd.branchRevs, backgroundColor: fd.branchColors, borderRadius: 5, borderSkipped: false }]);
-  updateChart('c-dow', RAW.days, [{ data: fd.dRev, backgroundColor: fd.dRev.map(v => v > Math.max(...fd.dRev) * 0.7 ? '#56754d' : '#E7BA44'), borderRadius: 5, borderSkipped: false, label: 'Revenue' }]);
-  updateChart('c-session-donut', ['Breakfast', 'Lunch', 'Snack', 'Dinner'], [{ data: fd.sessRevs, backgroundColor: fd.sessColors, borderWidth: 0, hoverOffset: 8 }]);
-  const noteEl = document.getElementById('pattern-note');
-  if (noteEl) noteEl.textContent = fd.patternNote;
-  const menuNoteEl = document.getElementById('menu-scope-note');
-  if (menuNoteEl) menuNoteEl.textContent = fd.itemScopeNote;
-
-  updateChart('c-top10r', fd.top10rItems, [{ data: fd.top10rRevs, backgroundColor: 'rgba(144,122,169,.75)', borderRadius: 4, borderSkipped: false }]);
-  updateChart('c-top10r2', fd.top10rItems, [{ data: fd.top10rRevs, backgroundColor: 'rgba(65,86,57,.75)', borderRadius: 4, borderSkipped: false }]);
-  updateChart('c-top10q', fd.top10qItems, [{ data: fd.top10qQtys, backgroundColor: 'rgba(231,186,68,.75)', borderRadius: 4, borderSkipped: false }]);
-
+function renderOutletCharts(fd) {
   updateChart('c-daily-rev', fd.dailyTrend.map(d => d.date), [
     { label: 'Daily Revenue', data: fd.dailyTrend.map(d => d.rev), borderColor: '#E7BA44', backgroundColor: 'rgba(231,186,68,.08)', fill: true, tension: .3, borderWidth: 2, pointRadius: 0, pointHoverRadius: 5 },
     { label: '7-Day Moving Avg', data: fd.dailyTrend.map(d => d.ma), borderColor: '#907aa9', backgroundColor: 'transparent', fill: false, tension: .4, borderWidth: 2, borderDash: [6, 3], pointRadius: 0, pointHoverRadius: 4 }
@@ -1085,16 +1070,6 @@ updateChart('c-ch-donut', RAW.channels, [{ data: fd.chRevs, backgroundColor: fd.
     { label: 'Orders', data: fd.sessOrds, backgroundColor: fd.sessColors.map(c => c.replace('.8', '.3').replace('0.2', '0.08')), borderRadius: 5, borderSkipped: false, yAxisID: 'y2', type: 'line', borderColor: fd.sessColors, borderWidth: 2, pointRadius: 4, fill: false }
   ]);
 
-  const meCats = ['Star', 'Plow Horse', 'Puzzle', 'Dog'];
-  const meCols = ['rgba(159,199,148,.8)', 'rgba(148,184,227,.8)', 'rgba(231,186,68,.85)', 'rgba(230,140,133,.85)'];
-  updateChart('c-me-scatter', [], meCats.map((cat, ci) => ({ label: cat, data: fd.mePoints.filter(p => p.cat === cat).map(p => ({ x: p.x, y: p.y, item: p.item })), backgroundColor: meCols[ci], pointRadius: 7, pointHoverRadius: 10 })));
-
-  updateChart('c-grow', RAW.growItems, [{ data: RAW.growPct, backgroundColor: 'rgba(65,86,57,.75)', borderRadius: 6, borderSkipped: false, label: 'Growth%' }]);
-  updateChart('c-decl', RAW.declItems, [{ data: RAW.declPct, backgroundColor: 'rgba(124,76,71,.75)', borderRadius: 6, borderSkipped: false, label: 'Change%' }]);
-
-  updateChart('c-menu-cat-pie', fd.catLabels, [{ data: fd.catRevs, backgroundColor: ['#E7BA44', '#56754d', '#5985b9', '#907aa9', '#9c5f59', '#7C4C47'], borderWidth: 0 }]);
-  updateChart('c-menu-price-tier', fd.priceTierLabels, [{ data: fd.priceTierQtys, backgroundColor: ['#56754d', '#E7BA44', '#5985b9', '#907aa9', '#9c5f59'], borderRadius: 5, label: 'Units Sold' }]);
-
   updateChart('c-bill', RAW.billBuckets, [{ data: fd.bills, backgroundColor: fd.bills.map(v => v === Math.max(...fd.bills) ? '#E7BA44' : 'rgba(231,186,68,.45)'), borderRadius: 5, borderSkipped: false }]);
 
   updateChart('c-aov-ch', RAW.channels, [{ data: fd.chAOVs, backgroundColor: fd.chAOVColors, borderRadius: 6, borderSkipped: false }]);
@@ -1121,6 +1096,30 @@ updateChart('c-ch-donut', RAW.channels, [{ data: fd.chRevs, backgroundColor: fd.
     { label: 'Swiggy', data: fd.chTrend.series['Swiggy'], borderColor: '#fc8019', backgroundColor: 'rgba(252,128,25,.06)', fill: true, tension: .3, borderWidth: 2, pointRadius: 4 }
   ]);
 
+  const pn = document.getElementById('pattern-note');
+  if (pn) pn.textContent = fd.patternNote;
+  drawHeatmap();
+}
+
+function renderMenuCharts(fd) {
+  updateChart('c-top10r2', fd.top10rItems, [{ data: fd.top10rRevs, backgroundColor: 'rgba(65,86,57,.75)', borderRadius: 4, borderSkipped: false }]);
+  updateChart('c-top10q', fd.top10qItems, [{ data: fd.top10qQtys, backgroundColor: 'rgba(231,186,68,.75)', borderRadius: 4, borderSkipped: false }]);
+
+  const meCats = ['Star', 'Plow Horse', 'Puzzle', 'Dog'];
+  const meCols = ['rgba(159,199,148,.8)', 'rgba(148,184,227,.8)', 'rgba(231,186,68,.85)', 'rgba(230,140,133,.85)'];
+  updateChart('c-me-scatter', [], meCats.map((cat, ci) => ({ label: cat, data: fd.mePoints.filter(p => p.cat === cat).map(p => ({ x: p.x, y: p.y, item: p.item })), backgroundColor: meCols[ci], pointRadius: 7, pointHoverRadius: 10 })));
+
+  updateChart('c-grow', RAW.growItems, [{ data: RAW.growPct, backgroundColor: 'rgba(65,86,57,.75)', borderRadius: 6, borderSkipped: false, label: 'Growth%' }]);
+  updateChart('c-decl', RAW.declItems, [{ data: RAW.declPct, backgroundColor: 'rgba(124,76,71,.75)', borderRadius: 6, borderSkipped: false, label: 'Change%' }]);
+
+  updateChart('c-menu-cat-pie', fd.catLabels, [{ data: fd.catRevs, backgroundColor: ['#E7BA44', '#56754d', '#5985b9', '#907aa9', '#9c5f59', '#7C4C47'], borderWidth: 0 }]);
+  updateChart('c-menu-price-tier', fd.priceTierLabels, [{ data: fd.priceTierQtys, backgroundColor: ['#56754d', '#E7BA44', '#5985b9', '#907aa9', '#9c5f59'], borderRadius: 5, label: 'Units Sold' }]);
+
+  const mn = document.getElementById('menu-scope-note');
+  if (mn) mn.textContent = fd.itemScopeNote;
+}
+
+function renderKothrudCharts(fd) {
   const kShare = fd.branchRevs[RAW.branches.indexOf('Kothrud')];
   const restShare = Math.max(0, fd.rev - kShare);
   updateChart('c-kothrud-share', ['Kothrud (' + fmt(kShare) + ')', 'Rest of Chain (' + fmt(restShare) + ')'], [
@@ -1151,6 +1150,9 @@ updateChart('c-ch-donut', RAW.channels, [{ data: fd.chRevs, backgroundColor: fd.
     ]);
   }
 
+}
+
+function renderMoneyCharts(fd) {
   // PnL Charts
   updateChart('c-pnl-waterfall', ['Target Sales', 'Actual Sales', 'COGS (30%)', 'Labor (18%)', 'Rent (15%)', 'Delivery Fee', 'Ops (5%)', 'Net Profit'], [
     { data: [fd.targetRev, fd.actualRev, -fd.cogs, -fd.labor, -fd.rent, -fd.commissions, -fd.ops, fd.netProfit], backgroundColor: ['#5985b9', '#E7BA44', '#9c5f59', '#9c5f59', '#9c5f59', '#cb202d', '#9c5f59', '#56754d'], borderRadius: 5, borderSkipped: false }
@@ -1159,15 +1161,158 @@ updateChart('c-ch-donut', RAW.channels, [{ data: fd.chRevs, backgroundColor: fd.
     { data: [fd.cogs, fd.labor, fd.rent, fd.commissions, fd.ops, fd.netProfit], backgroundColor: ['#9c5f59', '#907aa9', '#5985b9', '#cb202d', '#a3979d', '#56754d'], borderWidth: 0, hoverOffset: 8 }
   ]);
 
-  drawHeatmap();
-  renderBranchProfile(currentBranchProfile);
-  renderMarketBasketTab();
-  renderTables(fd);
-  renderWhatIfSimulator();
-  renderDualStoreComparison();
-  recalcFranchiseeModel();
-  renderHome();
-  renderKothrudGap();
+  // Real EBITDA from cost actuals (Docs/Cost Actuals/*.csv via the pipeline)
+  const ebTbl = document.getElementById('tbl-real-ebitda');
+  if (ebTbl) {
+    const ca = RAW.costActuals || {};
+    if (!Object.keys(ca).length) {
+      ebTbl.innerHTML = `<tr><td style="color:var(--muted);font-size:12px;padding:14px">Awaiting monthly cost actuals from accounts. Fill <strong>pipeline/cost_actuals_template.csv</strong> (one row per outlet per month, POS branch names, months as jan…dec), drop the file in <strong>Docs/Cost Actuals/</strong>, and re-run the pipeline — this table then shows each outlet's real EBITDA vs the ₹2L/month goal.</td></tr>`;
+    } else {
+      let html = `<tr><th>Outlet</th><th>Period Net Sales</th><th>Rent</th><th>Payroll</th><th>Purchases</th><th>Other</th><th>Real EBITDA</th><th>Margin</th><th>vs ₹2L/mo goal</th></tr>`;
+      RAW.branches.forEach(b => {
+        if (F.branch !== 'all' && b !== F.branch) return;
+        const covered = fd.monthsSel.filter(m => ca[b]?.[m]);
+        if (!covered.length) {
+          html += `<tr><td><strong>${b}</strong></td><td colspan="8" style="color:var(--muted)">No cost actuals for the selected period</td></tr>`;
+          return;
+        }
+        const sumK = k => covered.reduce((a, m) => a + (ca[b][m][k] || 0), 0);
+        const revB = covered.reduce((a, m) => a + (RAW.cube[m]?.[b]?.rev || 0), 0);
+        const rent = sumK('rent'), pay = sumK('payroll'), pur = sumK('purchases'), oth = sumK('other');
+        const eb = revB - rent - pay - pur - oth;
+        const margin = revB > 0 ? (eb / revB * 100).toFixed(1) : '0.0';
+        const goal = 200000 * covered.length;
+        html += `<tr><td><strong>${b}</strong></td><td>${fmt(revB)}</td><td>${fmt(rent)}</td><td>${fmt(pay)}</td><td>${fmt(pur)}</td><td>${fmt(oth)}</td><td style="font-weight:700;color:${eb >= 0 ? 'var(--green)' : '#e68c85'}">${fmt(eb)}</td><td>${margin}%</td><td><span class="tag ${eb >= goal ? 'star' : 'risk'}">${eb >= goal ? 'At/above' : 'Below'} goal</span></td></tr>`;
+      });
+      ebTbl.innerHTML = html;
+    }
+  }
+
+}
+
+
+// ── Combo Tracker (Menu page) ────────────────────────────────────────────────
+function renderComboTracker() {
+  const el = document.getElementById('combo-tracker');
+  if (!el) return;
+  const items = uploadInfo.items;
+  if (!items || !items.list || !items.list.length) {
+    el.innerHTML = `<div class="note" style="margin-bottom:0">No post-launch item export loaded yet. Export <strong>&ldquo;Multidate &mdash; Sales By Items&rdquo;</strong> from the POS for <strong>Jul 1 onwards</strong> and drop it on the <a href="#pg-data" style="color:var(--primary)">Data page upload box</a> &mdash; combo units, revenue and share appear here instantly.</div>`;
+    return;
+  }
+  const matched = [];
+  items.list.forEach(pt => { const c = matchCombo(pt.item); if (c) matched.push({ ...pt, combo: c }); });
+  if (!matched.length) {
+    el.innerHTML = `<div class="note" style="margin-bottom:0">Item export loaded (<strong>${items.label}</strong> &middot; ${items.list.length} items &middot; ${fmt(items.totalRev)}) but no items matched the launched-combo list. If the POS bills combos under different names, extend the match patterns in <strong>src/data/combos.js</strong>.</div>`;
+    return;
+  }
+  const totQty = matched.reduce((a, m) => a + m.x, 0);
+  const totRev = matched.reduce((a, m) => a + m.y, 0);
+  let html = `<div style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:10px;font-size:12px">
+    <span>Window: <strong>${items.label}</strong></span>
+    <span>Combo units: <strong>${totQty.toLocaleString()}</strong></span>
+    <span>Combo revenue: <strong>${fmt(totRev)}</strong></span>
+    <span>Share of item revenue: <strong>${items.totalRev ? (totRev / items.totalRev * 100).toFixed(1) : '0'}%</strong></span>
+  </div>
+  <table class="tbl"><tr><th>Combo</th><th>POS item</th><th>Units</th><th>Revenue</th><th>Avg price</th></tr>`;
+  matched.sort((a, b) => b.y - a.y).forEach(m => {
+    html += `<tr><td><strong>${m.combo}</strong></td><td>${m.item}</td><td>${m.x.toLocaleString()}</td><td>${fmt(m.y)}</td><td>₹${m.x ? Math.round(m.y / m.x) : 0}</td></tr>`;
+  });
+  el.innerHTML = html + `</table>`;
+}
+
+// ── Upload zone (Data page) ──────────────────────────────────────────────────
+function renderUploadStatus() {
+  const el = document.getElementById('upload-status');
+  if (!el) return;
+  const u = loadUploads();
+  const parts = [];
+  Object.values(u.months || {}).forEach(M => parts.push(`${M.label}: ${M.invoices.toLocaleString()} invoices, ${fmt(M.net)}${M.partial ? ` (partial, ${M.days} days)` : ''}`));
+  if (u.items) parts.push(`Item export “${u.items.label}”: ${u.items.list.length} items, ${fmt(u.items.totalRev)}`);
+  el.innerHTML = parts.length ? '<strong>Active on this device:</strong> ' + parts.join(' · ') : 'No device uploads active. Committed pipeline data only.';
+}
+
+window.handleUploadFiles = async (files) => {
+  if (!files || !files.length) return;
+  const resEl = document.getElementById('upload-result');
+  const u = loadUploads();
+  u.months = u.months || {};
+  const lines = [];
+  let changed = false;
+  for (const f of files) {
+    try {
+      const text = await f.text();
+      const rows = parseCSV(text);
+      const kind = detectKind(rows);
+      if (kind === 'transactions') {
+        const { months, warnings } = processTransactions(rows, RAW.branches);
+        if (!months.length) { lines.push(`❌ <strong>${f.name}</strong>: no valid sale invoices found.`); continue; }
+        months.forEach(M => {
+          if (baseMonths.includes(M.key)) {
+            lines.push(`⚠️ <strong>${f.name}</strong>: ${M.label} is already in the committed dataset — skipped. Re-run the pipeline to update committed months.`);
+          } else {
+            u.months[M.key] = M;
+            changed = true;
+            lines.push(`✅ <strong>${f.name}</strong>: ${M.label}${M.partial ? ` (partial — ${M.days}/${M.calendarDays} days)` : ''} · ${M.invoices.toLocaleString()} invoices · ${fmt(M.net)} net sales.`);
+          }
+        });
+        if (warnings.unknownBranches.length) lines.push(`⚠️ Skipped rows from unknown outlets: ${warnings.unknownBranches.join(', ')} (add them to the pipeline first).`);
+        if (warnings.unknownChannels.length) lines.push(`⚠️ Skipped rows with unknown channels: ${warnings.unknownChannels.join(', ')}.`);
+        if (warnings.zeroNet) lines.push(`ℹ️ ${warnings.zeroNet} zero-net comped invoices excluded (canonical rule).`);
+      } else if (kind === 'items') {
+        const res = processItems(rows);
+        u.items = { label: f.name.replace(/\.csv$/i, ''), savedAt: new Date().toISOString(), list: res.list, totalRev: res.totalRev, totalQty: res.totalQty };
+        changed = true;
+        lines.push(`✅ <strong>${f.name}</strong>: item export · ${res.list.length} items · ${fmt(res.totalRev)} — powers the Combo Tracker.`);
+      } else {
+        lines.push(`❌ <strong>${f.name}</strong>: columns not recognized — expected a POS “Sale Transactions” or “Sales By Items” export.`);
+      }
+    } catch (err) {
+      lines.push(`❌ <strong>${f.name}</strong>: ${err.message}`);
+    }
+  }
+  if (changed) {
+    saveUploads(u);
+    lines.push(`<button class="filter-reset" onclick="location.reload()">↻ Apply now (reloads the app)</button>`);
+  }
+  if (resEl) resEl.innerHTML = lines.map(l => `<div class="home-alert sev-info"><div style="width:100%">${l}</div></div>`).join('');
+  renderUploadStatus();
+};
+
+window.clearDeviceUploads = () => { clearUploads(); location.reload(); };
+
+// Only the active page renders — every navigation triggers a refresh, so
+// nothing goes stale, and filter changes stop re-drawing 35 hidden charts.
+function refresh() {
+  const fd = getFilteredData();
+  document.getElementById('filter-ctx').textContent = buildContextLabel();
+  updateFilterStyles();
+  const active = document.querySelector('.page.active')?.id || 'pg-home';
+  if (active === 'pg-home') {
+    renderHome();
+  } else if (active === 'pg-outlets') {
+    renderOutletCharts(fd);
+    renderOutletTables(fd);
+    renderBranchProfile(currentBranchProfile);
+    renderDualStoreComparison();
+  } else if (active === 'pg-kothrud') {
+    renderKothrudCharts(fd);
+    renderKothrudKPIs(fd);
+    renderKothrudTables(fd);
+    renderKothrudGap();
+  } else if (active === 'pg-menu-group') {
+    renderMenuCharts(fd);
+    renderMarketBasketTab();
+    renderComboTracker();
+  } else if (active === 'pg-money') {
+    updateMoneyKPIs(fd);
+    renderMoneyCharts(fd);
+    renderMoneyTables(fd);
+    renderWhatIfSimulator();
+    recalcFranchiseeModel();
+  } else if (active === 'pg-data') {
+    renderUploadStatus();
+  }
 }
 
 
@@ -2018,6 +2163,18 @@ window.addEventListener('hashchange', () => {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
 window.addEventListener('DOMContentLoaded', () => {
+  // Device uploads (Data page) extend the committed dataset with new months.
+  baseMonths = RAW.meta.months.slice();
+  uploadInfo = applyUploads(RAW);
+  uploadInfo.applied.forEach(mk => {
+    TIERED_TARGETS.forEach(tt => {
+      if (!tt.pos) return;
+      RAW.branchTargets[tt.pos] = RAW.branchTargets[tt.pos] || {};
+      if (RAW.branchTargets[tt.pos][mk] == null) RAW.branchTargets[tt.pos][mk] = tt.sales.t1;
+    });
+    if (RAW.branchTargets.Bavdhan && RAW.branchTargets.Bavdhan[mk] == null) RAW.branchTargets.Bavdhan[mk] = 500000;
+  });
+
   // Period & outlet selectors are built from the data itself — the app never
   // assumes what months exist. New pipeline runs extend these automatically.
   const meta = RAW.meta;
@@ -2061,6 +2218,14 @@ window.addEventListener('DOMContentLoaded', () => {
   renderBranchProfile('Kothrud');
   renderDualStoreComparison();
   recalcFranchiseeModel();
+
+  const zone = document.getElementById('upload-zone');
+  if (zone) {
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = 'var(--primary)'; });
+    zone.addEventListener('dragleave', () => { zone.style.borderColor = 'var(--border)'; });
+    zone.addEventListener('drop', e => { e.preventDefault(); zone.style.borderColor = 'var(--border)'; window.handleUploadFiles(e.dataTransfer.files); });
+  }
+  renderUploadStatus();
 
   // Deep link: #page or #group/subpage
   const hash = (location.hash || '').replace('#', '');

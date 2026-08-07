@@ -60,10 +60,11 @@ The app's information architecture is now right, but its **mental model is still
 
 Monthly close, as of now: **1)** download the month's "Sale Transactions" CSV into `Docs/Q3/` (and quarterly item exports), **2)** run `python pipeline/build_data.py`, **3)** commit + deploy. The app adapts (new month appears in the period selector, Home flips to the new latest month, target board recomputes).
 
-Roadmap to remove even that friction:
-- **P2**: upload page (Cloudflare Worker + R2) so a browser drag-drop replaces steps 1–3; combo tracker on Jul–Aug item exports; per-page render registry (D5); chart dedupe (D6); restate combo docs vs real AOV.
-- **P3**: cost-actuals ingestion → real per-outlet EBITDA replaces the P&L %-model; loyalty API (repeat-rate drivers in Kothrud Gap); reviews ingestion; week-over-week alert deltas once two live months exist.
+Roadmap status (P2/P3 implemented 2026-08-08):
+- **P2 — done**: ✅ in-browser upload on the Data page — drop a "Sale Transactions" CSV and a new month (even partial, e.g. month-to-date) merges into the cube instantly on that device, with the same cleaning rules as the pipeline, canonical-months protection, unknown-outlet/channel warnings, and auto-extended Tier-1 targets. ✅ Combo Tracker on the Menu page — drop a post-launch "Sales By Items" CSV and launched-combo units/revenue/share appear (match patterns in `src/data/combos.js`). ✅ per-page render registry (only the active page renders). ✅ chart/table dedupe (Customers → pointer to Combos & Baskets). ✅ restatement addendum on the three combo reports (AOV ₹245.60 → ₹515.73).
+- **P3 — data paths ready**: ✅ cost-actuals ingestion (fill `pipeline/cost_actuals_template.csv` → `Docs/Cost Actuals/` → pipeline; Money page's Real-EBITDA table activates, vs the ₹2L/mo goal). ✅ week-over-week alerts on Home (last 7 data days vs prior 7, chain + per outlet). ✅ loyalty API contract drafted (`Docs/Loyalty_API_Contract.md`) — integration lands when the endpoint exists. ⬜ reviews ingestion (needs source decision).
 - **P4**: conversational analytics on the trusted cube; auto weekly brief.
+- Note: the browser upload covers the daily/monthly ritual; a server-side upload (Worker + R2) only becomes necessary when multiple users need shared uploads without a pipeline run.
 
 ---
 

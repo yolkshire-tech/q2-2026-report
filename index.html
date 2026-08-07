@@ -425,16 +425,8 @@
     </div>
     <div class="chart-card" style="display:flex;flex-direction:column">
       <h3>Market Basket &mdash; Category Combos</h3>
-      <div class="sub" style="margin-bottom:12px">Frequently ordered together</div>
-      <table class="tbl">
-        <tr><th>When Customer Orders</th><th>Also Orders</th><th>Confidence</th><th>Lift</th></tr>
-        <tr><td>Main Dish</td><td>Beverage</td><td><span class="tag star">72%</span></td><td>1.8&times;</td></tr>
-        <tr><td>Egg Dish</td><td>Toast/Bread</td><td><span class="tag star">65%</span></td><td>1.6&times;</td></tr>
-        <tr><td>Rice Bowl</td><td>Cold Drink</td><td><span class="tag horse">58%</span></td><td>1.5&times;</td></tr>
-        <tr><td>Roll/Sandwich</td><td>Iced Tea</td><td><span class="tag horse">52%</span></td><td>1.4&times;</td></tr>
-        <tr><td>Breakfast Combo</td><td>Coffee</td><td><span class="tag puzzle">48%</span></td><td>1.3&times;</td></tr>
-      </table>
-      <div class="info-note" style="margin-top:12px;margin-bottom:0">Key opportunity: 72% of main-dish orders pair with a beverage. Improving attach by 20% adds ~&#8377;60/order &rarr; &#8377;24L+ annual uplift.</div>
+      <div class="sub" style="margin-bottom:12px">Moved &mdash; the full basket &amp; combo intelligence lives under <strong>Menu &rarr; Combos &amp; Baskets</strong>.</div>
+      <button class="filter-reset" onclick="showPage('pg-menu-group');showSub('pg-menu-group','pg-operations')" style="align-self:flex-start">Open Combos &amp; Baskets &rarr;</button>
     </div>
   </div>
 </div>
@@ -520,7 +512,11 @@
     <div class="note" id="menu-scope-note" style="margin-bottom:0;flex:1;min-width:260px"></div>
     <button class="filter-select" id="btn-exclude-nonmenu" style="cursor:pointer;font-weight:600;background:var(--bg2);color:var(--text);border:1px solid var(--border)" onclick="toggleNonMenuFilter()">💧 Exclude Water/Misc (OFF)</button>
   </div>
-  <div class="info-note" style="margin-bottom:16px"><strong>🍩 Combo Tracker:</strong> the launched combos will be measured here as soon as the Jul&ndash;Aug item-level POS exports are added (same "Sales By Items" report, exported for Jul 1 &ndash; Aug 31).</div>
+  <div class="chart-card" style="margin-bottom:16px">
+    <h3>🍩 Live Combo Tracker</h3>
+    <div class="sub">Performance of the combos launched Aug 2026 &mdash; powered by a &ldquo;Sales By Items&rdquo; export covering the post-launch window</div>
+    <div id="combo-tracker"></div>
+  </div>
   <div class="subpage active" id="pg-menu">
   <div class="sec">Category &amp; Price Point Analytics</div>
   <div class="grid g2">
@@ -745,6 +741,12 @@
   </div>
 
   <div class="sec">Outlet Sales Target &amp; Employee Incentive Roadmap</div>
+  <div class="chart-card" style="margin-bottom:20px">
+    <h3>💵 Real EBITDA per Outlet (from cost actuals)</h3>
+    <div class="sub">Actual rent, payroll and purchases per outlet &mdash; replaces the %-model whenever monthly cost actuals are loaded</div>
+    <div style="overflow-x:auto"><table class="tbl" id="tbl-real-ebitda"></table></div>
+  </div>
+
   <div class="chart-card" style="margin-bottom:20px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <div>
@@ -974,6 +976,18 @@
 <div class="page" id="pg-data">
   <div class="sec">Data Sources, Freshness &amp; Definitions</div>
   <div class="chart-card" style="margin-bottom:20px">
+    <h3>📤 Upload POS Exports</h3>
+    <div class="sub">Drop a monthly &ldquo;Sale Transactions&rdquo; CSV to add a new month on this device instantly, or a &ldquo;Sales By Items&rdquo; CSV to power the Combo Tracker. Committed pipeline data stays canonical &mdash; browser uploads only add months it doesn&rsquo;t cover yet.</div>
+    <div id="upload-zone" style="border:2px dashed var(--border);border-radius:12px;padding:26px;text-align:center;cursor:pointer" onclick="document.getElementById('upload-input').click()">
+      <div style="font-size:26px">📥</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:6px">Drag &amp; drop CSV files here, or click to choose</div>
+      <input type="file" id="upload-input" accept=".csv" multiple style="display:none" onchange="handleUploadFiles(this.files)">
+    </div>
+    <div id="upload-result" style="margin-top:12px"></div>
+    <div id="upload-status" style="margin-top:10px;font-size:11px;color:var(--muted)"></div>
+    <button class="filter-reset" style="margin-top:10px" onclick="clearDeviceUploads()">🗑 Clear device uploads</button>
+  </div>
+  <div class="chart-card" style="margin-bottom:20px">
     <h3>Connected Sources</h3>
     <div class="sub">What feeds this platform today, and what is pending</div>
     <table class="tbl">
@@ -981,9 +995,9 @@
       <tr><td><strong>POS invoice exports</strong></td><td>Jan 1 &ndash; Jun 30, 2026 &middot; 74,365 sale invoices</td><td>Latest data day: Jun 30, 2026</td><td><span class="tag star">Connected</span></td></tr>
       <tr><td><strong>POS item-level exports</strong></td><td>Q2 2026 &middot; 320 sold items</td><td>Through Jun 30, 2026</td><td><span class="tag star">Connected</span></td></tr>
       <tr><td><strong>Targets sheet (3-tier incentives)</strong></td><td>7 outlets, sales + profit tiers</td><td>Aug 2026</td><td><span class="tag star">Loaded</span></td></tr>
-      <tr><td><strong>Jul&ndash;Aug item exports (combo tracking)</strong></td><td>&mdash;</td><td>&mdash;</td><td><span class="tag horse">Awaiting export</span></td></tr>
-      <tr><td><strong>Cost actuals (rent, payroll, purchases)</strong></td><td>&mdash;</td><td>&mdash;</td><td><span class="tag horse">Awaiting accounts</span></td></tr>
-      <tr><td><strong>Loyalty / membership API</strong></td><td>&mdash;</td><td>&mdash;</td><td><span class="tag horse">Planned (self-built)</span></td></tr>
+      <tr><td><strong>Jul&ndash;Aug item exports (combo tracking)</strong></td><td>&mdash;</td><td>&mdash;</td><td><span class="tag horse">Upload via the box above</span></td></tr>
+      <tr><td><strong>Cost actuals (rent, payroll, purchases)</strong></td><td>&mdash;</td><td>&mdash;</td><td><span class="tag horse">Template ready: pipeline/cost_actuals_template.csv</span></td></tr>
+      <tr><td><strong>Loyalty / membership API</strong></td><td>&mdash;</td><td>&mdash;</td><td><span class="tag horse">Contract drafted: Docs/Loyalty_API_Contract.md</span></td></tr>
       <tr><td><strong>Reviews &amp; aggregator portals</strong></td><td>&mdash;</td><td>&mdash;</td><td><span class="tag horse">Planned</span></td></tr>
     </table>
   </div>
